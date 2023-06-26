@@ -838,15 +838,15 @@ export class chatgpt extends plugin {
       if (await redis.lIndex('CHATGPT:CHAT_QUEUE', 0) === randomId) {
         // 添加超时设置
         await redis.pSetEx('CHATGPT:CHAT_QUEUE_TIMEOUT', Config.defaultTimeoutMs, randomId)
-        if (confirmOn) {
-          await this.reply('我正在思考如何回复你，请稍等', true, { recallMsg: 8 })
-        }
-      } else {
-        let length = await redis.lLen('CHATGPT:CHAT_QUEUE') - 1
-        if (confirmOn) {
-          await this.reply(`我正在思考如何回复你，请稍等，当前队列前方还有${length}个问题`, true, { recallMsg: 8 })
-        }
-        logger.info(`chatgpt队列前方还有${length}个问题。管理员可通过#清空队列来强制清除所有等待的问题。`)
+        //if (confirmOn) {
+          //await this.reply('我正在思考如何回复你，请稍等', true, { recallMsg: 8 })
+        //}
+      //} else {
+        //let length = await redis.lLen('CHATGPT:CHAT_QUEUE') - 1
+        //if (confirmOn) {
+        //  await this.reply(`我正在思考如何回复你，请稍等，当前队列前方还有${length}个问题`, true, { recallMsg: 8 })
+        //}
+        //logger.info(`chatgpt队列前方还有${length}个问题。管理员可通过#清空队列来强制清除所有等待的问题。`)
         // 开始排队
         while (true) {
           if (await redis.lIndex('CHATGPT:CHAT_QUEUE', 0) === randomId) {
