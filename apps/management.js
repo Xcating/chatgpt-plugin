@@ -263,11 +263,48 @@ export class ChatgptManagement extends plugin {
           reg: '^#chatgpt(开启|关闭)智能模式$',
           fnc: 'switchSmartMode',
           permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(切换|使用)模型',
+          fnc: 'settingModel',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(切换|使用)(GPT3.5|GPT35|gpt3.5|gpt35|gpt-3.5|GPT-3.5)',
+          fnc: 'settingModel35',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(切换|使用)(GPT4|gpt4|gpt-4|GPT-4)',
+          fnc: 'settingModel4',
+          permission: 'master'
         }
       ]
     })
   }
-
+  async settingModel35 (e){
+    logger.info('切换模型：gpt-3.5')
+    Config.model='gpt-3.5'
+    e.reply('GPT3.5模型切换成功！',e.isGroup)
+  }
+  async settingModel4 (e){
+    logger.info('切换模型：gpt-4')
+    Config.model='gpt-4'
+    e.reply('GPT4模型切换成功！',e.isGroup)
+  }
+  async settingModel (e){
+    this.setContext('settingModels')
+    await this.reply('请发送要切换的模型', true)
+    return false
+  }
+  async settingModels () {
+    if (!this.e.msg) return
+    let Targetmodel = this.e.msg
+    Config.model=Targetmodel
+    if(Config.debug){
+      logger.info('TargetModel:'+Targetmodel)
+    }
+  }
   async viewUserSetting (e) {
     const userSetting = await getUserReplySetting(this.e)
     const replyMsg = `${this.e.sender.user_id}的回复设置:
