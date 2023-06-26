@@ -67,12 +67,12 @@ import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 try {
   await import('emoji-strip')
 } catch (err) {
-  logger.warn('【ChatGPT-Plugin】依赖emoji-strip未安装，会导致azure语音模式下朗读emoji的问题，建议执行pnpm install emoji-strip安装')
+  logger.warn('[ChatGPT-Plugin]依赖emoji-strip未安装，会导致azure语音模式下朗读emoji的问题，建议执行pnpm install emoji-strip安装')
 }
 try {
   await import('keyv')
 } catch (err) {
-  logger.warn('【ChatGPT-Plugin】依赖keyv未安装，可能影响Sydney模式下Bing对话，建议执行pnpm install keyv安装')
+  logger.warn('[ChatGPT-Plugin]依赖keyv未安装，可能影响Sydney模式下Bing对话，建议执行pnpm install keyv安装')
 }
 let version = Config.version
 let proxy
