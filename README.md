@@ -1,5 +1,5 @@
 ![chatgpt-plugin](https://user-images.githubusercontent.com/21212372/232115814-de9a0633-371f-4733-8da0-dd6e912c8a1e.png)
-<div align=center> <h1>云崽QQ机器人的ChatGPT插件(开发分支请勿使用)</h1> </div>
+<div align=center> <h1>云崽QQ机器人的ChatGPT插件</h1> </div>
 <div align=center>
    
    <img src ="https://img.shields.io/github/issues/ikechan8370/chatgpt-plugin?logo=github"/>
@@ -18,8 +18,7 @@
 
 ### 推荐的相关文档和参考资料
 本README
-[手册](https://chatgptplugin.ikechan8370.com/)
-[文档1（建设中）](https://chatgpt-docs.err0r.top/) 
+[手册|文档](https://chatgptplugin.ikechan8370.com/)
 [插件常见问题（鹤望兰版）](https://www.wolai.com/4FCxxWAdjbrHF29MCJmAQK) 
 [Yunzai常见问题（LUCK小运版）](https://www.wolai.com/oA43vuW71aBnv7UsEysn4T) 
 [憨憨博客](https://blog.hanhanz.top/)
