@@ -974,26 +974,26 @@ export class chatgpt extends plugin {
       }
       logger.info('[ChatGPT回复额外消息]');
         //----------------------
-        // 将中文句号和中文问号作为分隔符，使用split()方法分割文本
-        var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
-        let sentences = variableWithoutNewlines.split(/[。？]/);
-        
         //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
         // 遍历分割后的句子数组
         if(Config.ExrateMsg===true){
+          var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
+          let sentences = variableWithoutNewlines.split(/[。？]/); // 将中文句号和中文问号作为分隔符，使用split()方法分割文本
           sentences.forEach(async (NumberA, index) => {
               // 忽略空的句子
               if (NumberA.trim() !== '') {
                   const delay8 = index * 500;
                   setTimeout(async () => {
-                      if (Math.random() >= 0.3) {
+                      if (Math.random() >= 0.3) { //0.3是概率，Math.random()随机生成一个1~0的小数
                           await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e))
                       }
                       else {
                           await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e), e.isGroup)
                       }
                   }, delay8);
-                  logger.info('正在分割数据' + index + '个' + NumberA);
+                  if(Config.debug){
+                    logger.info('正在分割数据' + index + '个' + NumberA);
+                  }
                   
               }
           });
