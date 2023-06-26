@@ -30,7 +30,6 @@ export class EditCardTool extends AbstractTool {
     logger.info('edit card: ', groupId, qq)
     let group = await Bot.pickGroup(groupId)
     await group.setCard(qq, card)
-    await group.setGroupCard(groupId, card)
     return `the user ${qq}'s card has been changed into ${card}`
   }
 }
