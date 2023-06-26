@@ -48,38 +48,38 @@ export class QueryStarRailTool extends AbstractTool {
       let panel = new Panel(e)
       panel.e = e
       panel.panel(e).catch(e => logger.warn(e))
-      let uidRes = await fetch('https://avocado.wiki/v1/info/' + uid)
-      uidRes = await uidRes.json()
-      let { assistAvatar, displayAvatars } = uidRes.playerDetailInfo
-      function dealAvatar (avatar) {
-        delete avatar.position
-        delete avatar.vo_tag
-        delete avatar.desc
-        delete avatar.promption
-        delete avatar.relics
-        delete avatar.behaviorList
-        delete avatar.images
-        delete avatar.ranks
-        if (avatar.equipment) {
-          avatar.equipment = {
-            level: avatar.equipment.level,
-            rank: avatar.equipment.rank,
-            name: avatar.equipment.name,
-            skill_desc: avatar.equipment.skill_desc
-          }
-        }
-      }
-      dealAvatar(assistAvatar)
-      if (displayAvatars) {
-        displayAvatars.forEach(avatar => {
-          dealAvatar(avatar)
-        })
-      }
-      uidRes.playerDetailInfo.assistAvatar = assistAvatar
-      uidRes.playerDetailInfo.displayAvatars = displayAvatars
-      delete uidRes.repository
-      delete uidRes.version
-      return `the player info in json format is: \n${JSON.stringify(uidRes)}`
+      //let uidRes = await fetch('https://avocado.wiki/v1/info/' + uid)
+      //luidRes = await uidRes.json()
+      //llet { assistAvatar, displayAvatars } = uidRes.playerDetailInfo
+      //lfunction dealAvatar (avatar) {
+      //l  delete avatar.position
+      //l  delete avatar.vo_tag
+      //l  delete avatar.desc
+      //l  delete avatar.promption
+      //l  delete avatar.relics
+      //l  delete avatar.behaviorList
+      //l  delete avatar.images
+      //l  delete avatar.ranks
+      //l  if (avatar.equipment) {
+      //l    avatar.equipment = {
+      //l      level: avatar.equipment.level,
+      //l      rank: avatar.equipment.rank,
+      //l      name: avatar.equipment.name,
+      //l      skill_desc: avatar.equipment.skill_desc
+      //l    }
+      //l  }
+      //l}
+      //ldealAvatar(assistAvatar)
+      //lif (displayAvatars) {
+      //l  displayAvatars.forEach(avatar => {
+      //l    dealAvatar(avatar)
+      //l  })
+      //l}
+      //luidRes.playerDetailInfo.assistAvatar = assistAvatar
+      //luidRes.playerDetailInfo.displayAvatars = displayAvatars
+      //ldelete uidRes.repository
+      //ldelete uidRes.version
+      return `The panel has already been sent to the group`
     } catch (err) {
       return `failed to query, error: ${err.toString()}`
     }
