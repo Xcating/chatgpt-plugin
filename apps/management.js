@@ -355,6 +355,7 @@ export class ChatgptManagement extends plugin {
   async settingModel (e){
     this.setContext('settingModels')
     await this.reply('请发送要切换的模型', true)
+    logger.info("原神，启动！")
     return false
   }
   async settingModels () {
