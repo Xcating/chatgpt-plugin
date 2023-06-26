@@ -2039,7 +2039,7 @@ export class chatgpt extends plugin {
             new APTool(),
             // new HandleMessageMsgTool(),
             serpTool,
-            new QueryUserinfoTool()
+            //new QueryUserinfoTool()
           ]
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
