@@ -1,6 +1,10 @@
+:root {
+  --gradient-text-color: linear-gradient(120deg, #d51a2f, #0cacaa);
+  ;
+}
 @font-face {
-  font-family: "tttgbnumber";
-  src: url("../../../../../resources/font/tttgbnumber.ttf");
+  font-family: "FZB";
+  src: url("../font/FZB.ttf");
   font-weight: normal;
   font-style: normal;
 }

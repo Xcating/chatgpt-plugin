@@ -265,12 +265,12 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(GPT3.5|GPT35|gpt3.5|gpt35|gpt-3.5|GPT-3.5)',
+          reg: '^#chatgpt(切换|使用)(模型|model)?(GPT3.5|GPT35|gpt3.5|gpt35|gpt-3.5|GPT-3.5)',
           fnc: 'settingModel35',
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(GPT4|gpt4|gpt-4|GPT-4)',
+          reg: '^#chatgpt(切换|使用)(模型|model)?(GPT4|gpt4|gpt-4|GPT-4)',
           fnc: 'settingModel4',
           permission: 'master'
         },
@@ -364,6 +364,8 @@ export class ChatgptManagement extends plugin {
     if(Config.debug){
       logger.info('TargetModel:'+Targetmodel)
     }
+    this.finish('settingModels')
+    return
   }
   async viewUserSetting (e) {
     const userSetting = await getUserReplySetting(this.e)
