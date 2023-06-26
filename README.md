@@ -2,10 +2,10 @@
 <div align=center> <h1>修改自用版-云崽のChatGPT插件</h1> </div>
 <div align=center>
    
-   <img src ="https://img.shields.io/github/issues/ikechan8370/chatgpt-plugin?logo=github"/>
-<img src ="https://img.shields.io/github/license/ikechan8370/chatgpt-plugin"/>
-<img src ="https://img.shields.io/github/v/tag/ikechan8370/chatgpt-plugin?label=latest%20version&logo=github"/>
-<img src ="https://img.shields.io/github/languages/top/ikechan8370/chatgpt-plugin?logo=github"/>
+   <img src ="https://img.shields.io/github/issues/Xcating/chatgpt-plugin?logo=github"/>
+<img src ="https://img.shields.io/github/license/Xcating/chatgpt-plugin"/>
+<img src ="https://img.shields.io/github/v/tag/Xcating/chatgpt-plugin?label=latest%20version&logo=github"/>
+<img src ="https://img.shields.io/github/languages/top/Xcating/chatgpt-plugin?logo=github"/>
 </div>
 
 
