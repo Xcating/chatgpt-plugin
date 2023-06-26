@@ -775,6 +775,8 @@ export class chatgpt extends plugin {
     //const use = 'api'
     // 自动化插件本月已发送xx条消息更新太快，由于延迟和缓存问题导致不同客户端不一样，at文本和获取的card不一致。因此单独处理一下
     prompt = prompt.replace(/^｜本月已发送\d+条消息/, '')
+    prompt = prompt.replace(/^｜当前内存占用\d+/, '')
+    
     await this.abstractChat(e, prompt, use)
   }
 
