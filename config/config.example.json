@@ -32,6 +32,7 @@
   "sydneyMood": false,
   "enableSuggestedResponses": false,
   "api": "",
+  "smartMode": true,
   "apiBaseUrl": "",
   "apiForceUseReverse": false,
   "plus": false,
