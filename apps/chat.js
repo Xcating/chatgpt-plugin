@@ -63,7 +63,7 @@ import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
-import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
+//import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 try {
   await import('emoji-strip')
 } catch (err) {
@@ -2021,7 +2021,7 @@ export class chatgpt extends plugin {
             new APTool(),
             new QueryGenshinTool(),
             new HandleMessageMsgTool(),
-            new QueryUserinfoTool()
+            //new QueryUserinfoTool()
           ]
           // todo 3.0再重构tool的插拔和管理
           let tools = [
