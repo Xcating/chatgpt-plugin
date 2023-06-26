@@ -10,9 +10,6 @@
 
 
 
-![26224FE397F1E74104C1C007C1A32DDE](https://user-images.githubusercontent.com/21212372/227718994-4d33da74-6886-41d5-afd0-73986b086df0.gif)
-
-
 
 
 
@@ -150,11 +147,11 @@ pnpm i
 > - 部分API需要在和机器人的聊天里输入`#chatgpt设置token`才可以使用
 >
 > #### 我有新必应的测试资格了，如何获取必应Token？
-> 2023/05/29 无需登录也可以使用了，要求不高可以不填
+> 2023/05/29 无需登录也可以使用了，要求不高/不用必应画图可以不填
 >
 > 1. JS一键获取
 >
-> 登录www.bing.com，刷新一下网页，按F12或直接打开开发者模式，点击Console/控制台，运行如下代码，执行后即在您的剪切板存储了必应Token
+> 登录bing.com(登录账号)，刷新一下网页，按F12或直接打开开发者模式，点击Console/控制台，运行如下代码，执行后即在您的剪切板存储了必应Token
 >
 > ```js
 > copy(document.cookie.split(";").find(cookie=>cookie.trim().startsWith("_U=")).split("=")[1]);
@@ -162,7 +159,7 @@ pnpm i
 >
 > 2. 手动获取
 >
-> 登录www.bing.com，刷新一下网页，按F12或直接打开开发者模式，点击Application/存储，点击左侧Storage下的Cookies，展开找到[https://www.bing.com](https://www.bing.com/) 项，在右侧列表Name项下找到"\_U"，_U的value即为必应Token
+> 登录bing.com，刷新一下网页，按F12或直接打开开发者模式，点击Application/存储，点击左侧Storage下的Cookies，展开找到[https://www.bing.com](https://www.bing.com/) 项，在右侧列表Name项下找到"\_U"，_U的value即为必应Token
 >
 >
 >
@@ -177,7 +174,7 @@ pnpm i
 
 - prefix模式：【#chat+问题】，本模式可以避免指令冲突。
 
-发挥你的想象力吧，~~调教~~拟造出你自己的机器人风格！
+发挥你的想象力吧，~~调教~~乱编出你自己的~~没用的设定~~机器人风格！
 
 
 #### 文本/图片回复模式
@@ -233,10 +230,10 @@ pnpm i
 
 ## TODO
 
-* V3重构
-* 插件in插件
-* langchain分支完善
-* 游戏机制
+* V3重构 [14%]
+* 插件in插件 [API模式已经完成]
+* langchain分支完善 []
+* 游戏机制 []
 
 ## 其他
 
