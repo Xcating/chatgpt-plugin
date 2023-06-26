@@ -327,6 +327,24 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'ExrateMsg',
+          label: '分段发送',
+          bottomHelpMessage: '分割句号和问号分段输出消息',
+          component: 'Switch'
+        },
+        {
+          field: 'ExprotMoji',
+          label: '分段发送',
+          bottomHelpMessage: '发送消息完发送随机表情',
+          component: 'Switch'
+        },
+        {
+          field: 'openAiBaseUrl',
+          label: 'OpenAI API服务器地址',
+          bottomHelpMessage: 'OpenAI的API服务器地址。注意要带上/v1。默认为https://api.openai.com/v1',
+          component: 'Input'
+        },
+        {
           field: 'openAiBaseUrl',
           label: 'OpenAI API服务器地址',
           bottomHelpMessage: 'OpenAI的API服务器地址。注意要带上/v1。默认为https://api.openai.com/v1',

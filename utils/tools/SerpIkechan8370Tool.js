@@ -24,7 +24,7 @@ export class SerpIkechan8370Tool extends AbstractTool {
     }
     let serpRes = await fetch(`https://serp.ikechan8370.com/${source}?q=${encodeURIComponent(q)}&lang=zh-CN&limit=10`, {
       headers: {
-        'X-From-Library': 'ikechan8370'
+        'X-From-Library': 'ikechan8370-ChatGPT-plugin'
       }
     })
     serpRes = await serpRes.json()

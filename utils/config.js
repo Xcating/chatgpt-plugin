@@ -29,6 +29,8 @@ const defaultConfig = {
   OpenAiPlatformRefreshToken: '',
   openAiForceUseReverse: false,
   drawCD: 30,
+  ExprotMoji: true,
+  ExrateMsg: true,
   model: '',
   temperature: 0.8,
   toneStyle: 'balanced', // or creative, precise

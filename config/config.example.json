@@ -62,6 +62,8 @@
   "chatglmBaseUrl": "http://localhost:8080",
   "allowOtherMode": true,
   "sydneyContext": "",
+  "ExprotMoji": true,
+  "ExrateMsg": true,
   "emojiBaseURL": "https://www.gstatic.com/android/keyboard/emojikitchen",
   "enableGroupContext": false,
   "groupContextLength": 50,

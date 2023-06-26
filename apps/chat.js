@@ -972,6 +972,42 @@ export class chatgpt extends plugin {
         // 字数超限直接返回
         return false
       }
+      logger.info('[ChatGPT回复额外消息]');
+        //----------------------
+        // 将中文句号和中文问号作为分隔符，使用split()方法分割文本
+        var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
+        let sentences = variableWithoutNewlines.split(/[。？]/);
+        
+        //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
+        // 遍历分割后的句子数组
+        if(Config.ExrateMsg===true){
+          sentences.forEach(async (NumberA, index) => {
+              // 忽略空的句子
+              if (NumberA.trim() !== '') {
+                  const delay8 = index * 500;
+                  setTimeout(async () => {
+                      if (Math.random() >= 0.3) {
+                          await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e))
+                      }
+                      else {
+                          await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e), e.isGroup)
+                      }
+                  }, delay8);
+                  logger.info('正在分割数据' + index + '个' + NumberA);
+                  
+              }
+          });
+        }
+        else{
+          logger.info('未启用分割消息，统一发送');
+          await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
+        }
+        if(Config.ExprotMoji===true){
+          setTimeout(async () => {
+            logger.info('触发发送表情...');
+            e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站
+          }, 2000);
+    }
       if (use !== 'api3' && use !== 'poe' && use !== 'claude') {
         previousConversation.conversation = {
           conversationId: chatMessage.conversationId
@@ -1141,7 +1177,7 @@ export class chatgpt extends plugin {
           if (Config.ttsMode === 'vits-uma-genshin-honkai' && ttsResponse.length > Config.ttsAutoFallbackThreshold) {
             await this.reply('回复的内容过长，已转为文本模式')
           }
-          await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
+          //await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
           if (quotemessage.length > 0) {
             this.reply(await makeForwardMsg(this.e, quotemessage.map(msg => `${msg.text} - ${msg.url}`)))
           }
@@ -1251,7 +1287,7 @@ export class chatgpt extends plugin {
           this.reply('今日对话已达上限')
           return false
         }
-        await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
+        //await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
         if (quotemessage.length > 0) {
           this.reply(await makeForwardMsg(this.e, quotemessage.map(msg => `${msg.text} - ${msg.url}`)))
         }
