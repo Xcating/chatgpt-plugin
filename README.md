@@ -23,7 +23,7 @@
 ## 特点
 
 * 支持单人连续对话Conversation
-* API模式下，使用 gpt-3.5-turbo 或 gpt-4 API，仅需OpenAI Api Key，开箱即用。**注意收费**
+* API模式下，使用 gpt-3.5-turbo 或 gpt-4 API 或转发/反代支持的其他模型，仅需OpenAI Api Key，开箱即用。**注意收费**
 * 支持问答图片截图和聊天记录导出
 * 支持AI性格调教，角色扮演强烈推荐Bing自定义模式
 * 支持对接vits和Azure等回答直接转语音
