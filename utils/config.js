@@ -125,6 +125,8 @@ const defaultConfig = {
   enhanceAzureTTSEmotion: false,
   autoJapanese: false,
   enableGenerateContents: false,
+  PresetsAPIUrlA: "",
+  PresetsAPIUrlB: "",
   amapKey: '',
   azSerpKey: '',
   serpSource: 'ikechan8370',

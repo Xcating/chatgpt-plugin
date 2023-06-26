@@ -265,11 +265,6 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)模型',
-          fnc: 'settingModel',
-          permission: 'master'
-        },
-        {
           reg: '^#chatgpt(切换|使用)(GPT3.5|GPT35|gpt3.5|gpt35|gpt-3.5|GPT-3.5)',
           fnc: 'settingModel35',
           permission: 'master'
@@ -278,7 +273,22 @@ export class ChatgptManagement extends plugin {
           reg: '^#chatgpt(切换|使用)(GPT4|gpt4|gpt-4|GPT-4)',
           fnc: 'settingModel4',
           permission: 'master'
-        }
+        },
+        {
+          reg: '^#chatgpt(切换|使用)模型',
+          fnc: 'settingModel',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)A)',
+          fnc: 'AUrlApi',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)B)',
+          fnc: 'BUrlApi',
+          permission: 'master'
+        },
       ]
     })
   }
@@ -286,6 +296,16 @@ export class ChatgptManagement extends plugin {
     logger.info('切换模型：gpt-3.5')
     Config.model='gpt-3.5'
     e.reply('GPT3.5模型切换成功！',e.isGroup)
+  }
+  async AUrlApi (e){
+    logger.info('切换预设API反代-A')
+    Config.openAiBaseUrl=Config.PresetsAPIUrlA
+    e.reply('API反代A切换成功',e.isGroup)
+  }
+  async BUrlApi (e){
+    logger.info('切换预设API反代-B')
+    Config.openAiBaseUrl=Config.PresetsAPIUrlB
+    e.reply('API反代B切换成功',e.isGroup)
   }
   async settingModel4 (e){
     logger.info('切换模型：gpt-4')
