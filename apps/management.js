@@ -289,6 +289,26 @@ export class ChatgptManagement extends plugin {
           fnc: 'BUrlApi',
           permission: 'master'
         },
+        {
+          reg: '^#chatgpt(开启|打开|开)(分割消息|额外消息|分割|分片|分片发送)',
+          fnc: 'OpenExrateMsg',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(开启|打开|开)(回复表情|表情回复|表情|随机表情|发送表情)',
+          fnc: 'OpenExprotMoji',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(关闭|关)(分割消息|额外消息|分割|分片|分片发送)',
+          fnc: 'OffExrateMsg',
+          permission: 'master'
+        },
+        {
+          reg: '^#chatgpt(关闭|关)(回复表情|表情回复|表情|随机表情|发送表情)',
+          fnc: 'OffExprotMoji',
+          permission: 'master'
+        }
       ]
     })
   }
@@ -296,6 +316,26 @@ export class ChatgptManagement extends plugin {
     logger.info('切换模型：gpt-3.5')
     Config.model='gpt-3.5'
     e.reply('GPT3.5模型切换成功！',e.isGroup)
+  }
+  async OpenExrateMsg (e){
+    logger.info('[打开-分割消息]')
+    Config.ExrateMsg=true
+    e.reply('分割消息打开成功！',e.isGroup)
+  }
+  async OpenExprotMoji (e){
+    logger.info('[打开-回复随机表情]')
+    Config.ExprotMoji=true
+    e.reply('回复随机表情打开成功！',e.isGroup)
+  }
+  async OffExrateMsg (e){
+    logger.info('[关闭-分割消息]')
+    Config.ExrateMsg=false
+    e.reply('分割消息关闭成功！',e.isGroup)
+  }
+  async OffExprotMoji (e){
+    logger.info('[关闭-回复随机表情]')
+    Config.ExprotMoji=false
+    e.reply('回复随机表情关闭成功！',e.isGroup)
   }
   async AUrlApi (e){
     logger.info('切换预设API反代-A')

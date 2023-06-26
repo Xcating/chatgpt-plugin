@@ -1005,7 +1005,7 @@ export class chatgpt extends plugin {
         if(Config.ExprotMoji===true){
           setTimeout(async () => {
             logger.info('触发发送表情...');
-            e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站
+            e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站，有更好的提issue（
           }, 2000);
     }
       if (use !== 'api3' && use !== 'poe' && use !== 'claude') {
