@@ -21,7 +21,7 @@ export class EditCardTool extends AbstractTool {
     required: ['card', 'groupId']
   }
 
-  description = '当你想要修改某个群员的群名片时有用。输入应该是群号、qq号和群名片，用空格隔开。'
+  description = 'Useful when changing someone elses or ones own name'
 
   func = async function (opts) {
     let {qq, card, groupId} = opts
