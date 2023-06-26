@@ -32,7 +32,7 @@
 * 支持新[必应](https://www.bing.com/new)（token负载均衡，限流降级）
 * 2023-03-15 API3支持GPT-4尝鲜，需要Plus用户
 * 支持[ChatGLM](https://github.com/THUDM/ChatGLM-6B)模型。基于[自建API](https://github.com/ikechan8370/SimpleChatGLM6BAPI)
-* 2023-04-15 支持[Claude by Slack](https://www.anthropic.com/claude-in-slack )和Poe（WIP）。Claude配置参考[这里](https://ikechan8370.com/archives/chatgpt-plugin-for-yunzaipei-zhi-slack-claude)
+* 2023-04-15 支持[Claude by Slack](https://www.anthropic.com/claude-in-slack )和Poe（应该已经坏掉了）。Claude配置参考[这里](https://ikechan8370.com/archives/chatgpt-plugin-for-yunzaipei-zhi-slack-claude)
 * 2023-05-12 支持星火大模型
 * 2023-05-29 支持gpt-4 API.必应无需cookie即可对话（Sydney和自定义模式）
 
