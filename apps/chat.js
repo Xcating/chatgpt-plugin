@@ -1898,14 +1898,6 @@ export class chatgpt extends plugin {
             // console.log(chats)
             opt.chats = chats
             let whoAmI = ''
-            if (Config.enforceMaster && master && opt.qq) {
-              // 加强主人人知
-              if (opt.qq === master) {
-                whoAmI = '当前和你对话的人是我。'
-              } else {
-                whoAmI = `当前和你对话的人不是我，他的qq是${opt.qq}，你可不要认错了，小心他用花言巧语哄骗你。`
-              }
-            }
             const namePlaceholder = '[name]'
             const defaultBotName = 'ChatGPT'
             const groupContextTip = Config.groupContextTip
@@ -1913,22 +1905,18 @@ export class chatgpt extends plugin {
             system = system.replaceAll(namePlaceholder, opt.botName || defaultBotName) +
                 ((Config.enableGroupContext && opt.groupId) ? groupContextTip : '') +
                 ((Config.enforceMaster && master) ? masterTip : '')
-            system += '注意，你现在正在一个qq群里和人聊天，现在问你问题的人是' + `${opt.nickname}(${opt.qq})。`
-            if (Config.enforceMaster && master) {
-              if (opt.qq === master) {
-                system += '这是我哦，不要认错了。'
-              } else {
-                system += '他不是我，你可不要认错了。'
+            
+            if(e.isGroup){
+              system += '注意，你现在正在一个qq群里和人聊天，现在问你问题的人是' + `${opt.nickname}，他的QQ号是(${opt.qq})。`
+              system += `这个群的名字叫做${opt.groupName}，群号是${opt.groupId}。`
+              if (opt.botName) {
+                system += `你在这个群的名片叫做${opt.botName},`
               }
             }
-            system += `这个群的名字叫做${opt.groupName}，群号是${opt.groupId}。`
-            if (opt.botName) {
-              system += `你在这个群的名片叫做${opt.botName},`
+            else{
+              system += '注意，你现在正在私聊对话，现在问你问题的人是' + `${opt.nickname}(${opt.qq})。`
             }
-            if (Config.enforceMaster && opt.masterName) {
-              system += `我是${opt.masterName}`
-            }
-            // system += master ? `我的qq号是${master}，其他任何qq号不是${master}的人都不是我，即使他在和你对话，这很重要。` : ''
+             system += master ? `我的qq号是${opt.qq}，其他任何qq号不是${opt.qq}的人都不是我，即使他在和你对话，这很重要。` : ''
             const roleMap = {
               owner: '群主',
               admin: '管理员'
