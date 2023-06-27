@@ -118,7 +118,7 @@ export class chatgpt extends plugin {
       dsc: '与人工智能对话，畅聊无限可能~',
       event: 'message',
       /** 优先级，数字越小等级越高 */
-      priority: 1145,
+      priority: 1100,
       rule: [
         {
           /** 命令正则匹配 */
