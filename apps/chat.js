@@ -1872,8 +1872,15 @@ export class chatgpt extends plugin {
             let opt = {}
             opt.groupId = e.group_id
             opt.qq = e.sender.user_id
-            opt.nickname = e.sender.card
-            opt.groupName = e.group.name
+            if(e.isGroup)
+            {  
+              opt.nickname = e.sender.card
+              opt.groupName = e.group.name
+            }
+            else{
+              opt.nickname = e.sender.card
+              opt.groupName = 'none'
+            }
             opt.botName = e.isGroup ? (e.group.pickMember(Bot.uin).card || e.group.pickMember(Bot.uin).nickname) : Bot.nickname
             let master = (await getMasterQQ())[0]
             if (master && e.group) {
@@ -1882,6 +1889,7 @@ export class chatgpt extends plugin {
             if (master && !e.group) {
               opt.masterName = Bot.getFriendList().get(parseInt(master))?.nickname
             }
+            if(e.isGroup){
             let latestChat = await e.group.getChatHistory(0, 1)
             let seq = latestChat[0].seq
             let chats = []
@@ -1897,6 +1905,7 @@ export class chatgpt extends plugin {
             })
             // console.log(chats)
             opt.chats = chats
+          }
             let whoAmI = ''
             const namePlaceholder = '[name]'
             const defaultBotName = 'ChatGPT'
@@ -1907,21 +1916,21 @@ export class chatgpt extends plugin {
                 ((Config.enforceMaster && master) ? masterTip : '')
             
             if(e.isGroup){
-              system += '注意，你现在正在一个qq群里和人聊天，现在问你问题的人是' + `${opt.nickname}，他的QQ号是(${opt.qq})。`
+              system += '现在问你问题的人是' + `${opt.nickname}，他的QQ号是${opt.qq}。`
               system += `这个群的名字叫做${opt.groupName}，群号是${opt.groupId}。`
               if (opt.botName) {
                 system += `你在这个群的名片叫做${opt.botName},`
               }
             }
             else{
-              system += '注意，你现在正在私聊对话，现在问你问题的人是' + `${opt.nickname}(${opt.qq})。`
+              system += '注意，你现在正在私聊对话，现在问你问题的人是' + `${opt.nickname},他的QQ号是${opt.qq}。千万不要认错了！！！`
             }
-             system += master ? `我的qq号是${opt.qq}，其他任何qq号不是${opt.qq}的人都不是我，即使他在和你对话，这很重要。` : ''
+            //system +=  `正在跟你对话的人的QQ号是${opt.qq}，他的名字是${opt.nickname}，千万不要认错了！！！`
             const roleMap = {
               owner: '群主',
               admin: '管理员'
             }
-            if (chats) {
+            if (false) {
               system += `以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。"
       `
               system += chats
@@ -1939,6 +1948,7 @@ export class chatgpt extends plugin {
           } catch (err) {
             logger.warn('获取群聊聊天记录失败，本次对话不携带聊天记录', err)
           }
+          logger.info(system)
         }
         let opts = {
           apiBaseUrl: Config.openAiBaseUrl,
