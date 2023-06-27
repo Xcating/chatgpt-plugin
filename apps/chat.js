@@ -63,6 +63,9 @@ import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
+import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
+import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
+
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 try {
   await import('emoji-strip')
@@ -283,6 +286,8 @@ export class chatgpt extends plugin {
       return
     }
     let ats = e.message.filter(m => m.type === 'at')
+    const isAtMode = Config.toggleMode === 'at'
+    if (isAtMode) ats = ats.filter(item => item.qq !== Bot.uin)
     if (ats.length === 0) {
       if (use === 'api3') {
         await redis.del(`CHATGPT:QQ_CONVERSATION:${e.sender.user_id}`)
@@ -2025,7 +2030,7 @@ export class chatgpt extends plugin {
           let tools = [
             // new SendAvatarTool(),
             // new SendDiceTool(),
-            // new EditCardTool(),
+            new EditCardTool(),
             new QueryStarRailTool(),
             new QueryGenshinTool(),
             new WebsiteTool(),
@@ -2043,7 +2048,7 @@ export class chatgpt extends plugin {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
             if (botInfo.role !== 'member') {
               // 管理员才给这些工具
-              tools.push(...[new EditCardTool(), new JinyanTool(), new KickOutTool(), new HandleMessageMsgTool()])
+              tools.push(...[new EditCardTool(), new KickOutTool(), new HandleMessageMsgTool()])
               // 用于撤回和加精的id
 
               if (e.source?.seq) {
