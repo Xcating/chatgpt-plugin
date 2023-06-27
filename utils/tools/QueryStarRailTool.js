@@ -18,7 +18,7 @@ export class QueryStarRailTool extends AbstractTool {
         description: '游戏角色名'
       }
     },
-    required: []
+    required: ["character"]
   }
 
   func = async function (opts, e) {

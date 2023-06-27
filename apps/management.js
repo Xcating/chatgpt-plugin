@@ -353,18 +353,18 @@ export class ChatgptManagement extends plugin {
     e.reply('GPT4模型切换成功！',e.isGroup)
   }
   async settingModel (e){
-    this.setContext('settingModels')
+    this.setContext('settingModels8')
     await this.reply('请发送要切换的模型', true)
     logger.info("原神，启动！")
     return false
   }
-  async settingModels () {
-    if (!this.e.msg) return
+  async settingModels8 () {
     let Targetmodel = this.e.msg
     Config.model=Targetmodel
     if(Config.debug){
       logger.info('TargetModel:'+Targetmodel)
     }
+    await this.reply('切换成功', true)
     this.finish('settingModels')
     return
   }
