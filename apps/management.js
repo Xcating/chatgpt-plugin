@@ -1487,9 +1487,12 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
     if (await redis.exists('CHATGPT:USE') != 0) {
       redisConfig.useMode = await redis.get('CHATGPT:USE')
     }
+    const filepath = path.join('plugins/chatgpt-plugin/resources', 'view.json')
+    const configView = JSON.parse(fs.readFileSync(filepath, 'utf8'))
     const configJson = JSON.stringify({
       chatConfig: Config,
-      redisConfig
+      redisConfig,
+      view: configView
     })
     console.log(configJson)
     const buf = Buffer.from(configJson)
