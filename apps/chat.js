@@ -2012,8 +2012,8 @@ export class chatgpt extends plugin {
             new WeatherTool(),
             new SendPictureTool(),
             new SendVideoTool(),
-            new SearchMusicTool(),
-            new SendMusicTool(),
+            //new SearchMusicTool(),
+            //new SendMusicTool(),
             new ImageCaptionTool(),
             new SearchVideoTool(),
             new SerpImageTool(),
@@ -2044,6 +2044,13 @@ export class chatgpt extends plugin {
             serpTool,
             //new QueryUserinfoTool()
           ]
+          try {
+            await import('../../avocado-plugin/apps/avocado.js')
+            tools.push(...[new EliMusicTool(), new EliMovieTool()])
+          } catch (err) {
+            tools.push(...[new SendMusicTool(), new SearchMusicTool()])
+            logger.mark(logger.green('【🥑ChatGPT-Plugin🥑】🥑插件🥑avocado-plugin🥑未安装') + '，🥑安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
+          }
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
             if (botInfo.role !== 'member') {
