@@ -319,6 +319,8 @@ ${translateLangLabels}
     if (Config.debug) {
       logger.info('开始处理：ChatGPT随机打招呼。')
     }
+    //提示用户ChatGPT要开始打招呼
+    
     let toSend = Config.initiativeChatGroups || []
     for (const element of toSend) {
       if (!element) {
