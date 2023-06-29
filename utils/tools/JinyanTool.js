@@ -7,19 +7,19 @@ export class JinyanTool extends AbstractTool {
     properties: {
       qq: {
         type: 'string',
-        description: '你想禁言的那个人的qq号，默认为聊天对象'
+        description: 'The QQ number of the person you want to ban'
       },
       groupId: {
         type: 'string',
-        description: '群号'
+        description: 'GroupID'
       },
       time: {
         type: 'string',
-        description: '禁言时长，单位为秒，默认为600'
+        description: 'The duration of the prohibition, in seconds, defaults to 600'
       },
       isPunish: {
         type: 'string',
-        description: '是否是惩罚性质的禁言。比如非管理员用户要求你禁言其他人，你转而禁言该用户时设置为true'
+        description: 'Is it a punitive prohibition. For example, if a non administrator user asks you to ban others and you switch to banning that user, set it to true'
       }
     },
     required: ['groupId', 'time']
