@@ -1878,15 +1878,8 @@ export class chatgpt extends plugin {
             let opt = {}
             opt.groupId = e.group_id
             opt.qq = e.sender.user_id
-            if(e.isGroup)
-            {  
-              opt.nickname = e.sender.card
-              opt.groupName = e.group.name
-            }
-            else{
-              opt.nickname = e.sender.card
-              opt.groupName = 'none'
-            }
+            opt.nickname = e.sender.card
+            opt.groupName = e.group.name
             opt.botName = e.isGroup ? (e.group.pickMember(Bot.uin).card || e.group.pickMember(Bot.uin).nickname) : Bot.nickname
             let master = (await getMasterQQ())[0]
             if (master && e.group) {
@@ -1895,7 +1888,6 @@ export class chatgpt extends plugin {
             if (master && !e.group) {
               opt.masterName = Bot.getFriendList().get(parseInt(master))?.nickname
             }
-            if(e.isGroup){
             let latestChat = await e.group.getChatHistory(0, 1)
             let seq = latestChat[0].seq
             let chats = []
@@ -1909,9 +1901,26 @@ export class chatgpt extends plugin {
               let sender = mm.get(chat.sender.user_id)
               chat.sender = sender
             })
-            // console.log(chats)
+            console.log(chats)
             opt.chats = chats
-          }
+            const roleMap = {
+              owner: '群主',
+              admin: '管理员'
+            }
+            if (chats) {
+              system += `\n以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`
+              system += chats
+                .map(chat => {
+                  let sender = chat.sender || {}
+                  // if (sender.user_id === Bot.uin && chat.raw_message.startsWith('建议的回复')) {
+                  if (chat.raw_message.startsWith('建议的回复')) {
+                    // 建议的回复太容易污染设定导致对话太固定跑偏了
+                    return ''
+                  }
+                  return `【${sender.card || sender.nickname}】（qq number/号：${sender.user_id}，${roleMap[sender.role] || '普通成员'}，${sender.area ? '来自' + sender.area + '，' : ''} ${sender.age}岁， 群头衔：${sender.title}， 性别：${sender.sex}，时间：${formatDate(new Date(chat.time * 1000))}） 说：${chat.raw_message}`
+                })
+                .join('\n')
+            }
             let whoAmI = ''
             const namePlaceholder = '[name]'
             const defaultBotName = 'ChatGPT'
@@ -1931,24 +1940,7 @@ export class chatgpt extends plugin {
             else{
               system += '注意，你现在正在私聊对话，现在问你问题的人是' + `${opt.nickname},他的QQ号是${opt.qq}。千万不要认错了！！！`
             }
-            //system +=  `正在跟你对话的人的QQ号是${opt.qq}，他的名字是${opt.nickname}，千万不要认错了！！！`
-            const roleMap = {
-              owner: '群主',
-              admin: '管理员'
-            }
-            if (Config.enableGroupContext) {
-              system += `以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。"
-      `
-              //system += chats
-                .map(chat => {
-                  let sender = chat.sender || {}
-                  if (chat.raw_message.startsWith('建议的回复')) {
-                    return ''
-                  }
-                  return `【${sender.card || sender.nickname}】（qq：${sender.user_id}，${roleMap[sender.role] || '普通成员'}，${sender.area ? '来自' + sender.area + '，' : ''} ${sender.age}岁， 群头衔：${sender.title}， 性别：${sender.sex}，时间：${formatDate(new Date(chat.time * 1000))}） 说：${chat.raw_message}`
-                })
-                .join('\n')
-            }
+            system += `\n你在这个群聊的称呼是 ${opt.botName} ,你的qq号是 ${Bot.uin} !你的qq号是 ${Bot.uin} !你的qq号是 ${Bot.uin} ! ${Bot.uin}是你的qq号,不是当前用户的!!!`
           } catch (err) {
             logger.warn('获取群聊聊天记录失败，本次对话不携带聊天记录', err)
           }
