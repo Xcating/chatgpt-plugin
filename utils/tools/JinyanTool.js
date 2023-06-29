@@ -58,5 +58,5 @@ export class JinyanTool extends AbstractTool {
     return `the user ${qq} has been muted for ${time} seconds`
   }
 
-  description = 'Useful when you want to ban someone. If you want to mute all, just replace the qq number with \'all\''
+  description = 'Useful when you want to mute someone. If you want to mute all, just replace the qq number with \'all\''
 }
