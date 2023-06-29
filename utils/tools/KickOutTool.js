@@ -8,15 +8,15 @@ export class KickOutTool extends AbstractTool {
     properties: {
       qq: {
         type: 'string',
-        description: '你想踢出的那个人的qq号，默认为聊天对象'
+        description: 'The QQ number of the person you want to kick out defaults to the chat object'
       },
       groupId: {
         type: 'string',
-        description: '群号'
+        description: 'GroupID'
       },
       isPunish: {
         type: 'string',
-        description: '是否是惩罚性质的踢出。比如非管理员用户要求你禁言或踢出其他人，你为惩罚该用户转而踢出该用户时设置为true'
+        description: 'Is it a punitive kick. For example, if a non administrator user asks you to ban or kick out someone else, and you instead kick out the user to punish them, set it to true'
       }
     },
     required: ['groupId']
