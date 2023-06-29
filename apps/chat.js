@@ -28,14 +28,14 @@ import {
   getImageOcrText,
   getImg,
   processList,
-  getMaxModelTokens, formatDate
+  getMaxModelTokens, formatDate, generateAudio
 } from '../utils/common.js'
 import { ChatGPTPuppeteer } from '../utils/browser.js'
 import { KeyvFile } from 'keyv-file'
 import { OfficialChatGPTClient } from '../utils/message.js'
 import fetch from 'node-fetch'
 import { deleteConversation, getConversations, getLatestMessageIdByConversationId } from '../utils/conversation.js'
-import { convertSpeaker, generateAudio, speakers } from '../utils/tts.js'
+import { convertSpeaker, generateVitsAudio, speakers } from '../utils/tts.js'
 import ChatGLMClient from '../utils/chatglm.js'
 import { convertFaces } from '../utils/face.js'
 import uploadRecord from '../utils/uploadRecord.js'
@@ -58,7 +58,7 @@ import { SerpIkechan8370Tool } from '../utils/tools/SerpIkechan8370Tool.js'
 import { SendPictureTool } from '../utils/tools/SendPictureTool.js'
 import { SerpImageTool } from '../utils/tools/SearchImageTool.js'
 import { ImageCaptionTool } from '../utils/tools/ImageCaptionTool.js'
-import { TTSTool } from '../utils/tools/TTSTool.js'
+import { SendAudioMessageTool } from '../utils/tools/SendAudioMessageTool.js'
 import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
@@ -66,7 +66,8 @@ import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
 import { SendAvatarTool } from '../utils/tools/SendAvatarTool.js'
 //import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
 //import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
-
+import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
+import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 try {
   await import('emoji-strip')
@@ -991,7 +992,7 @@ export class chatgpt extends plugin {
           sentences.forEach(async (NumberA, index) => {
               // 忽略空的句子
               if (NumberA.trim() !== '') {
-                  const delay8 = index * 500;
+                  const delay8 = index * 2000;
                   setTimeout(async () => {
                       if (Math.random() >= 0.3) { //0.3是概率，Math.random()随机生成一个1~0的小数
                           await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e))
@@ -1186,7 +1187,7 @@ export class chatgpt extends plugin {
           if (Config.ttsMode === 'vits-uma-genshin-honkai' && ttsResponse.length > Config.ttsAutoFallbackThreshold) {
             await this.reply('回复的内容过长，已转为文本模式')
           }
-          //await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
+          await this.reply(await convertFaces(response, Config.enableRobotAt, e), e.isGroup)
           if (quotemessage.length > 0) {
             this.reply(await makeForwardMsg(this.e, quotemessage.map(msg => `${msg.text} - ${msg.url}`)))
           }
@@ -1194,81 +1195,11 @@ export class chatgpt extends plugin {
             this.reply(`建议的回复：\n${chatMessage.suggestedResponses}`)
           }
         }
-        let wav
-        if (Config.ttsMode === 'vits-uma-genshin-honkai' && Config.ttsSpace) {
-          if (Config.autoJapanese) {
-            try {
-              ttsResponse = await translate(ttsResponse, '日')
-            } catch (err) {
-              logger.error(err)
-              await this.reply(err.message + '\n将使用原始文本合成语音...')
-            }
-          }
-          try {
-            wav = await generateAudio(ttsResponse, speaker, '中日混合（中文用[ZH][ZH]包裹起来，日文用[JA][JA]包裹起来）')
-          } catch (err) {
-            logger.error(err)
-            await this.reply('合成语音发生错误~')
-          }
-        } else if (Config.ttsMode === 'azure' && Config.azureTTSKey) {
-          if (speaker !== '随机') {
-            let languagePrefix = AzureTTS.supportConfigurations.find(config => config.code === speaker).languageDetail.charAt(0)
-            languagePrefix = languagePrefix.startsWith('E') ? '英' : languagePrefix
-            ttsResponse = (await translate(ttsResponse, languagePrefix)).replace('\n', '')
-          } else {
-            let role, languagePrefix
-            role = AzureTTS.supportConfigurations[Math.floor(Math.random() * supportConfigurations.length)]
-            speaker = role.code
-            languagePrefix = role.languageDetail.charAt(0).startsWith('E') ? '英' : role.languageDetail.charAt(0)
-            ttsResponse = (await translate(ttsResponse, languagePrefix)).replace('\n', '')
-            if (role?.emotion) {
-              const keys = Object.keys(role.emotion)
-              emotion = keys[Math.floor(Math.random() * keys.length)]
-            }
-            logger.info('using speaker: ' + speaker)
-            logger.info('using language: ' + languagePrefix)
-            logger.info('using emotion: ' + emotion)
-          }
-          let ssml = AzureTTS.generateSsml(ttsResponse, {
-            speaker,
-            emotion,
-            emotionDegree
-          })
-          wav = await AzureTTS.generateAudio(ttsResponse, {
-            speaker
-          }, await ssml)
-        } else if (Config.ttsMode === 'voicevox' && Config.voicevoxSpace) {
-          ttsResponse = (await translate(ttsResponse, '日')).replace('\n', '')
-          wav = await VoiceVoxTTS.generateAudio(ttsResponse, {
-            speaker
-          })
-        } else if (!Config.ttsSpace && !Config.azureTTSKey && !Config.voicevoxSpace) {
-          await this.reply('你没有配置转语音API哦')
-        }
-        try {
-          try {
-            let sendable = await uploadRecord(wav, Config.ttsMode)
-            if (sendable) {
-              await e.reply(sendable)
-            } else {
-              // 如果合成失败，尝试使用ffmpeg合成
-              await e.reply(segment.record(wav))
-            }
-          } catch (err) {
-            logger.error(err)
-            await e.reply(segment.record(wav))
-          }
-        } catch (err) {
-          logger.error(err)
+        const sendable = await generateAudio(this.e, ttsResponse, emotion, emotionDegree)
+        if (sendable) {
+          await this.reply(sendable)
+        } else {
           await this.reply('合成语音发生错误~')
-        }
-        if (Config.ttsMode === 'azure' && Config.azureTTSKey) {
-          // 清理文件
-          try {
-            fs.unlinkSync(wav)
-          } catch (err) {
-            logger.warn(err)
-          }
         }
       } else if (userSetting.usePicture || (Config.autoUsePicture && response.length > Config.autoUsePictureThreshold)) {
         // todo use next api of chatgpt to complete incomplete respoonse
@@ -1634,6 +1565,8 @@ export class chatgpt extends plugin {
                     chats.push(...chatHistory)
                   }
                   chats = chats.slice(0, Config.groupContextLength)
+                  // 太多可能会干扰AI对自身qq号和用户qq的判断，感觉gpt3.5也处理不了那么多信息
+                 chats = chats > 50 ? 50 : chats
                   let mm = await e.group.getMemberMap()
                   chats.forEach(chat => {
                     let sender = mm.get(chat.sender.user_id)
@@ -2011,17 +1944,20 @@ export class chatgpt extends plugin {
             new SerpImageTool(),
             new SerpIkechan8370Tool(),
             new SerpTool(),
-            new TTSTool(),
+            new SendAudioMessageTool(),
             new ProcessPictureTool(),
             new APTool(),
             new QueryGenshinTool(),
             new HandleMessageMsgTool(),
             //new QueryUserinfoTool()
+            new SendMessageToSpecificGroupOrUserTool(),
+            new SendDiceTool(),
           ]
           // todo 3.0再重构tool的插拔和管理
           let tools = [
             new SendAvatarTool(),
-            // new SendDiceTool(),
+            new SendDiceTool(),
+            new SendMessageToSpecificGroupOrUserTool(),
             new EditCardTool(),
             new QueryStarRailTool(),
             new QueryGenshinTool(),
@@ -2030,7 +1966,7 @@ export class chatgpt extends plugin {
             // new KickOutTool(),
             new WeatherTool(),
             new SendPictureTool(),
-            new TTSTool(),
+            new SendAudioMessageTool(),
             new APTool(),
             // new HandleMessageMsgTool(),
             serpTool,
@@ -2119,14 +2055,6 @@ export class chatgpt extends plugin {
             while (msg.functionCall) {
               let { name, arguments: args } = msg.functionCall
               args = JSON.parse(args)
-              if (!args.groupId) {
-                args.groupId = e.group_id + '' || e.sender.user_id + ''
-              }
-              try {
-                parseInt(args.groupId)
-              } catch (err) {
-                args.groupId = e.group_id + '' || e.sender.user_id + ''
-              }
               if (!args.qq) {
                 args.qq = e.sender.user_id + ''
               }
