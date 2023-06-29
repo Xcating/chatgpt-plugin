@@ -2034,7 +2034,7 @@ export class chatgpt extends plugin {
             new QueryStarRailTool(),
             new QueryGenshinTool(),
             new WebsiteTool(),
-            // new JinyanTool(),
+             new JinyanTool(),
             // new KickOutTool(),
             new WeatherTool(),
             new SendPictureTool(),
@@ -2056,7 +2056,7 @@ export class chatgpt extends plugin {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
             if (botInfo.role !== 'member') {
               // 管理员才给这些工具
-              tools.push(...[new EditCardTool(), new KickOutTool(), new HandleMessageMsgTool()])
+              tools.push(...[new KickOutTool(), new HandleMessageMsgTool()])
               // 用于撤回和加精的id
 
               if (e.source?.seq) {
