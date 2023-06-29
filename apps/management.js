@@ -365,7 +365,7 @@ export class ChatgptManagement extends plugin {
       logger.info('TargetModel:'+Targetmodel)
     }
     await this.reply('切换成功', true)
-    this.finish('settingModels')
+    this.finish('settingModels8')
     return
   }
   async viewUserSetting (e) {

@@ -334,7 +334,7 @@ export function supportGuoba () {
         },
         {
           field: 'ExprotMoji',
-          label: '分段发送',
+          label: '发送随机表情',
           bottomHelpMessage: '发送消息完发送随机表情',
           component: 'Switch'
         },
