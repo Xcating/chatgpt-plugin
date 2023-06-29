@@ -1952,8 +1952,8 @@ export class chatgpt extends plugin {
           } catch (err) {
             logger.warn('获取群聊聊天记录失败，本次对话不携带聊天记录', err)
           }
-          logger.info(system)
         }
+        logger.info(system)
         let opts = {
           apiBaseUrl: Config.openAiBaseUrl,
           apiKey: Config.apiKey,
