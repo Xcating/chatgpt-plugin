@@ -63,6 +63,7 @@ import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
+import { SendAvatarTool } from '../utils/tools/SendAvatarTool.js'
 //import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
 //import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
 
@@ -2007,6 +2008,7 @@ export class chatgpt extends plugin {
             new EditCardTool(),
             new QueryStarRailTool(),
             new WebsiteTool(),
+            new SendAvatarTool(),
             new JinyanTool(),
             new KickOutTool(),
             new WeatherTool(),
@@ -2028,7 +2030,7 @@ export class chatgpt extends plugin {
           ]
           // todo 3.0再重构tool的插拔和管理
           let tools = [
-            // new SendAvatarTool(),
+            new SendAvatarTool(),
             // new SendDiceTool(),
             new EditCardTool(),
             new QueryStarRailTool(),

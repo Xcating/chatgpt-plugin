@@ -7,7 +7,7 @@ export class SendAvatarTool extends AbstractTool {
     properties: {
       qq: {
         type: 'string',
-        description: '要发头像的人的qq号'
+        description: '你要发的头像对应的QQ号'
       },
       groupId: {
         type: 'string',
@@ -28,6 +28,5 @@ export class SendAvatarTool extends AbstractTool {
     }
     return `the user ${qq}'s avatar has been sent to group ${groupId}`
   }
-
   description = 'Useful when you want to send the user avatar picture to the group. The input to this tool should be the user\'s qq number and the target group number, and they should be concated with a space. 如果是在群聊中，优先选择群号发送。'
 }
