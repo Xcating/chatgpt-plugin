@@ -1939,7 +1939,7 @@ export class chatgpt extends plugin {
             if (Config.enableGroupContext) {
               system += `以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。"
       `
-              system += chats
+              //system += chats
                 .map(chat => {
                   let sender = chat.sender || {}
                   if (chat.raw_message.startsWith('建议的回复')) {
