@@ -27,7 +27,6 @@ import {
   getUserReplySetting,
   getImageOcrText,
   getImg,
-  processList,
   getMaxModelTokens, formatDate, generateAudio
 } from '../utils/common.js'
 import { ChatGPTPuppeteer } from '../utils/browser.js'
@@ -783,6 +782,7 @@ export class chatgpt extends plugin {
     // 自动化插件本月已发送xx条消息更新太快，由于延迟和缓存问题导致不同客户端不一样，at文本和获取的card不一致。因此单独处理一下
     prompt = prompt.replace(/^｜本月已发送\d+条消息/, '')
     prompt = prompt.replace(/^｜当前内存占用\d+/, '')
+    prompt = prompt.replace(/^｜离原神3.8还有\d天\d小时\d分钟+/, '')
     
     await this.abstractChat(e, prompt, use)
   }
@@ -1971,14 +1971,14 @@ export class chatgpt extends plugin {
             new QueryGenshinTool(),
             new HandleMessageMsgTool(),
             //new QueryUserinfoTool()
-            new SendMessageToSpecificGroupOrUserTool(),
+            //new SendMessageToSpecificGroupOrUserTool(),
             new SendDiceTool(),
           ]
           // todo 3.0再重构tool的插拔和管理
           let tools = [
             new SendAvatarTool(),
             new SendDiceTool(),
-            new SendMessageToSpecificGroupOrUserTool(),
+            //new SendMessageToSpecificGroupOrUserTool(),
             new EditCardTool(),
             new QueryStarRailTool(),
             new QueryGenshinTool(),
