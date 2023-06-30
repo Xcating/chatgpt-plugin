@@ -326,7 +326,7 @@ export class chatgpt extends plugin {
           store: new KeyvFile({ filename: 'cache.json' }),
           namespace: 'chatglm_6b'
         }
-        let Keyv
+        let Keyv //bye
         try {
           Keyv = (await import('keyv')).default
         } catch (err) {
