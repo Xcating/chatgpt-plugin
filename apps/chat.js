@@ -169,16 +169,16 @@ export class chatgpt extends plugin {
           log: false
         },
         {
-          reg: '^#(chatgpt)?对话列表$',
+          reg: '^#(chatgpt)?(对话|聊天|说话)列表$',
           fnc: 'getAllConversations',
           permission: 'master'
         },
         {
-          reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结)对话([sS]*)',
+          reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结|关掉)对话([sS]*)',
           fnc: 'destroyConversations'
         },
         {
-          reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结)全部对话$',
+          reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结|关掉)全部对话$',
           fnc: 'endAllConversations',
           permission: 'master'
         },
@@ -187,19 +187,19 @@ export class chatgpt extends plugin {
         //   fnc: 'help'
         // },
         {
-          reg: '^#chatgpt图片模式$',
+          reg: '^#chatgpt(切换|更改)?(图片|照片)(模式)?$',
           fnc: 'switch2Picture'
         },
         {
-          reg: '^#chatgpt文本模式$',
+          reg: '^#chatgpt(切换|更改)?(文本|文字)(模式)?$',
           fnc: 'switch2Text'
         },
         {
-          reg: '^#chatgpt语音模式$',
+          reg: '^#chatgpt(切换|更改)?(语音|vits|声音)(模式)?$',
           fnc: 'switch2Audio'
         },
         {
-          reg: '^#chatgpt语音换源',
+          reg: '^#chatgpt(语音|语音角色|声音)换源',
           fnc: 'switchTTSSource'
         },
         {
@@ -207,7 +207,7 @@ export class chatgpt extends plugin {
           fnc: 'setDefaultRole'
         },
         {
-          reg: '^#(chatgpt)?清空(chat)?队列$',
+          reg: '^#(chatgpt|ChatGPT|GPT|柴特寄批踢)?清空(chat|聊天|对话)?队列$',
           fnc: 'emptyQueue',
           permission: 'master'
         },
@@ -217,20 +217,20 @@ export class chatgpt extends plugin {
           permission: 'master'
         },
         {
-          reg: '#(OpenAI|openai)(剩余)?(余额|额度)',
+          reg: '#(OpenAI|openai|OPENAI|Openai)(剩余)?(余额|额度)',
           fnc: 'totalAvailable',
           permission: 'master'
         },
         {
-          reg: '^#chatgpt切换对话',
+          reg: '^#chatgpt(切换|更改)对话',
           fnc: 'attachConversation'
         },
         {
-          reg: '^#(chatgpt)?加入对话',
+          reg: '^#(chatgpt)?(加入|进入)对话',
           fnc: 'joinConversation'
         },
         {
-          reg: '^#chatgpt删除对话',
+          reg: '^#(chatgpt)(删除|扔掉)对话',
           fnc: 'deleteConversation',
           permission: 'master'
         }
