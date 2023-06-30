@@ -1833,7 +1833,9 @@ export class chatgpt extends plugin {
             opt.groupId = e.group_id
             opt.qq = e.sender.user_id
             opt.nickname = e.sender.card
-            opt.groupName = e.group.name
+            if(e.isGroup){
+              opt.groupName = e.group.name
+            }
             opt.botName = e.isGroup ? (e.group.pickMember(Bot.uin).card || e.group.pickMember(Bot.uin).nickname) : Bot.nickname
             let master = (await getMasterQQ())[0]
             if (master && e.group) {
@@ -1842,24 +1844,28 @@ export class chatgpt extends plugin {
             if (master && !e.group) {
               opt.masterName = Bot.getFriendList().get(parseInt(master))?.nickname
             }
-            let latestChat = await e.group.getChatHistory(0, 1)
-            let seq = latestChat[0].seq
             let chats = []
-            while (chats.length < Config.groupContextLength) {
-              let chatHistory = await e.group.getChatHistory(seq, 20)
-              chats.push(...chatHistory)
-            }
-            chats = chats.slice(0, Config.groupContextLength)
-            let mm = await e.group.getMemberMap()
-            chats.forEach(chat => {
-              let sender = mm.get(chat.sender.user_id)
-              chat.sender = sender
-            })
-            console.log(chats)
-            opt.chats = chats
-            const roleMap = {
-              owner: '群主',
-              admin: '管理员'
+            if(e.isGroup)
+            {
+              let latestChat = await e.group.getChatHistory(0, 1)
+              let seq = latestChat[0].seq
+              
+              while (chats.length < Config.groupContextLength) {
+                let chatHistory = await e.group.getChatHistory(seq, 20)
+                chats.push(...chatHistory)
+              }
+              chats = chats.slice(0, Config.groupContextLength)
+              let mm = await e.group.getMemberMap()
+              chats.forEach(chat => {
+                let sender = mm.get(chat.sender.user_id)
+                chat.sender = sender
+              })
+              console.log(chats)
+              opt.chats = chats
+              const roleMap = {
+                owner: '群主',
+                admin: '管理员'
+              }
             }
             if (chats) {
               system += `\n以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`
