@@ -1845,6 +1845,10 @@ export class chatgpt extends plugin {
               opt.masterName = Bot.getFriendList().get(parseInt(master))?.nickname
             }
             let chats = []
+            const roleMap = {
+              owner: '群主',
+              admin: '管理员'
+            }
             if(e.isGroup)
             {
               let latestChat = await e.group.getChatHistory(0, 1)
@@ -1862,10 +1866,6 @@ export class chatgpt extends plugin {
               })
               console.log(chats)
               opt.chats = chats
-              const roleMap = {
-                owner: '群主',
-                admin: '管理员'
-              }
             }
             if (chats) {
               system += `\n以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`
