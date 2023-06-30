@@ -2078,14 +2078,6 @@ export class chatgpt extends plugin {
             while (msg.functionCall) {
               let { name, arguments: args } = msg.functionCall
               args = JSON.parse(args)
-              if (!args.qq) {
-                args.qq = e.sender.user_id + ''
-              }
-              try {
-                parseInt(args.qq)
-              } catch (err) {
-                args.qq = e.sender.user_id + ''
-              }
               let functionResult = await fullFuncMap[name].exec(Object.assign({ isAdmin, sender }, args), e)
               logger.mark(`function ${name} execution result: ${functionResult}`)
               option.parentMessageId = msg.id
