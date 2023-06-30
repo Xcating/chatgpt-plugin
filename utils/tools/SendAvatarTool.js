@@ -19,7 +19,7 @@ export class SendAvatarTool extends AbstractTool {
 
   func = async function (opts, e) {
     let { qq, targetGroupIdOrQQNumber } = opts
-    const pictures = qq.split(/[,，\s]/).filter(qq => !isNaN(qq.trim()) && qq.trim()).map(qq => segment.image('https://q1.qlogo.cn/g?b=qq&s=0&nk=' + parseInt(qq.trim())))
+    const pictures = qq.split(/[,，\s]/).filter(qq => !isNaN(qq.trim()) && qq.trim()).map(qq => segment.image('https://q1.qlogo.cn/g?b=qq&s=100&nk=' + parseInt(qq.trim())))
     if (!pictures.length) {
       return 'there is no valid qq'
     }
