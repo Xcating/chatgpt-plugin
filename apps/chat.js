@@ -561,18 +561,21 @@ export class chatgpt extends plugin {
     }
   }
 
-  async switch2Picture (e) {
-    let userReplySetting = await redis.get(`CHATGPT:USER:${e.sender.user_id}`)
-    if (!userReplySetting) {
-      userReplySetting = getDefaultReplySetting()
-    } else {
-      userReplySetting = JSON.parse(userReplySetting)
-    }
-    userReplySetting.usePicture = true
-    userReplySetting.useTTS = false
-    await redis.set(`CHATGPT:USER:${e.sender.user_id}`, JSON.stringify(userReplySetting))
-    await this.reply('ChatGPT回复已转换为图片模式')
+async switch2Picture(e) {
+  let userReplySetting = await redis.get(`CHATGPT:USER:${e.sender.user_id}`)
+  if (!userReplySetting) {
+    userReplySetting = getDefaultReplySetting()
+  } else {
+    userReplySetting = JSON.parse(userReplySetting)
   }
+  
+  userReplySetting.usePicture = true
+  userReplySetting.useTTS = false
+  
+  await redis.set(`CHATGPT:USER:${e.sender.user_id}`, JSON.stringify(userReplySetting))
+  await this.reply('ChatGPT reply has been switched to picture mode')
+}
+
 
   async switch2Text (e) {
     let userSetting = await getUserReplySetting(this.e)
