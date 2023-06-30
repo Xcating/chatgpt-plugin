@@ -178,6 +178,12 @@ export class chatgpt extends plugin {
           fnc: 'destroyConversations'
         },
         {
+          /** 命令正则匹配 */
+          reg: '^#(必应|bing|Bing)?(结束|新开|摧毁|毁灭|完结|关掉)对话([sS]*)',
+          /** 执行方法 */
+          fnc: 'BingDestory'
+        },
+        {
           reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结|关掉)全部对话$',
           fnc: 'endAllConversations',
           permission: 'master'
@@ -418,7 +424,157 @@ export class chatgpt extends plugin {
       }
     }
   }
-
+  async BingDestory (e) {
+    const userData = await getUserData(e.user_id)
+    const use = 'bing'
+    await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`)
+    if (use === 'claude') {
+      // let client = new SlackClaudeClient({
+      //   slackUserToken: Config.slackUserToken,
+      //   slackChannelId: Config.slackChannelId
+      // })
+      // await client.endConversation()
+      await redis.del(`CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`)
+      await e.reply('claude对话已结束')
+      return
+    }
+    if (use === 'xh') {
+      await redis.del(`CHATGPT:CONVERSATIONS_XH:${e.sender.user_id}`)
+      await e.reply('星火对话已结束')
+      return
+    }
+    let ats = e.message.filter(m => m.type === 'at')
+    const isAtMode = Config.toggleMode === 'at'
+    if (isAtMode) ats = ats.filter(item => item.qq !== Bot.uin)
+    if (ats.length === 0) {
+      if (use === 'api3') {
+        await redis.del(`CHATGPT:QQ_CONVERSATION:${e.sender.user_id}`)
+        await this.reply('已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话', true)
+      } else if (use === 'bing' && (Config.toneStyle === 'Sydney' || Config.toneStyle === 'Custom')) {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`)
+        if (!c) {
+          await this.reply('当前没有开启对话', true)
+          return
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`)
+        }
+        const conversation = {
+          store: new KeyvFile({ filename: 'cache.json' }),
+          namespace: Config.toneStyle
+        }
+        let Keyv
+        try {
+          Keyv = (await import('keyv')).default
+        } catch (err) {
+          await this.reply('依赖keyv未安装，请执行pnpm install keyv', true)
+        }
+        const conversationsCache = new Keyv(conversation)
+        logger.info(`SydneyUser_${e.sender.user_id}`, await conversationsCache.get(`SydneyUser_${e.sender.user_id}`))
+        await conversationsCache.delete(`SydneyUser_${e.sender.user_id}`)
+        await this.reply('已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话', true)
+      } else if (use === 'chatglm') {
+        const conversation = {
+          store: new KeyvFile({ filename: 'cache.json' }),
+          namespace: 'chatglm_6b'
+        }
+        let Keyv
+        try {
+          Keyv = (await import('keyv')).default
+        } catch (err) {
+          await this.reply('依赖keyv未安装，请执行pnpm install keyv', true)
+        }
+        const conversationsCache = new Keyv(conversation)
+        logger.info(`ChatGLMUser_${e.sender.user_id}`, await conversationsCache.get(`ChatGLMUser_${e.sender.user_id}`))
+        await conversationsCache.delete(`ChatGLMUser_${e.sender.user_id}`)
+        await this.reply('已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话', true)
+      } else if (use === 'api') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS:${e.sender.user_id}`)
+        if (!c) {
+          await this.reply('当前没有开启对话', true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS:${e.sender.user_id}`)
+          await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        }
+      } else if (use === 'bing') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`)
+        if (!c) {
+          await this.reply('当前没有开启对话', true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`)
+          await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        }
+      } else if (use === 'browser') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_BROWSER:${e.sender.user_id}`)
+        if (!c) {
+          await this.reply('当前没有开启对话', true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_BROWSER:${e.sender.user_id}`)
+          await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        }
+      }
+    } else {
+      let at = ats[0]
+      let qq = at.qq
+      let atUser = _.trimStart(at.text, '@')
+      if (use === 'api3') {
+        await redis.del(`CHATGPT:QQ_CONVERSATION:${qq}`)
+        await this.reply(`${atUser}已退出TA当前的对话，TA仍可以@我进行聊天以开启新的对话`, true)
+      } else if (use === 'bing' && (Config.toneStyle === 'Sydney' || Config.toneStyle === 'Custom')) {
+        const conversation = {
+          store: new KeyvFile({ filename: 'cache.json' }),
+          namespace: Config.toneStyle
+        }
+        let Keyv
+        try {
+          Keyv = (await import('keyv')).default
+        } catch (err) {
+          await this.reply('依赖keyv未安装，请执行pnpm install keyv', true)
+        }
+        const conversationsCache = new Keyv(conversation)
+        await conversationsCache.delete(`SydneyUser_${qq}`)
+        await this.reply('已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话', true)
+      } else if (use === 'chatglm') {
+        const conversation = {
+          store: new KeyvFile({ filename: 'cache.json' }),
+          namespace: 'chatglm_6b'
+        }
+        let Keyv
+        try {
+          Keyv = (await import('keyv')).default
+        } catch (err) {
+          await this.reply('依赖keyv未安装，请执行pnpm install keyv', true)
+        }
+        const conversationsCache = new Keyv(conversation)
+        logger.info(`ChatGLMUser_${e.sender.user_id}`, await conversationsCache.get(`ChatGLMUser_${e.sender.user_id}`))
+        await conversationsCache.delete(`ChatGLMUser_${qq}`)
+        await this.reply('已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话', true)
+      } else if (use === 'api') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS:${qq}`)
+        if (!c) {
+          await this.reply(`当前${atUser}没有开启对话`, true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS:${qq}`)
+          await this.reply(`已结束${atUser}的对话，TA仍可以@我进行聊天以开启新的对话`, true)
+        }
+      } else if (use === 'bing') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_BING:${qq}`)
+        if (!c) {
+          await this.reply(`当前${atUser}没有开启对话`, true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_BING:${qq}`)
+          await this.reply(`已结束${atUser}的对话，TA仍可以@我进行聊天以开启新的对话`, true)
+        }
+      } else if (use === 'browser') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_BROWSER:${qq}`)
+        if (!c) {
+          await this.reply(`当前${atUser}没有开启对话`, true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_BROWSER:${qq}`)
+          await this.reply(`已结束${atUser}的对话，TA仍可以@我进行聊天以开启新的对话`, true)
+        }
+      }
+    }
+  }
   async endAllConversations (e) {
     let use = await redis.get('CHATGPT:USE') || 'api'
     let deleted = 0
