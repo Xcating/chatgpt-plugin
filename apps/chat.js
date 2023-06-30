@@ -573,7 +573,7 @@ async switch2Picture(e) {
   userReplySetting.useTTS = false
   
   await redis.set(`CHATGPT:USER:${e.sender.user_id}`, JSON.stringify(userReplySetting))
-  await this.reply('ChatGPT reply has been switched to picture mode')
+  await this.reply('ChatGPT回复已转换为图片模式')
 }
 
 
