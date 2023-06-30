@@ -179,7 +179,7 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
-          reg: '^#(必应|bing|Bing)?(结束|新开|摧毁|毁灭|完结|关掉)对话([sS]*)',
+          reg: '^#(必应|bing|Bing|必应AI)?(结束|新开|摧毁|毁灭|完结|关掉)对话([sS]*)',
           /** 执行方法 */
           fnc: 'BingDestory'
         },
