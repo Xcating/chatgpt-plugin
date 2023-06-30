@@ -9,7 +9,7 @@ import HttpsProxyAgent from 'https-proxy-agent'
 import { Config, pureSydneyInstruction } from './config.js'
 import { formatDate, getMasterQQ, isCN, getUserData } from './common.js'
 import delay from 'delay'
-
+import moment from 'moment'
 if (!globalThis.fetch) {
   globalThis.fetch = fetch
   globalThis.Headers = Headers
@@ -308,7 +308,7 @@ export default class SydneyAIClient {
     const text = (pureSydney ? pureSydneyInstruction : (useCast?.bing || Config.sydney)).replaceAll(namePlaceholder, botName || defaultBotName) +
             ((Config.enableGroupContext && groupId) ? groupContextTip : '') +
             ((Config.enforceMaster && master) ? masterTip : '') +
-            (Config.sydneyMood ? moodTip : '') + 
+            (Config.sydneyMood ? moodTip : '') +
             (Config.sydneySystemCode ? '' : '')
     logger.info(text)
     if (pureSydney) {
@@ -372,16 +372,15 @@ export default class SydneyAIClient {
     if (Config.enableGenerateContents) {
       optionsSets.push(...['gencontentv3'])
     }
+    const currentDate = moment().format('YYYY-MM-DDTHH:mm:ssZ')
+
     const obj = {
       arguments: [
         {
           source: 'cib',
           optionsSets,
-          sliceIds: [
-            '222dtappid',
-            '225cricinfo',
-            '224locals0'
-          ],
+          allowedMessageTypes: ['ActionRequest', 'Chat', 'Context', 'InternalSearchQuery', 'InternalSearchResult', 'Disengaged', 'InternalLoaderMessage', 'Progress', 'RenderCardRequest', 'AdsQuery', 'SemanticSerp', 'GenerateContentQuery', 'SearchQuery'],
+          sliceIds: [],
           traceId: genRanHex(32),
           isStartOfSession: invocationId === 0,
           message: {
@@ -413,13 +412,17 @@ export default class SydneyAIClient {
             author: 'user',
             inputMethod: 'Keyboard',
             text: message,
-            messageType
+            messageType,
+            userIpAddress: await generateRandomIP(),
+            timestamp: currentDate
             // messageType: 'SearchQuery'
           },
+          tone: 'Creative',
           conversationSignature,
           participant: {
             id: clientId
           },
+          spokenTextMode: 'None',
           conversationId,
           previousMessages
         }
@@ -782,4 +785,16 @@ export default class SydneyAIClient {
 
     return orderedMessages
   }
+}
+async function generateRandomIP () {
+  let ip = await redis.get('CHATGPT:BING_IP')
+  if (ip) {
+    return ip
+  }
+  const baseIP = '104.28.215.'
+  const subnetSize = 254 // 2^8 - 2
+  const randomIPSuffix = Math.floor(Math.random() * subnetSize) + 1
+  ip = baseIP + randomIPSuffix
+  await redis.set('CHATGPT:BING_IP', ip, { EX: 86400 * 7 })
+  return ip
 }
