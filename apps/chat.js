@@ -582,33 +582,46 @@ export class chatgpt extends plugin {
     await this.reply('ChatGPT回复已转换为文字模式')
   }
 
-  async switch2Audio (e) {
-    switch (Config.ttsMode) {
-      case 'vits-uma-genshin-honkai':
-        if (!Config.ttsSpace) {
-          await this.reply('您没有配置VITS API，请前往锅巴面板进行配置')
-          return
-        }
-        break
-      case 'azure':
-        if (!Config.azureTTSKey) {
-          await this.reply('您没有配置Azure Key，请前往锅巴面板进行配置')
-          return
-        }
-        break
-      case 'voicevox':
-        if (!Config.voicevoxSpace) {
-          await this.reply('您没有配置VoiceVox API，请前往锅巴面板进行配置')
-          return
-        }
-        break
+  async switch2Audio(e) {
+    const ttsMode = Config.ttsMode;
+    const ttsSettings = {
+      'vits-uma-genshin-honkai': {
+        api: 'VITS',
+        key: 'ttsSpace',
+        message: '您没有配置VITS API，请前往锅巴面板进行配置',
+      },
+      azure: {
+        api: 'Azure',
+        key: 'azureTTSKey',
+        message: '您没有配置Azure Key，请前往锅巴面板进行配置',
+      },
+      voicevox: {
+        api: 'VoiceVox',
+        key: 'voicevoxSpace',
+        message: '您没有配置VoiceVox API，请前往锅巴面板进行配置',
+      },
+    };
+  
+    const ttsSetting = ttsSettings[ttsMode];
+    if (!ttsSetting) {
+      await this.reply('未知的TTS模式');
+      return;
     }
-    let userSetting = await getUserReplySetting(this.e)
-    userSetting.useTTS = true
-    userSetting.usePicture = false
-    await redis.set(`CHATGPT:USER:${e.sender.user_id}`, JSON.stringify(userSetting))
-    await this.reply('ChatGPT回复已转换为语音模式')
+  
+    const apiKey = Config[ttsSetting.key];
+    if (!apiKey) {
+      await this.reply(ttsSetting.message);
+      return;
+    }
+  
+    let userSetting = await getUserReplySetting(this.e);
+    userSetting.useTTS = true;
+    userSetting.usePicture = false;
+    await redis.set(`CHATGPT:USER:${e.sender.user_id}`, JSON.stringify(userSetting));
+  
+    await this.reply(`ChatGPT回复已转换为${ttsSetting.api}语音模式`);
   }
+  
 
   async switchTTSSource (e) {
     let target = e.msg.replace(/^#chatgpt语音换源/, '')
