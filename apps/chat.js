@@ -172,7 +172,7 @@ export class chatgpt extends plugin {
           reg: '^#(chatgpt)?(对话|聊天|说话)列表$',
           fnc: 'getAllConversations',
           permission: 'master'
-        },
+        }, 
         {
           reg: '^#(chatgpt)?(结束|新开|摧毁|毁灭|完结|关掉)对话([sS]*)',
           fnc: 'destroyConversations'
@@ -1459,7 +1459,7 @@ async switch2Picture(e) {
     } else {
       if (Config.cacheEntry) cacheData.file = randomString()
       const cacheresOption = {
-        method: 'POST',
+        method: 'POST', 
         headers: {
           'Content-Type': 'application/json'
         },
