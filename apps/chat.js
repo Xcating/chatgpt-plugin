@@ -63,8 +63,8 @@ import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
 import { SendAvatarTool } from '../utils/tools/SendAvatarTool.js'
-//import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
-//import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
+import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
+import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
 import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
 import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
@@ -2017,14 +2017,13 @@ async switch2Picture(e) {
             serpTool,
             //new QueryUserinfoTool()
           ]
-          tools.push(...[new SendMusicTool(), new SearchMusicTool()])
-          //try {
-          //  await import('../../avocado-plugin/apps/avocado.js')
-          //  tools.push(...[new EliMusicTool(), new EliMovieTool()])
-          //} catch (err) {
-          //  
-          //  logger.mark(logger.green('【🥑ChatGPT-Plugin🥑】🥑插件🥑avocado-plugin🥑未安装') + '，🥑安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
-          //}
+          try {
+            await import('../../avocado-plugin/apps/avocado.js')
+            tools.push(...[new EliMusicTool(), new EliMovieTool()])
+          } catch (err) {
+            tools.push(...[new SendMusicTool(), new SearchMusicTool()])
+            logger.mark(logger.green('【🥑ChatGPT-Plugin🥑】🥑插件🥑avocado-plugin🥑未安装') + '，🥑安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
+          }
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
             if (botInfo.role !== 'member') {
