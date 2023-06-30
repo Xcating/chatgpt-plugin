@@ -1,12 +1,11 @@
 :root {
   --gradient-text-color: linear-gradient(120deg, #d51a2f, #0cacaa);
+  --gradient-text-color-2: linear-gradient(120deg,#0cacaa , #d51a2f);
   ;
 }
 @font-face {
-  font-family: "FZB";
-  src: url("../font/FZB.ttf");
-  font-weight: normal;
-  font-style: normal;
+  font-family: 'FZB';
+  src: url("./font/FZB.ttf") format('truetype')
 }
 * {
   margin: 0;
@@ -18,27 +17,32 @@ body {
   font-family: sans-serif;
   font-size: 16px;
   width: 900px;
-  color: #1e1f20;
   transform: scale(1.5);
+  background: url("../common/theme/main.png");
   transform-origin: 0 0;
 }
 .container {
   width: 930px;
   padding: 20px 15px 10px 15px;
-  background-color: #f5f6fb;
+
+  background: url(../common/theme/main.png) top left no-repeat;
+  background-size: 100% auto;
 }
-.head_box {
-  border-radius: 15px;
-  font-family: tttgbnumber;
-  padding: 10px 20px;
-  position: relative;
-  box-shadow: 0 5px 10px 0 rgb(0 0 0 / 15%);
+.head-box {
+  margin: 60px 0 0 0;
+  padding-bottom: 0;
+  background-image: var(--gradient-text-color);
+  color: var(--gradient-text-color);
 }
 .head_box .id_text {
   font-size: 24px;
+  background-image: var(--gradient-text-color);
+  color: var(--gradient-text-color);
 }
 .head_box .day_text {
   font-size: 20px;
+  background-image: var(--gradient-text-color);
+  color: var(--gradient-text-color);
 }
 .head_box .chatgpt_logo {
   position: absolute;
@@ -55,34 +59,47 @@ body {
 }
 
 .data_box {
-  border-radius: 15px;
+  border-radius: 15px; 
   margin-top: 20px;
-  margin-bottom: 15px;
-  padding: 20px 0px 5px 0px;
-  background: #fff;
-  box-shadow: 0 5px 10px 0 rgb(0 0 0 / 15%);
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: rgba(243, 233, 159, 0.3);
+  box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
   position: relative;
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 18px;
 }
 .tab_lable {
-  position: absolute;
-  top: -10px;
-  left: -8px;
-  background: #d4b98c;
-  color: #fff;
-  font-size: 14px;
-  padding: 3px 10px;
-  border-radius: 15px 0px 15px 15px;
-  z-index: 20;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 15px 15px 10px 20px;
+  /* 渐变文字 */
+  display: inline-block;
+  background-image: var(--gradient-text-color);
+  background-clip: text;
+  -webkit-background-clip: text;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: transparent;
 }
 .data_line {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 14px;
+  display: block;
+  font-size: 13px;
+  line-height: 15px;
+  background-image: var(--gradient-text-color);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 .data_line_item {
-  width: 100px;
-  text-align: center;
-  /*margin: 0 20px;*/
+  display: block;
+  font-size: 13px;
+  line-height: 15px;
+  background-image: var(--gradient-text-color);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 .num {
   font-family: tttgbnumber;
@@ -90,9 +107,11 @@ body {
 }
 .data_box .lable {
   font-size: 14px;
-  color: #7f858a;
+  background-image: var(--gradient-text-color);
   line-height: 1;
   margin-top: 3px;
+  color: var(--gradient-text-color);
+  
 }
 
 .list{
@@ -119,21 +138,26 @@ body {
   flex-shrink: 0;
 }
 .list .item .title{
-  font-size: 16px;
-  margin-left: 6px;
-  line-height: 20px;
+  display: block;
+  font-size: 13px;
+  line-height: 15px;
+  background-image: var(--gradient-text-color-2);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 /* .list .item .title .text{
   white-space: nowrap;
 } */
 .list .item .title .dec{
-  font-size: 12px;
-  color: #999;
-  margin-top: 2px;
+  display: block;
+  font-size: 13px;
+  line-height: 18px;
 }
 .logo {
   font-size: 14px;
   font-family: "tttgbnumber";
   text-align: center;
   color: #7994a7;
+  background-image: var(--gradient-text-color);
 }
