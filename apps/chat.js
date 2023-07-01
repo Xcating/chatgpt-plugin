@@ -2069,7 +2069,8 @@ async switch2Picture(e) {
         }
         this.chatGPTApi = new ChatGPTAPI(opts)
         let option = {
-          timeoutMs: 120000
+          timeoutMs: 120000,
+          completionParams
           // systemMessage: promptPrefix
         }
         option.systemMessage = system
@@ -2207,7 +2208,6 @@ async switch2Picture(e) {
           // if (e.sender.role === 'admin' || e.sender.role === 'owner') {
           //   tools.push(...[new JinyanTool(), new KickOutTool()])
           // }
-          try {
             let funcMap = {}
             let fullFuncMap = {}
             tools.forEach(tool => {
@@ -2226,12 +2226,6 @@ async switch2Picture(e) {
             }
             option.completionParams.functions = Object.keys(funcMap).map(k => funcMap[k].function)
            
-          }
-          catch(err) {
-            logger.error(err)
-            await e.reply('调用工具错误' + err)
-            throw new Error(err)
-          }
           let msg
           try {
             msg = await this.chatGPTApi.sendMessage(prompt, option)

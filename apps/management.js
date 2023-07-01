@@ -254,17 +254,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(模型|model)?(GPT3.5|GPT35|gpt3.5|gpt35|gpt-3.5|GPT-3.5)',
-          fnc: 'settingModel35',
-          permission: 'master'
-        },
-        {
-          reg: '^#chatgpt(切换|使用)(模型|model)?(GPT4|gpt4|gpt-4|GPT-4)',
-          fnc: 'settingModel4',
-          permission: 'master'
-        },
-        {
-          reg: '^#chatgpt(切换|使用)模型',
+          reg: '^#chatgpt(切换|使用|设置)模型.*$',
           fnc: 'settingModel',
           permission: 'master'
         },
@@ -298,30 +288,8 @@ export class ChatgptManagement extends plugin {
           fnc: 'OffExprotMoji',
           permission: 'master'
         },
-        {
-          reg: '^#chatgpt(关闭|关|开启|开|允许|禁止)(智能|智慧|智障|smart)(模式)?',
-          fnc: 'SmartMode',
-          permission: 'master'
-        },
       ]
     })
-  }
-  async SmartMode (e) {
-    if(e.msg.match(/(开|允许|开启)/))
-    {
-      Config.smartMode=true
-      e.reply('打开智 障模式成功',e.isGroup)
-    }
-    else
-    {
-      Config.smartMode=false
-      e.reply('关闭智 障模式成功',e.isGroup)
-    }
-  }
-  async settingModel35 (e){
-    logger.info('切换模型：gpt-3.5')
-    Config.model='gpt-3.5'
-    e.reply('GPT3.5模型切换成功！',e.isGroup)
   }
   async OpenExrateMsg (e){
     logger.info('[打开-分割消息]')
@@ -353,25 +321,38 @@ export class ChatgptManagement extends plugin {
     Config.openAiBaseUrl=Config.PresetsAPIUrlB
     e.reply('API反代B切换成功',e.isGroup)
   }
-  async settingModel4 (e){
-    logger.info('切换模型：gpt-4')
-    Config.model='gpt-4'
-    e.reply('GPT4模型切换成功！',e.isGroup)
-  }
   async settingModel (e){
-    this.setContext('settingModels8')
-    await this.reply('请发送要切换的模型', true)
-    logger.info("原神，启动！")
+    if(e.msg.match(/(gpt-3.5|gpt3.5|GPT3.5|GPT-3.5)/)){
+      await this.reply('切换GPT-3.5模型成功', true)
+      Config.model='gpt-3.5-turbo'
+    }
+    else if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
+      Config.model='gpt-3.5-turbo-16k-0613'
+      await this.reply('切换GPT-3.5-16k模型成功', true)
+    }
+    else if(e.msg.match(/(gpt-4-32k|gpt4-32k|GPT4-32k|GPT-4-32k)/)){
+      Config.model='gpt-4-32k'
+      await this.reply('切换GPT-4-32k模型成功', true)
+    }
+    else if(e.msg.match(/(gpt-4|gpt4|GPT4|GPT-4)/)){
+      Config.model='gpt-4'
+      await this.reply('切换GPT-4模型成功', true)
+    }
+    else {
+      this.setContext('settingModels')
+      await this.reply('你没有指定模型，请发送要切换的模型', true)
+    }
+    logger.info(e.msg)
     return false
   }
-  async settingModels8 () {
+  async settingModels () {
     let Targetmodel = this.e.msg
     Config.model=Targetmodel
     if(Config.debug){
       logger.info('TargetModel:'+Targetmodel)
     }
     await this.reply('切换成功', true)
-    this.finish('settingModels8')
+    this.finish('settingModels')
     return
   }
   async viewUserSetting (e) {

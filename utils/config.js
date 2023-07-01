@@ -133,7 +133,7 @@ const defaultConfig = {
   azSerpKey: '',
   serpSource: 'ikechan8370',
   extraUrl: 'https://cpe.ikechan8370.com',
-  smartMode: true,
+  smartMode: false,
   version: 'Fork-1.0.3-Beta'
 }
 const _path = process.cwd()
