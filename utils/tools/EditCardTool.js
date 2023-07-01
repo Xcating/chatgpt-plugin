@@ -25,7 +25,8 @@ export class EditCardTool extends AbstractTool {
 
   func = async function (opts, e) {
     let { qq, card, groupId } = opts
-    qq = isNaN(qq) || !qq ? e.sender.user_id : parseInt(qq.trim())
+    logger.info('要修改的QQ：' + isNaN(qq) || !qq ? e.sender.user_id : parseInt(qq))
+    qq = isNaN(qq) || !qq ? e.sender.user_id : parseInt(qq)
     groupId = isNaN(groupId) || !groupId ? e.group_id : parseInt(groupId.trim())
 
     let group = await Bot.pickGroup(groupId)
@@ -36,7 +37,7 @@ export class EditCardTool extends AbstractTool {
     if (mm.get(Bot.uin).role === 'member') {
       return `failed, you, not user, don't have permission to edit card in group ${groupId}`
     }
-    logger.info('edit card: ', groupId, qq)
+    logger.info('修改群名片参数:', groupId, qq, card)
     await group.setCard(qq, card)
     return `the user ${qq}'s card has been changed into ${card}`
   }
