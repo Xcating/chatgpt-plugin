@@ -1677,7 +1677,7 @@ async switch2Picture(e) {
                   let chats = []
                   while (chats.length < Config.groupContextLength) {
                     let chatHistory = await e.group.getChatHistory(seq, 20)
-                    chats.push(...chatHistory)
+                    chats.push(...chatHistory.reverse())
                   }
                   chats = chats.slice(0, Config.groupContextLength)
                   // 太多可能会干扰AI对自身qq号和用户qq的判断，感觉gpt3.5也处理不了那么多信息
@@ -1940,8 +1940,8 @@ async switch2Picture(e) {
             }
             let chats = []
             const roleMap = {
-              owner: '群主',
-              admin: '管理员'
+              owner: 'GroupOwner',
+              admin: 'GroupAdministrator'
             }
             if(e.isGroup)
             {
@@ -1962,7 +1962,7 @@ async switch2Picture(e) {
               opt.chats = chats
             }
             if (chats) {
-              system += `\n以下是一段qq群内的对话，提供给你作为上下文，你在回答所有问题时必须优先考虑这些信息，结合这些上下文进行回答，这很重要！！！。记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`
+              system += `\nThere is the conversation history in the group, you must chat according to the conversation history context.记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`
               system += chats
                 .map(chat => {
                   let sender = chat.sender || {}
@@ -2116,7 +2116,7 @@ async switch2Picture(e) {
 
               if (e.source?.seq) {
                 let source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
-                option.systemMessage += `\nthe last message is replying to ${source.message_id}, the content is "${source?.raw_message}"\n`
+                option.systemMessage += `\nthe last message is replying to ${source.message_id}"\n`
               } else {
                 option.systemMessage += `\nthe last message id is ${e.message_id}. `
               }
