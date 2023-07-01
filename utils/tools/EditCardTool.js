@@ -37,6 +37,7 @@ export class EditCardTool extends AbstractTool {
     if (mm.get(Bot.uin).role === 'member') {
       return `failed, you, not user, don't have permission to edit card in group ${groupId}`
     }
+    qq=Number(qq)
     logger.info('修改群名片参数:', groupId, qq, card)
     await group.setCard(qq, card)
     return `the user ${qq}'s card has been changed into ${card}`
