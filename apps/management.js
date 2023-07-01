@@ -297,9 +297,26 @@ export class ChatgptManagement extends plugin {
           reg: '^#chatgpt(关闭|关)(回复表情|表情回复|表情|随机表情|发送表情)',
           fnc: 'OffExprotMoji',
           permission: 'master'
-        }
+        },
+        {
+          reg: '^#chatgpt(关闭|关|开启|开|允许|禁止)(智能|智慧|智障|smart)(模式)?',
+          fnc: 'SmartMode',
+          permission: 'master'
+        },
       ]
     })
+  }
+  async SmartMode (e) {
+    if(e.msg.match(/(开|允许|开启)/))
+    {
+      Config.smartMode=true
+      e.reply('打开智 障模式成功',e.isGroup)
+    }
+    else
+    {
+      Config.smartMode=false
+      e.reply('关闭智 障模式成功',e.isGroup)
+    }
   }
   async settingModel35 (e){
     logger.info('切换模型：gpt-3.5')
