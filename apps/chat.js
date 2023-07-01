@@ -2207,24 +2207,31 @@ async switch2Picture(e) {
           // if (e.sender.role === 'admin' || e.sender.role === 'owner') {
           //   tools.push(...[new JinyanTool(), new KickOutTool()])
           // }
-          let funcMap = {}
-          let fullFuncMap = {}
-          tools.forEach(tool => {
-            funcMap[tool.name] = {
-              exec: tool.func,
-              function: tool.function()
+          try {
+            let funcMap = {}
+            let fullFuncMap = {}
+            tools.forEach(tool => {
+              funcMap[tool.name] = {
+                function: tool.function()
+              }
+            })
+            fullTools.forEach(tool => {
+              fullFuncMap[tool.name] = {
+                exec: tool.func,
+                function: tool.function()
+              }
+            })
+            if (!option.completionParams) {
+              option.completionParams = {}
             }
-          })
-          fullTools.forEach(tool => {
-            fullFuncMap[tool.name] = {
-              exec: tool.func,
-              function: tool.function()
-            }
-          })
-          if (!option.completionParams) {
-            option.completionParams = {}
+            option.completionParams.functions = Object.keys(funcMap).map(k => funcMap[k].function)
+           
           }
-          option.completionParams.functions = Object.keys(funcMap).map(k => funcMap[k].function)
+          catch(err) {
+            logger.error(err)
+            await e.reply('调用工具错误' + err)
+            throw new Error(err)
+          }
           let msg
           try {
             msg = await this.chatGPTApi.sendMessage(prompt, option)
