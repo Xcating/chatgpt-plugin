@@ -135,6 +135,12 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
+          reg: '^#poe[sS]*',
+          /** 执行方法 */
+          fnc: 'poe1'
+        },
+        {
+          /** 命令正则匹配 */
           reg: '^#chatglm[sS]*',
           /** 执行方法 */
           fnc: 'chatglm'
@@ -359,6 +365,29 @@ export class chatgpt extends plugin {
         } else {
           await redis.del(`CHATGPT:CONVERSATIONS_BROWSER:${e.sender.user_id}`)
           await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        }
+      } else if (use === 'poe') {
+        let cookie = await redis.get('CHATGPT:POE_TOKEN')
+        if (!cookie) {
+          throw new Error('未绑定Poe Cookie，请使用#chatgpt设置Poe token命令绑定cookie')
+        }
+        if (!cookie.startsWith('p-b=')) {
+          cookie = 'p-b=' + cookie
+        }
+        let client = new PoeClient({
+          quora_cookie: cookie,
+          proxy: Config.proxy,
+          debug: Config.debug
+        })
+        try {
+          await client.setCredentials()
+          await client.getChatId()
+          let ai = await redis.get('CHATGPT:POE_BOT') || 'a2'
+          await client.clearContext(ai)
+          await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        } catch (err) {
+          logger.error(err)
+          await this.reply('结束对话失败，请查看日志', true)
         }
       }
     } else {
@@ -1411,7 +1440,24 @@ async switch2Picture(e) {
     await this.abstractChat(e, prompt, 'api3')
     return true
   }
-
+  async poe1 (e) {
+    if (!Config.allowOtherMode) {
+      return false
+    }
+    let ats = e.message.filter(m => m.type === 'at')
+    if (!e.atme && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark('艾特别人了，没艾特我，忽略#poe1')
+      }
+      return false
+    }
+    let prompt = _.replace(e.raw_message.trimStart(), '#poe1', '').trim()
+    if (prompt.length === 0) {
+      return false
+    }
+    await this.abstractChat(e, prompt, 'poe')
+    return true
+  }
   async chatglm (e) {
     if (!Config.allowOtherMode) {
       return false
@@ -1858,17 +1904,21 @@ async switch2Picture(e) {
         return sendMessageResult
       }
       case 'poe': {
-        const cookie = await redis.get('CHATGPT:POE_TOKEN')
+        let cookie = await redis.get('CHATGPT:POE_TOKEN')
         if (!cookie) {
           throw new Error('未绑定Poe Cookie，请使用#chatgpt设置Poe token命令绑定cookie')
         }
+        if (!cookie.startsWith('p-b=')) {
+          cookie = 'p-b=' + cookie
+        }
         let client = new PoeClient({
           quora_cookie: cookie,
-          proxy: Config.proxy
+          proxy: Config.proxy,
+          debug: Config.debug
         })
         await client.setCredentials()
         await client.getChatId()
-        let ai = 'a2' // todo
+        let ai = await redis.get('CHATGPT:POE_BOT') || 'a2'
         await client.sendMsg(ai, prompt)
         const response = await client.getResponse(ai)
         return {
