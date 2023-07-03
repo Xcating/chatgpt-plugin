@@ -259,76 +259,71 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)(A|a)',
-          fnc: 'AUrlApi',
+          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)(B|b|a|A)',
+          fnc: 'UrlApiCG',
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)(B|b)',
-          fnc: 'BUrlApi',
+          reg: '^#chatgpt(关闭|关|开启|开|打开)(分割消息|额外消息|分割|分片|分片发送)',
+          fnc: 'ExrateMsg',
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(开启|打开|开)(分割消息|额外消息|分割|分片|分片发送)',
-          fnc: 'OpenExrateMsg',
-          permission: 'master'
-        },
-        {
-          reg: '^#chatgpt(开启|打开|开)(回复表情|表情回复|表情|随机表情|发送表情)',
-          fnc: 'OpenExprotMoji',
-          permission: 'master'
-        },
-        {
-          reg: '^#chatgpt(关闭|关)(分割消息|额外消息|分割|分片|分片发送)',
-          fnc: 'OffExrateMsg',
-          permission: 'master'
-        },
-        {
-          reg: '^#chatgpt(关闭|关)(回复表情|表情回复|表情|随机表情|发送表情)',
-          fnc: 'OffExprotMoji',
+          reg: '^#chatgpt(关闭|关|开|开启|打开)(回复表情|表情回复|表情|随机表情|发送表情)',
+          fnc: 'ExprotMoji',
           permission: 'master'
         },
       ]
     })
   }
-  async OpenExrateMsg (e){
-    logger.info('[打开-分割消息]')
-    Config.ExrateMsg=true
-    e.reply('分割消息打开成功！',e.isGroup)
+  async ExrateMsg (e){
+    if(e.msg.match(/(开|开启|打开)/)){
+      Config.ExrateMsg=true
+      e.reply('分割消息打开成功！',e.isGroup)
+      logger.debug('[分割消息开]')
+    }
+    else {
+      Config.ExrateMsg=false
+      e.reply('分割消息关闭成功')
+      logger.debug('[分割消息关]')
+    }
+    logger.info('[分割消息切换]')
+    
   }
-  async OpenExprotMoji (e){
-    logger.info('[打开-回复随机表情]')
-    Config.ExprotMoji=true
-    e.reply('回复随机表情打开成功！',e.isGroup)
+  async ExprotMoji (e){
+    if(e.msg.match(/(开|开启|打开)/)){
+      Config.ExprotMoji=true
+      e.reply('回复随机表情打开成功！',e.isGroup)
+      logger.debug('[回复随机表情开]')
+    }
+    else {
+      Config.ExprotMoji=false
+      e.reply('回复随机表情关闭成功')
+      logger.debug('[回复随机表情关]')
+    }
+    logger.info('[回复随机表情切换]')
   }
-  async OffExrateMsg (e){
-    logger.info('[关闭-分割消息]')
-    Config.ExrateMsg=false
-    e.reply('分割消息关闭成功！',e.isGroup)
-  }
-  async OffExprotMoji (e){
-    logger.info('[关闭-回复随机表情]')
-    Config.ExprotMoji=false
-    e.reply('回复随机表情关闭成功！',e.isGroup)
-  }
-  async AUrlApi (e){
-    logger.info('切换预设API反代-A')
-    Config.openAiBaseUrl=Config.PresetsAPIUrlA
-    e.reply('API反代A切换成功',e.isGroup)
-  }
-  async BUrlApi (e){
-    logger.info('切换预设API反代-B')
-    Config.openAiBaseUrl=Config.PresetsAPIUrlB
-    e.reply('API反代B切换成功',e.isGroup)
+  async UrlApiCG (e){
+    if(e.msg.match(/(A|a)/)){
+      Config.openAiBaseUrl=Config.PresetsAPIUrlA
+      e.reply('切换预设API反代-A成功！',e.isGroup)
+      logger.debug('[切换预设API反代-A]')
+    }
+    else {
+      Config.openAiBaseUrl=Config.PresetsAPIUrlB
+      e.reply('切换预设API反代-A成功！',e.isGroup)
+      logger.debug('[切换预设API反代-A]')
+    }
+    logger.info('[切换API预设反代]')
   }
   async settingModel (e){
-    if(e.msg.match(/(gpt-3.5|gpt3.5|GPT3.5|GPT-3.5)/)){
-      await this.reply('切换GPT-3.5模型成功', true)
-      Config.model='gpt-3.5-turbo'
-    }
-    else if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
-      Config.model='gpt-3.5-turbo-16k-0613'
+    if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
       await this.reply('切换GPT-3.5-16k模型成功', true)
+      Config.model='gpt-3.5-turbo-16k-0613'
+    }
+    else if(e.msg.match(/(gpt-3.5|gpt3.5|GPT3.5|GPT-3.5)/)){
+      Config.model='gpt-3.5-turbo-0613'
+      await this.reply('切换GPT-3.5模型成功', true)
     }
     else if(e.msg.match(/(gpt-4-32k|gpt4-32k|GPT4-32k|GPT-4-32k)/)){
       Config.model='gpt-4-32k'
