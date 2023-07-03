@@ -67,6 +67,7 @@ import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
 import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
 import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
 import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
+import { SetTitleTool } from "../utils/tools/SetTitleTool.js";
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 try {
   await import('emoji-strip')
@@ -2120,6 +2121,7 @@ async switch2Picture(e) {
             new ProcessPictureTool(),
             new APTool(),
             new QueryGenshinTool(),
+            new SetTitleTool(),
             //new EliMusicTool(),
             //new EliMovieTool(),
             new HandleMessageMsgTool(),
@@ -2148,6 +2150,7 @@ async switch2Picture(e) {
             //new EliMovieTool(),
             new HandleMessageMsgTool(),
             serpTool,
+            new SetTitleTool()
             //new QueryUserinfoTool()
           ]
           ///
