@@ -10,6 +10,7 @@ import { PoeClient } from '../utils/poe/index.js'
 import AzureTTS, { supportConfigurations } from '../utils/tts/microsoft-azure.js'
 import VoiceVoxTTS from '../utils/tts/voicevox.js'
 import { translate } from '../utils/translate.js'
+import { createCaptcha, solveCaptcha } from "../utils/bingCaptcha.js";
 import fs from 'fs'
 import {
   render,
@@ -1127,6 +1128,11 @@ async switch2Picture(e) {
         // 字数超限直接返回
         return false
       }
+      if (chatMessage.image) {
+        this.setContext('solveBingCaptcha', false, 60)
+        await e.reply([chatMessage.text, segment.image(`base64://${chatMessage.image}`)])
+        return
+      }
       logger.info('[ChatGPT回复额外消息]');
         //----------------------
         //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
@@ -1813,7 +1819,17 @@ async switch2Picture(e) {
           } catch (error) {
             logger.error(error)
             const message = error?.message || error?.data?.message || error || '出错了'
-            if (message && typeof message === 'string' && message.indexOf('限流') > -1) {
+            if (message && typeof message === 'string' && message.indexOf('CaptchaChallenge') > -1) {
+              let { id, image } = await createCaptcha(e, bingToken)
+              e.bingCaptchaId = id
+              e.token = bingToken
+              return {
+                text: '请崽60秒内输入下面图片以通过必应人机验证',
+                image,
+                error: true,
+                token: bingToken
+              }
+            } else if (message && typeof message === 'string' && message.indexOf('限流') > -1) {
               throttledTokens.push(bingToken)
               let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
               const badBingToken = bingTokens.findIndex(element => element.Token === bingToken)
@@ -2518,6 +2534,18 @@ async switch2Picture(e) {
       sendMessageOption = Object.assign(sendMessageOption, conversation)
     }
     return await this.chatGPTApi.sendMessage(prompt, sendMessageOption)
+  }
+
+  async solveBingCaptcha (e) {
+    let id = e.bingCaptchaId
+    let text = e.msg
+    let solveResult = await solveCaptcha(id, text, e.token)
+    if (solveResult.result) {
+      await e.reply('验证码已通过')
+    } else {
+      await e.reply('验证码失败：' + JSON.stringify(solveResult.detail))
+    }
+    this.finish('solveBingCaptcha')
   }
 }
 
