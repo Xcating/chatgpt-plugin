@@ -1703,7 +1703,7 @@ async switch2Picture(e) {
               }
               bingAIClient.opts.userToken = bingToken
               bingAIClient.opts.cookies = cookies
-              opt.messageType = allThrottled ? 'Chat' : 'SearchQuery'
+              //opt.messageType = allThrottled ? 'Chat' : 'SearchQuery'
               if (Config.enableGroupContext && e.isGroup && typeof e.group.getMemberMap === 'function') {
                 try {
                   opt.groupId = e.group_id
