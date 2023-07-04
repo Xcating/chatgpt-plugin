@@ -319,7 +319,7 @@ export class ChatgptManagement extends plugin {
   async settingModel (e){
     if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
       await this.reply('切换GPT-3.5-16k模型成功', true)
-      Config.model='gpt-3.5-turbo-16k-0613'
+      Config.model='gpt-3.5-turbo-16k'
     }
     else if(e.msg.match(/(gpt-3.5|gpt3.5|GPT3.5|GPT-3.5)/)){
       Config.model='gpt-3.5-turbo-0613'
