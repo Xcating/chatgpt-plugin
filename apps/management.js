@@ -249,7 +249,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(开启|关闭)智能模式$',
+          reg: '^#chatgpt(开启|关闭)(智能|智障)模式$',
           fnc: 'switchSmartMode',
           permission: 'master'
         },
@@ -1448,18 +1448,18 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
   async switchSmartMode (e) {
     if (e.msg.includes('开启')) {
       if (Config.smartMode) {
-        await e.reply('已经开启了')
+        await e.reply('已经开了，别再乱发消息了')
         return
       }
       Config.smartMode = true
-      await e.reply('好的，已经打开智能模式，注意API额度哦。配合开启读取群聊上下文效果更佳！')
+      await e.reply('好的，已经打开智障模式')
     } else {
       if (!Config.smartMode) {
-        await e.reply('已经是关闭得了')
+        await e.reply('已经关了，开个几把')
         return
       }
       Config.smartMode = false
-      await e.reply('好的，已经关闭智能模式')
+      await e.reply('好的，已经关闭智障模式')
     }
   }
 }
