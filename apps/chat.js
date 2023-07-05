@@ -1175,7 +1175,7 @@ async switch2Picture(e) {
             // 检查计数是否达到上限
             if (count >= Config.Maxcount) {
               // 连接超过五个句子的内容
-              extraSentences = sentences.slice(i + 1).join("");
+              extraSentences = sentences.slice(i + 1).join("。");
               logger.info(extraSentences)
               break;
             }
