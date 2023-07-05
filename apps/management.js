@@ -311,8 +311,8 @@ export class ChatgptManagement extends plugin {
     }
     else {
       Config.openAiBaseUrl=Config.PresetsAPIUrlB
-      e.reply('切换预设API反代-A成功！',e.isGroup)
-      logger.debug('[切换预设API反代-A]')
+      e.reply('切换预设API反代-B成功！',e.isGroup)
+      logger.debug('[切换预设API反代-B]')
     }
     logger.info('[切换API预设反代]')
   }
