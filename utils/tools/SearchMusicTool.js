@@ -1,39 +1,38 @@
-import fetch from 'node-fetch'
 import { AbstractTool } from './AbstractTool.js'
 
-export class SearchMusicTool extends AbstractTool {
-  name = 'searchMusic'
+export class SendMusicTool extends AbstractTool {
+  name = 'sendMusic'
 
   parameters = {
     properties: {
-      keyword: {
+      id: {
         type: 'string',
-        description: '音乐的标题或关键词, 可以是歌曲名或歌曲名+歌手名的组合'
+        description: '音乐的id'
+      },
+      targetGroupIdOrQQNumber: {
+        type: 'string',
+        description: 'Fill in the target user_id or groupId when you need to send music to specific group or user, otherwise leave blank'
       }
     },
     required: ['keyword']
   }
 
-  func = async function (opts) {
-    let { keyword } = opts
+  func = async function (opts, e) {
+    let { id, targetGroupIdOrQQNumber } = opts
+    // 非法值则发送到当前群聊
+    const defaultTarget = e.isGroup ? e.group_id : e.sender.user_id
+    const target = isNaN(targetGroupIdOrQQNumber) || !targetGroupIdOrQQNumber
+      ? defaultTarget
+      : parseInt(targetGroupIdOrQQNumber) === Bot.uin ? defaultTarget : parseInt(targetGroupIdOrQQNumber)
+
     try {
-      let result = await searchMusic163(keyword)
-      return `search result: ${result}`
+      let group = await Bot.pickGroup(target)
+      await group.shareMusic('163', id)
+      return `the music has been shared to ${target}`
     } catch (e) {
-      return `music search failed: ${e}`
+      return `music share failed: ${e}`
     }
   }
 
-  description = 'Useful when you want to search music by keyword.'
-}
-
-export async function searchMusic163 (name) {
-  let response = await fetch(`http://music.163.com/api/search/get/web?s=${name}&type=1&offset=0&total=true&limit=6`)
-  let json = await response.json()
-  if (json.result?.songCount > 0) {
-    return json.result.songs.map(song => {
-      return `id: ${song.id}, name: ${song.name}, artists: ${song.artists.map(a => a.name).join('&')}, alias: ${song.alias || 'none'}`
-    }).join('\n')
-  }
-  return null
+  description = 'Useful when you want to share music. You must use searchMusic first to get the music id'
 }

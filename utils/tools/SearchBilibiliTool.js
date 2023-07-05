@@ -3,33 +3,70 @@ import fetch from 'node-fetch'
 import { formatDate, mkdirs } from '../common.js'
 import fs from 'fs'
 import { AbstractTool } from './AbstractTool.js'
-export class SearchVideoTool extends AbstractTool {
-  name = 'searchVideo'
+export class SendVideoTool extends AbstractTool {
+  name = 'sendVideo'
 
   parameters = {
     properties: {
-      keyword: {
+      id: {
         type: 'string',
-        description: '要搜索的视频的标题或关键词'
+        description: '要发的视频的id'
+      },
+      targetGroupIdOrQQNumber: {
+        type: 'string',
+        description: 'Fill in the target user\'s qq number or groupId when you need to send video to specific user or group, otherwise leave blank'
       }
     },
-    required: ['keyword']
+    required: ['id']
   }
 
-  func = async function (opts) {
-    let { keyword } = opts
+  func = async function (opts, e) {
+    let { id, targetGroupIdOrQQNumber } = opts
+    // 非法值则发送到当前群聊或私聊
+    const defaultTarget = e.isGroup ? e.group_id : e.sender.user_id
+    const target = isNaN(targetGroupIdOrQQNumber) || !targetGroupIdOrQQNumber
+      ? defaultTarget
+      : parseInt(targetGroupIdOrQQNumber) === Bot.uin ? defaultTarget : parseInt(targetGroupIdOrQQNumber)
+
+    let msg = []
     try {
-      return await searchBilibili(keyword)
+      let { arcurl, title, pic, description, videoUrl, headers, bvid, author, play, pubdate, like, honor } = await getBilibili(id)
+      let group = await Bot.pickGroup(target)
+      msg.push(title.replace(/(<([^>]+)>)/ig, '') + '\n')
+      msg.push(`UP主：${author} 发布日期：${formatDate(new Date(pubdate * 1000))} 播放量：${play} 点赞：${like}\n`)
+      msg.push(arcurl + '\n')
+      msg.push(segment.image(pic))
+      msg.push('\n' + description)
+      if (honor) {
+        msg.push(`本视频曾获得过${honor}称号`)
+      }
+      msg.push('\n视频在路上啦！')
+      await group.sendMsg(msg)
+      const videoResponse = await fetch(videoUrl, { headers })
+      const fileType = videoResponse.headers.get('Content-Type').split('/')[1]
+      let fileLoc = `data/chatgpt/videos/${bvid}.${fileType}`
+      mkdirs('data/chatgpt/videos')
+      videoResponse.blob().then(async blob => {
+        const arrayBuffer = await blob.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        await fs.writeFileSync(fileLoc, buffer)
+        await group.sendMsg(segment.video(fileLoc))
+      })
+      return `the video ${title.replace(/(<([^>]+)>)/ig, '')} was shared to ${target}. the video information: ${msg}`
     } catch (err) {
       logger.error(err)
-      return `fail to search video, error: ${err.toString()}`
+      if (msg.length > 0) {
+        return `fail to share video, but the video msg is found: ${msg}, you can just tell the information of this video`
+      } else {
+        return `fail to share video, error: ${err.toString()}`
+      }
     }
   }
 
-  description = 'Useful when you want to search a video by keywords. you should remember the id of the video if you want to share it'
+  description = 'Useful when you are allowed to send a video. You must use searchVideo to get search result and choose one video and get its id'
 }
 
-export async function searchBilibili (name) {
+export async function getBilibili (bvid) {
   let biliRes = await fetch('https://www.bilibili.com',
     {
       // headers: {
@@ -57,20 +94,48 @@ export async function searchBilibili (name) {
       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
       cookie: cookieHeader
     }
-    let response = await fetch(`https://api.bilibili.com/x/web-interface/search/type?keyword=${name}&search_type=video`,
-      {
-        headers
-      })
-    let json = await response.json()
-    if (json.data?.numResults > 0) {
-      let result = json.data.result.map(r => {
-        return `id: ${r.bvid}，标题：${r.title}，作者：${r.author}，播放量：${r.play}，发布日期：${formatDate(new Date(r.pubdate * 1000))}`
-      }).slice(0, Math.min(json.data?.numResults, 5)).join('\n')
-      return `这些是关键词“${name}”的搜索结果：\n${result}`
-    } else {
-      return `没有找到关键词“${name}”的搜索结果`
+    let videoInfo = await fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`, {
+      headers
+    })
+    videoInfo = await videoInfo.json()
+    let cid = videoInfo.data.cid
+    let arcurl = `http://www.bilibili.com/video/av${videoInfo.data.aid}`
+    let title = videoInfo.data.title
+    let pic = videoInfo.data.pic
+    let description = videoInfo.data.desc
+    let author = videoInfo.data.owner.name
+    let play = videoInfo.data.stat.view
+    let pubdate = videoInfo.data.pubdate
+    let like = videoInfo.data.stat.like
+    let honor = videoInfo.data.honor_reply?.honor?.map(h => h.desc)?.join('、')
+    let downloadInfo = await fetch(`https://api.bilibili.com/x/player/playurl?bvid=${bvid}&cid=${cid}`, { headers })
+    let videoUrl = (await downloadInfo.json()).data.durl[0].url
+    return {
+      arcurl, title, pic, description, videoUrl, headers, bvid, author, play, pubdate, like, honor
+    }
+  } else {
+    return {}
+  }
+}
+
+function randomIndex () {
+  // Define weights for each index
+  const weights = [5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]
+
+  // Compute the total weight
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+
+  // Generate a random number between 0 and the total weight
+  const randomNumber = Math.floor(Math.random() * totalWeight)
+
+  // Choose the index based on the random number and weights
+  let weightSum = 0
+  for (let i = 0; i < weights.length; i++) {
+    weightSum += weights[i]
+    if (randomNumber < weightSum) {
+      return i
     }
   }
-
-  return {}
 }
+
+// console.log('send bilibili')
