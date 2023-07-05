@@ -4,6 +4,5 @@ config/*
 !config/config.md
 server/static/live2dw/*
 !server/static/live2dw/Murasame
-prompts/*
 !prompts/.gitkeep
 node_modules/
