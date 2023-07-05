@@ -87,6 +87,7 @@ const defaultConfig = {
   sydneyApologyIgnored: true,
   enforceMaster: false,
   oldview: false,
+  Maxcount: 5,
   newhelp: false,
   serverPort: 3321,
   serverHost: '',

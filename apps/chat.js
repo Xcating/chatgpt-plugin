@@ -1145,25 +1145,45 @@ async switch2Picture(e) {
         // 遍历分割后的句子数组
         if(Config.ExrateMsg===true){
           var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
-          let sentences = variableWithoutNewlines.split(/[。？]/); // 将中文句号和中文问号作为分隔符，使用split()方法分割文本
-          sentences.forEach(async (NumberA, index) => {
-              // 忽略空的句子
-              if (NumberA.trim() !== '') {
-                  const delay8 = index * 2000;
-                  setTimeout(async () => {
-                      if (Math.random() >= 0.3) { //0.3是概率，Math.random()随机生成一个1~0的小数
-                          await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e))
-                      }
-                      else {
-                          await this.reply(await convertFaces(NumberA, Config.enableRobotAt, e), e.isGroup)
-                      }
-                  }, delay8);
-                  if(Config.debug){
-                    logger.info('正在分割数据' + index + '个' + NumberA);
-                  }
-                  
-              }
-          });
+          // 使用正则表达式进行字符串分割
+          var sentences = variableWithoutNewlines.split(/[。？]/);
+          logger.red(variableWithoutNewlines)
+          // 计数器
+          var count = 0;
+          // 存储超过五个句子的内容
+          var extraSentences = "";
+          // 遍历每个句子
+          for (var i = 0; i < sentences.length; i++) {
+            var sentence = sentences[i].trim();
+            // 忽略空字符串
+            if (sentence === "") {
+              continue;
+            }
+            // 执行回复操作
+            // 忽略空的句子
+            if (Math.random() >= 0.3) { //0.3是概率，Math.random()随机生成一个1~0的小数
+              await this.reply(await convertFaces(sentence, Config.enableRobotAt, e))
+            }
+            else {
+              await this.reply(await convertFaces(sentence, Config.enableRobotAt, e), e.isGroup)
+            }
+            if(Config.debug){
+                logger.info('正在分割数据' + count + '个' + sentence);
+            }  
+            // 增加计数
+            count++;
+            // 检查计数是否达到上限
+            if (count >= Config.Maxcount) {
+              // 连接超过五个句子的内容
+              extraSentences = sentences.slice(i + 1).join("");
+              logger.info(extraSentences)
+              break;
+            }
+          }
+          // 如果有超过五个句子的内容，则作为第六条回复发送
+          if (extraSentences !== "") {
+            await this.reply(await convertFaces(extraSentences, Config.enableRobotAt, e), e.isGroup)
+          }
         }
         else{
           logger.info('未启用分割消息，统一发送');
