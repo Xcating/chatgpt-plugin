@@ -8,29 +8,29 @@ export class WeatherTool extends AbstractTool {
     properties: {
       city: {
         type: 'string',
-        description: '要查询的地点，细化到县/区级'
+        description: '要查询的地点'
+      },
+      targetGroupIdOrQQNumber: {
+        type: 'string',
+        description: 'Fill in the target user\'s qq number or groupId when you need to send avatar to specific user or group, otherwise leave blank'
       }
     },
     required: ['city']
   }
 
-  func = async function (opts) {
-    let { city } = opts
-    let key = Config.amapKey
-    if (!key) {
-      return 'query failed: you don\'t provide API key of 高德'
+  func = async function (opts,e) {
+    let { city , targetGroupIdOrQQNumber } = opts
+    let img = segment.image(`http://api.caonm.net/api/qqtq/t?msg=${city}&key=9eEVLhmjy98VKTkg4jSuUo2vVO`)
+    const target = isNaN(targetGroupIdOrQQNumber) || !targetGroupIdOrQQNumber
+      ? e.isGroup ? e.group_id : e.sender.user_id
+      : parseInt(targetGroupIdOrQQNumber.trim())
+    let groupList = await Bot.getGroupList()
+    console.log('SendWether', target, img)
+    if (groupList.get(target)) {
+      let group = await Bot.pickGroup(target)
+      await group.sendMsg(img)
     }
-    let adcodeRes = await fetch(`https://restapi.amap.com/v3/config/district?keywords=${city}&subdistrict=1&key=${key}`)
-    adcodeRes = await adcodeRes.json()
-    let adcode = adcodeRes.districts[0]?.adcode
-    if (!adcode) {
-      return `the area ${city} doesn't exist! are you kidding? you should mute him for 1 minute`
-    }
-    let cityName = adcodeRes.districts[0].name
-    let res = await fetch(`https://restapi.amap.com/v3/weather/weatherInfo?city=${adcode}&key=${key}`)
-    res = await res.json()
-    let result = res.lives[0]
-    return `the weather information of area ${cityName} in json format is:\n${JSON.stringify(result)}`
+    return `天气信息已经发送到目标群，你只需要告诉用户已经发了`
   }
 
   description = 'Useful when you want to query weather '

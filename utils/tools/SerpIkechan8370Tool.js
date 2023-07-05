@@ -20,11 +20,11 @@ export class SerpIkechan8370Tool extends AbstractTool {
   func = async function (opts) {
     let { q, source } = opts
     if (!source) {
-      source = 'google'
+      source = 'baidu'
     }
     let serpRes = await fetch(`https://serp.ikechan8370.com/${source}?q=${encodeURIComponent(q)}&lang=zh-CN&limit=10`, {
       headers: {
-        'X-From-Library': 'ikechan8370-ChatGPT-plugin'
+        'X-From-Library': 'ikechan8370-ChatGPT-plugin-Fork'
       }
     })
     serpRes = await serpRes.json()
