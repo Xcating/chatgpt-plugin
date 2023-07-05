@@ -2,7 +2,7 @@
     "AI聊天": [
         {
             "icon": "fas fa-comments",
-            "title": "聊天",
+            "title": "AI聊天",
             "text": "<span class=\"text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blueGray-600 bg-blueGray-200\">私聊</span>或在群中<span class=\"text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-blueGray-600 bg-blueGray-200\">@我+内容</span>进行聊天",
             "list": []
         },

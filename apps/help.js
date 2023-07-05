@@ -4,7 +4,7 @@ import { render, renderUrl } from '../utils/common.js'
 let version = Config.version
 let helpData = [
   {
-    group: '聊天',
+    group: 'AI聊天',
     list: [
       {
         icon: 'chat',
