@@ -918,8 +918,14 @@ async switch2Picture(e) {
       return false
     }
     // 黑白名单过滤对话
-    let [whitelist, blacklist] = [Config.whitelist, Config.blacklist]
+    let [whitelist = [], blacklist = []] = [Config.whitelist, Config.blacklist]
     let chatPermission = false // 对话许可
+    if (typeof whitelist === 'string') {
+      whitelist = [whitelist]
+    }
+    if (typeof blacklist === 'string') {
+      blacklist = [blacklist]
+    }
     if (whitelist.join('').length > 0) {
       for (const item of whitelist) {
         if (item.length > 11) {
