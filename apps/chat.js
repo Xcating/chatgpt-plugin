@@ -1147,7 +1147,6 @@ async switch2Picture(e) {
           var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
           // 使用正则表达式进行字符串分割
           var sentences = variableWithoutNewlines.split(/[。？]/);
-          logger.red(variableWithoutNewlines)
           // 计数器
           var count = 0;
           // 存储超过五个句子的内容
@@ -1168,7 +1167,7 @@ async switch2Picture(e) {
               await this.reply(await convertFaces(sentence, Config.enableRobotAt, e), e.isGroup)
             }
             if(Config.debug){
-                logger.info('正在分割数据' + count + '个' + sentence);
+                logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `正在分割数据${count}个，内容为${sentence}`)
             }  
             // 增加计数
             count++;
@@ -1186,12 +1185,12 @@ async switch2Picture(e) {
           }
         }
         else{
-          logger.info('未启用分割消息，统一发送');
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `未启用分割消息，统一发送`)
           await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
         }
         if(Config.ExprotMoji===true){
           setTimeout(async () => {
-            logger.info('触发发送表情...');
+            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `触发发送表情`)
             e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站，有更好的提issue（
           }, 2000);
     }
