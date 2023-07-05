@@ -149,7 +149,7 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
-          reg: '^bing[sS]*',   //reg: '^#bing[sS]*',
+          reg: '^#bing[sS]*',
           /** 执行方法 */
           fnc: 'bing'
         },

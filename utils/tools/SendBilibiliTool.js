@@ -23,9 +23,11 @@ export class SendVideoTool extends AbstractTool {
   func = async function (opts, e) {
     let { id, targetGroupIdOrQQNumber } = opts
     // 非法值则发送到当前群聊或私聊
+    const defaultTarget = e.isGroup ? e.group_id : e.sender.user_id
     const target = isNaN(targetGroupIdOrQQNumber) || !targetGroupIdOrQQNumber
-      ? e.isGroup ? e.group_id : e.sender.user_id
-      : parseInt(targetGroupIdOrQQNumber.trim())
+      ? defaultTarget
+      : parseInt(targetGroupIdOrQQNumber) === Bot.uin ? defaultTarget : parseInt(targetGroupIdOrQQNumber)
+
     let msg = []
     try {
       let { arcurl, title, pic, description, videoUrl, headers, bvid, author, play, pubdate, like, honor } = await getBilibili(id)
@@ -38,7 +40,7 @@ export class SendVideoTool extends AbstractTool {
       if (honor) {
         msg.push(`本视频曾获得过${honor}称号`)
       }
-      msg.push('\n视频憨憨正在发送啦！')
+      msg.push('\n视频在路上啦！')
       await group.sendMsg(msg)
       const videoResponse = await fetch(videoUrl, { headers })
       const fileType = videoResponse.headers.get('Content-Type').split('/')[1]
