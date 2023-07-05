@@ -337,6 +337,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'Maxcount',
+          label: '最大分割消息个数',
+          bottomHelpMessage: '仅在分段发送模式下使用',
+          component: 'InputNumber'
+        },
+        {
           field: 'ExprotMoji',
           label: '发送随机表情',
           bottomHelpMessage: '发送消息完发送随机表情',
