@@ -270,7 +270,7 @@ ${translateLangLabels}
       }
     }
     if (!url) {
-      await e.reply('不支持合成', true)
+      //await e.reply('不支持合成', true)
       return false
     }
     let response = await fetch(url)
