@@ -1215,7 +1215,7 @@ async switch2Picture(e) {
           previousConversation.parentMessageId = chatMessage.id
         }
         if (Config.debug) {
-          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[Sydney]`),chatMessage)
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[聊天回复信息]`),chatMessage)
         }
         if (!chatMessage.error) {
           // 没错误的时候再更新，不然易出错就对话没了
