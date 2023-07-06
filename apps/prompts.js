@@ -91,6 +91,7 @@ export class help extends plugin {
       name: 'API默认',
       content: Config.promptPrefixOverride
     }
+    logger.error('debug')
     let defaultSydneyPrompt = {
       name: 'Sydney默认',
       content: Config.sydney
@@ -98,7 +99,8 @@ export class help extends plugin {
     prompts.push(...[defaultPrompt, defaultSydneyPrompt])
     prompts.push(...readPrompts())
     console.log(prompts)
-    e.reply(await makeForwardMsg(e, prompts.map(p => `《${p.name}》\n${limitString(p.content, 500)}`), '设定列表'))
+    logger.error(prompts)
+    e.reply(await makeForwardMsg(e, prompts.map(p => `《${p.name}》\n${limitString(p.content, 400)}`), '可爱的各种各样的....'))
   }
 
   async detailPrompt (e) {
