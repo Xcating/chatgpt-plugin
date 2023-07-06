@@ -49,11 +49,11 @@ function randomNum (minNum, maxNum) {
  */
 export async function generateVitsAudio (text, speaker = '随机', language = '中日混合（中文用[ZH][ZH]包裹起来，日文用[JA][JA]包裹起来）', noiseScale = Config.noiseScale, noiseScaleW = Config.noiseScaleW, lengthScale = Config.lengthScale) {
   if (!speaker || speaker === '随机') {
-    logger.info('随机角色！这次哪个角色这么幸运会被选到呢……')
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), '随机角色！这次哪个角色这么幸运会被选到呢……')
     speaker = speakers[randomNum(0, speakers.length)]
   }
   text = wrapTextByLanguage(text)
-  logger.info(`正在使用${speaker}，基于文本：'${text}'生成语音`)
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), `正在使用${speaker}，基于文本：'${text}'生成语音`)
   let body = {
     data: [
       text, language, speaker,
@@ -63,19 +63,19 @@ export async function generateVitsAudio (text, speaker = '随机', language = '�
   let space = Config.ttsSpace
   if (space.endsWith('/api/generate')) {
     let trimmedSpace = space.substring(0, space.length - 13)
-    logger.warn(`vits api 当前为${space}，已校正为${trimmedSpace}`)
+    logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), `vits api 当前为${space}，已校正为${trimmedSpace}`)
     space = trimmedSpace
   }
   if (space.endsWith('/')) {
     let trimmedSpace = _.trimEnd(space, '/')
-    logger.warn(`vits api 当前为${space}，已校正为${trimmedSpace}`)
+    logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), `vits api 当前为${space}，已校正为${trimmedSpace}`)
     space = trimmedSpace
   }
   let url = `${space}/api/generate`
   if (Config.huggingFaceReverseProxy) {
     url = `${Config.huggingFaceReverseProxy}/api/generate?space=${_.trimStart(space, 'https://')}`
   }
-  logger.info(`正在使用接口${url}`)
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), `正在使用接口${url}`)
   let response = await newFetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -87,18 +87,18 @@ export async function generateVitsAudio (text, speaker = '随机', language = '�
   try {
     let json = JSON.parse(responseBody)
     if (Config.debug) {
-      logger.info(json)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), json)
     }
     if (response.status > 299) {
-      logger.info(json)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), json)
       throw new Error(JSON.stringify(json))
     }
     let [message, audioInfo, take] = json?.data
-    logger.info(message, take)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), message, take)
     let audioLink = `${space}/file=${audioInfo.name}`
     if (Config.huggingFaceReverseProxy) {
       if (Config.debug) {
-        logger.info('使用huggingface加速反代下载生成音频' + Config.huggingFaceReverseProxy)
+        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[语音]`), logger.red(`[Vits语音]`), '使用huggingface加速反代下载生成音频' + Config.huggingFaceReverseProxy)
       }
       let spaceHost = _.trimStart(space, 'https://')
       audioLink = `${Config.huggingFaceReverseProxy}/file=${audioInfo.name}?space=${spaceHost}`
