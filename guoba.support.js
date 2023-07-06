@@ -357,13 +357,13 @@ export function supportGuoba () {
         {
           field: 'PresetsAPIUrlA',
           label: 'API反代预设地址A',
-          bottomHelpMessage: 'OpenAI的API服务器地址预设A，可用指令"#chatgpt切换API反代预设A"切换。注意要带上/v1。默认为https://api.openai.com/v1',
+          bottomHelpMessage: 'OpenAI的API服务器地址预设A，可用指令"#chatgpt切换反代预设A"切换。注意要带上/v1。默认为https://api.openai.com/v1',
           component: 'Input'
         },
         {
           field: 'PresetsAPIUrlB',
           label: 'API反代预设地址B',
-          bottomHelpMessage: 'OpenAI的API服务器地址预设B，可用指令"#chatgpt切换API反代预设B"切换。注意要带上/v1。默认为https://api.openai.com/v1',
+          bottomHelpMessage: 'OpenAI的API服务器地址预设B，可用指令"#chatgpt切换反代预设B"切换。注意要带上/v1。默认为https://api.openai.com/v1',
           component: 'Input'
         },
         {

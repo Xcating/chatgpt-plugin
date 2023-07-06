@@ -259,7 +259,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(Api|API|api)(反代|转发)(预设|设置)(B|b|a|A)',
+          reg: '^#chatgpt(切换|使用)(Api|API|api)?(反代|转发)(预设|设置)(B|b|a|A)',
           fnc: 'UrlApiCG',
           permission: 'master'
         },
