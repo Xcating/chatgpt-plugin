@@ -1182,7 +1182,7 @@ async switch2Picture(e) {
               break;
             }
           }
-          // 如果有超过五个句子的内容，则作为第六条回复发送
+          // 如果有超过X个句子的内容，则作为第X+1条回复发送
           if (extraSentences !== "") {
             await this.reply(await convertFaces(extraSentences, Config.enableRobotAt, e), e.isGroup)
           }
