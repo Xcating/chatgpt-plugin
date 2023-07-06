@@ -777,7 +777,6 @@ export async function getImageOcrText (e) {
         if (eachImgRes) resultArr.push(eachImgRes)
         eachImgRes = ''
       }
-      // logger.warn('resultArr', resultArr)
       return resultArr
     } catch (err) {
       return false
@@ -851,8 +850,7 @@ export async function generateAudio (e, pendingText, speakingEmotion, emotionDeg
         sendable = segment.record(wav)
       }
     } catch (err) {
-      logger.error(err)
-      sendable = segment.record(wav)
+      return false
     }
   } catch (err) {
     logger.error(err)

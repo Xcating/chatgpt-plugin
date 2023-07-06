@@ -70,6 +70,7 @@ import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessage
 import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
+let checkNumber
 try {
   await import('emoji-strip')
 } catch (err) {
@@ -89,6 +90,7 @@ if (Config.proxy) {
     logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent')
   }
 }
+
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。
  * 单位：秒
@@ -1375,11 +1377,6 @@ async switch2Picture(e) {
           }
         }
         const sendable = await generateAudio(this.e, ttsResponse, emotion, emotionDegree)
-        if (sendable) {
-          await this.reply(sendable)
-        } else {
-          await this.reply('合成语音发生错误~')
-        }
       } else if (userSetting.usePicture || (Config.autoUsePicture && response.length > Config.autoUsePictureThreshold)) {
         // todo use next api of chatgpt to complete incomplete respoonse
         try {
@@ -1659,6 +1656,7 @@ async switch2Picture(e) {
   }
 
   async sendMessage (prompt, conversation = {}, use, e) {
+    checkNumber = 0
     if (!conversation) {
       conversation = {
         timeoutMs: Config.defaultTimeoutMs
