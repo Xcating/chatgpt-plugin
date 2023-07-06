@@ -73,12 +73,12 @@ import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 try {
   await import('emoji-strip')
 } catch (err) {
-  logger.warn('[ChatGPT-Plugin]依赖emoji-strip未安装，会导致azure语音模式下朗读emoji的问题，建议执行pnpm install emoji-strip安装')
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '[ChatGPT-Plugin]依赖emoji-strip未安装，会导致azure语音模式下朗读emoji的问题，建议执行pnpm install emoji-strip安装')
 }
 try {
   await import('keyv')
 } catch (err) {
-  logger.warn('[ChatGPT-Plugin]依赖keyv未安装，可能影响Sydney模式下Bing对话，建议执行pnpm install keyv安装')
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '[ChatGPT-Plugin]依赖keyv未安装，可能影响Sydney模式下Bing对话，建议执行pnpm install keyv安装')
 }
 let version = Config.version
 let proxy
@@ -86,7 +86,7 @@ if (Config.proxy) {
   try {
     proxy = (await import('https-proxy-agent')).default
   } catch (e) {
-    console.warn('未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent')
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent')
   }
 }
 /**
@@ -1139,7 +1139,8 @@ async switch2Picture(e) {
         await e.reply([chatMessage.text, segment.image(`base64://${chatMessage.image}`)])
         return
       }
-      logger.info('[ChatGPT回复额外消息]');
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Exrate]`), logger.red(`[MoreMessage]`), `ChatGPT回复额外消息`)
+      //logger.info('[ChatGPT回复额外消息]');
         //----------------------
         //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
         // 遍历分割后的句子数组
@@ -1167,7 +1168,7 @@ async switch2Picture(e) {
               await this.reply(await convertFaces(sentence, Config.enableRobotAt, e), e.isGroup)
             }
             if(Config.debug){
-                logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `正在分割数据${count}个，内容为${sentence}`)
+                logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Exrate]`), logger.red(`[MoreMessage]`), `正在分割数据${count}个，内容为${sentence}`)
             }  
             // 增加计数
             count++;
@@ -1185,12 +1186,12 @@ async switch2Picture(e) {
           }
         }
         else{
-          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `未启用分割消息，统一发送`)
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Exrate]`), logger.red(`[MoreMessage]`), `未启用分割消息，统一发送`)
           await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
         }
         if(Config.ExprotMoji===true){
           setTimeout(async () => {
-            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Ex]`), logger.red(`[MoreMessage]`), `触发发送表情`)
+            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Exrate]`), logger.red(`[MoreMessage]`), `触发发送表情`)
             e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站，有更好的提issue（
           }, 2000);
     }

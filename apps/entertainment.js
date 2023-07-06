@@ -255,7 +255,7 @@ ${translateLangLabels}
     const fullPath = fs.realpathSync(`${_path}/plugins/chatgpt-plugin/resources/emojiData.json`)
     const data = fs.readFileSync(fullPath)
     let emojDataJson = JSON.parse(data)
-    logger.mark(`合成emoji：${left} ${right}`)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[Emoji合成]`), `合成emoji：${left} ${right}`)
     let url
     if (emojDataJson[right]) {
       let find = emojDataJson[right].find(item => item.leftEmoji === left)
@@ -271,6 +271,7 @@ ${translateLangLabels}
     }
     if (!url) {
       //await e.reply('不支持合成', true)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[Emoji合成]`), `当前表情不支持合成`)
       return false
     }
     let response = await fetch(url)
