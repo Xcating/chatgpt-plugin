@@ -1376,6 +1376,7 @@ async switch2Picture(e) {
             this.reply(`建议的回复：\n${chatMessage.suggestedResponses}`)
           }
         }
+        await generateAudio(this.e, ttsResponse, emotion, emotionDegree)
       } else if (userSetting.usePicture || (Config.autoUsePicture && response.length > Config.autoUsePictureThreshold)) {
         // todo use next api of chatgpt to complete incomplete respoonse
         try {
