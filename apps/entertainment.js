@@ -243,7 +243,7 @@ ${translateLangLabels}
       return false
     }
     mkdirs('data/chatgpt/emoji')
-    logger.info('combine ' + e.msg)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[Emoji合成]`), 'combine ' + e.msg)
     let resultFileLoc = `data/chatgpt/emoji/${left}_${right}.jpg`
     if (fs.existsSync(resultFileLoc)) {
       let image = segment.image(fs.createReadStream(resultFileLoc))
@@ -295,7 +295,7 @@ ${translateLangLabels}
       return false
     }
     let groupId = e.msg.replace(/^#chatgpt打招呼/, '')
-    logger.info(groupId)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), groupId)
     groupId = parseInt(groupId)
     if (groupId && !Bot.getGroupList().get(groupId)) {
       await e.reply('机器人不在这个群里！')
@@ -303,7 +303,7 @@ ${translateLangLabels}
     }
     let message = await generateHello()
     let sendable = message
-    logger.info(`打招呼给群聊${groupId}：` + message)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `打招呼给群聊${groupId}：` + message)
     if (Config.defaultUseTTS) {
       let audio = await generateVitsAudio(message, Config.defaultTTSRole)
       sendable = segment.record(audio)
@@ -318,7 +318,7 @@ ${translateLangLabels}
 
   async sendRandomMessage () {
     if (Config.debug) {
-      logger.info('开始处理：ChatGPT随机打招呼。')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), '开始处理：ChatGPT随机打招呼。')
     }
     //提示用户ChatGPT要开始打招呼
     
@@ -332,7 +332,7 @@ ${translateLangLabels}
         // 打招呼概率
         if (Math.floor(Math.random() * 100) < Config.helloProbability) {
           let message = await generateHello()
-          logger.info(`打招呼给群聊${groupId}：` + message)
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `打招呼给群聊${groupId}：` + message)
           if (Config.defaultUseTTS) {
             let audio
             const [defaultVitsTTSRole, defaultAzureTTSRole, defaultVoxTTSRole] = [Config.defaultTTSRole, Config.azureTTSSpeaker, Config.voicevoxTTSSpeaker]
@@ -392,7 +392,7 @@ ${translateLangLabels}
             await Bot.sendGroupMsg(groupId, message)
           }
         } else {
-          logger.info(`时机未到，这次就不打招呼给群聊${groupId}了`)
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `时机未到，这次就不打招呼给群聊${groupId}了`)
         }
       } else {
         logger.warn('机器人不在要发送的群组里，忽略群。同时建议检查配置文件修改要打招呼的群号。' + groupId)

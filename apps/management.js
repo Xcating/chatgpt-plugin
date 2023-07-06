@@ -280,41 +280,41 @@ export class ChatgptManagement extends plugin {
     if(e.msg.match(/(开|开启|打开)/)){
       Config.ExrateMsg=true
       e.reply('分割消息打开成功！',e.isGroup)
-      logger.debug('[分割消息开]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息开')
     }
     else {
       Config.ExrateMsg=false
       e.reply('分割消息关闭成功')
-      logger.debug('[分割消息关]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息关')
     }
-    logger.info('[分割消息切换]')
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息切换')
     
   }
   async ExprotMoji (e){
     if(e.msg.match(/(开|开启|打开)/)){
       Config.ExprotMoji=true
       e.reply('回复随机表情打开成功！',e.isGroup)
-      logger.debug('[回复随机表情开]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情开')
     }
     else {
       Config.ExprotMoji=false
       e.reply('回复随机表情关闭成功')
-      logger.debug('[回复随机表情关]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情关')
     }
-    logger.info('[回复随机表情切换]')
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情切换')
   }
   async UrlApiCG (e){
     if(e.msg.match(/(A|a)/)){
       Config.openAiBaseUrl=Config.PresetsAPIUrlA
       e.reply('切换预设API反代-A成功！',e.isGroup)
-      logger.debug('[切换预设API反代-A]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-A')
     }
     else {
       Config.openAiBaseUrl=Config.PresetsAPIUrlB
       e.reply('切换预设API反代-B成功！',e.isGroup)
-      logger.debug('[切换预设API反代-B]')
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-B')
     }
-    logger.info('[切换API预设反代]')
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换API预设反代')
   }
   async settingModel (e){
     if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
@@ -337,14 +337,14 @@ export class ChatgptManagement extends plugin {
       this.setContext('settingModels')
       await this.reply('你没有指定模型，请发送要切换的模型', true)
     }
-    logger.info(e.msg)
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[模型]`), e.msg)
     return false
   }
   async settingModels () {
     let Targetmodel = this.e.msg
     Config.model=Targetmodel
     if(Config.debug){
-      logger.info('TargetModel:'+Targetmodel)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[模型]`), '切换的目标模型:'+Targetmodel)
     }
     await this.reply('切换成功', true)
     this.finish('settingModels')
@@ -802,7 +802,7 @@ azure语音：Azure 语音是微软 Azure 平台提供的一项语音服务，�
     // 异步就好了，不卡着这个context了
     bingAIClient.createNewConversation().then(async res => {
       if (res.clientId) {
-        logger.info('bing token 有效')
+        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[必应]`), 'Bing Token 有效')
       } else {
         logger.error('bing token 无效', res)
         // 移除无效token

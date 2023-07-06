@@ -282,6 +282,7 @@ export class chatgpt extends plugin {
    * @returns {Promise<void>}
    */
   async destroyConversations (e) {
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[结束对话]`), `触发结束对话`)
     const userData = await getUserData(e.user_id)
     const use = (userData.mode === 'default' ? null : userData.mode) || await redis.get('CHATGPT:USE')
     await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`)
@@ -1113,7 +1114,7 @@ async switch2Picture(e) {
       })
       previousConversation = JSON.parse(previousConversation)
       if (Config.debug) {
-        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[Sydney]`),{ previousConversation })
+        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[对话信息]`),{ previousConversation })
       }
       conversation = {
         conversationId: previousConversation.conversation?.conversationId,
