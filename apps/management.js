@@ -269,7 +269,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(关闭|关|开|开启|打开)(回复表情|表情回复|表情|随机表情|发送表情)',
+          reg: '^#chatgpt(关闭|关|开|开启|打开)(回复表情|表情回复|表情|随机表情|发送表情|回复随机表情)',
           fnc: 'ExprotMoji',
           permission: 'master'
         },

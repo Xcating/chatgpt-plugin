@@ -170,6 +170,26 @@ let helpData = [
         icon: 'token',
         title: '#chatgpt(设置|添加)群聊[白黑]名单',
         desc: '白名单配置后只有白名单内的群可使用本插件，配置黑名单则会在对应群聊禁用本插件'
+      },
+      {
+        icon: 'confirm',
+        title: '#chatgpt切换模型',
+        desc: '切换API的回答模型'
+      },
+      {
+        icon: 'confirm',
+        title: '#chatgpt切换反代预设(A|B)',
+        desc: '切换API的反代预设，不是Sydney反代'
+      },
+      {
+        icon: 'confirm',
+        title: '#chatgpt(开|关)分割消息',
+        desc: '开关分割消息，回复时每遇到中文句号和问号将分割消息'
+      },
+      {
+        icon: 'confirm',
+        title: '#chatgpt(开|关)随机表情',
+        desc: '开关分割消息，回复时回复随机表情'
       }
     ]
   },
