@@ -6,3 +6,4 @@ server/static/live2dw/*
 !server/static/live2dw/Murasame
 !prompts/.gitkeep
 node_modules/
+package-lock.json
