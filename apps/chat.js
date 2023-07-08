@@ -5,13 +5,14 @@ import { v4 as uuid } from 'uuid'
 import delay from 'delay'
 import { ChatGPTAPI } from '../utils/openai/chatgpt-api.js'
 import { BingAIClient } from '@waylaidwanderer/chatgpt-api'
-import SydneyAIClient from '../utils/SydneyAIClient.js'
 import { PoeClient } from '../utils/poe/index.js'
 import AzureTTS, { supportConfigurations } from '../utils/tts/microsoft-azure.js'
 import VoiceVoxTTS from '../utils/tts/voicevox.js'
 import { translate } from '../utils/translate.js'
 import { createCaptcha, solveCaptcha } from "../utils/bingCaptcha.js";
 import fs from 'fs'
+import SydneyAIClient from '../utils/SydneyAIClient.js'
+import ESydneyAIClient from '../utils/E-SydneyAIClient.js'
 import {
   render,
   renderUrl,
@@ -1686,14 +1687,26 @@ async switch2Picture(e) {
             namespace: Config.toneStyle,
             store: new KeyvFile({ filename: 'cache.json' })
           }
-          bingAIClient = new SydneyAIClient({
-            userToken: bingToken, // "_U" cookie from bing.com
-            cookies,
-            debug: Config.debug,
-            cache: cacheOptions,
-            user: e.sender.user_id,
-            proxy: Config.proxy
-          })
+          if(Config.BingMiao){
+            bingAIClient = new SydneyAIClient({
+              userToken: bingToken, // "_U" cookie from bing.com
+              cookies,
+              debug: Config.debug,
+              cache: cacheOptions,
+              user: e.sender.user_id,
+              proxy: Config.proxy
+            })
+          }
+          else{
+            bingAIClient = new ESydneyAIClient({
+              userToken: bingToken, // "_U" cookie from bing.com
+              cookies,
+              debug: Config.debug,
+              cache: cacheOptions,
+              user: e.sender.user_id,
+              proxy: Config.proxy
+            })
+          }
           // Sydney不实现上下文传递，删除上下文索引
           delete conversation.clientId
           delete conversation.invocationId

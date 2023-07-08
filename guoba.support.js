@@ -475,6 +475,12 @@ export function supportGuoba () {
           component: 'Divider'
         },
         {
+          field: 'BingMiao',
+          label: '喵版必应',
+          bottomHelpMessage: '使用喵喵设定时得到完整的防ntr效果，如果用的是自己的设定请关闭',
+          component: 'Switch'
+        },
+        {
           field: 'toneStyle',
           label: 'Bing模式',
           bottomHelpMessage: '微软必应官方的三种应答风格。默认为均衡，Sydney为实验风格，独立与三种风格之外；自设定为自定义AI的回答风格',
