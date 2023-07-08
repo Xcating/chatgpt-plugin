@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import chalk from 'chalk'
 import { Config } from './utils/config.js'
 import { createServer } from './server/index.js'
 
@@ -30,11 +31,18 @@ for (let i in files) {
 
 // 启动服务器
 await createServer()
-logger.info('**************************************')
-logger.info('chatgpt-plugin加载成功')
+logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
+console.log(chalk.cyan(" ________  ___  ___  ________  _________  ________  ________  _________"));
+console.log(chalk.cyan("|\\   ____\\|\\  \\|\\  \\|\\   __  \\|\\___   ___\\\\   ____\\|\\   __  \\|\\___   ___\\"));
+console.log(chalk.cyan("\\ \\  \\___|\\ \\  \\\\\\  \\ \\  \\|\\  \\|___ \\  \\_\\ \\  \\___|\\ \\  \\|\\  \\|___ \\  \\_|"));
+console.log(chalk.cyan(" \\ \\  \\    \\ \\   __  \\ \\   __  \\   \\ \\  \\ \\ \\  \\  __\\ \\   ____\\   \\ \\  \\"));
+console.log(chalk.cyan("  \\ \\  \\____\\ \\  \\ \\  \\ \\  \\ \\  \\   \\ \\  \\ \\ \\  \\|\\  \\ \\  \\___|    \\ \\  \\"));
+console.log(chalk.cyan("   \\ \\_______\\ \\__\\ \\__\\ \\__\\ \\__\\   \\ \\__\\ \\ \\_______\\ \\__\\        \\ \\__\\"));
+console.log(chalk.cyan("    \\|_______|\\|__|\\|__|\\|__|\\|__|    \\|__|  \\|_______|\\|__|         \\|__|"));
+logger.info('ChatGpt-Plugin加载成功')
 logger.info(`当前版本${Config.version}`)
 logger.info('仓库地址 https://github.com/ikechan8370/chatgpt-plugin')
 logger.info('插件群号 559567232')
-logger.info('**************************************')
+logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
 
 export { apps }
