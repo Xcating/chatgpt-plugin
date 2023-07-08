@@ -109,6 +109,7 @@ const defaultConfig = {
   slackUserToken: '',
   slackBotUserToken: '',
   // slackChannelId: '',
+  HelloCron: '',
   slackSigningSecret: '',
   slackClaudeUserId: '',
   slackClaudeEnableGlobalPreset: true,
