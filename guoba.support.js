@@ -291,19 +291,19 @@ export function supportGuoba () {
         {
           field: 'BingRulePrefix',
           label: '必应回答前缀',
-          bottomHelpMessage: '配置完需要重启，默认为bing',
+          bottomHelpMessage: '配置完需要重启，默认为bing，支持用|分隔开多个前缀',
           component: 'Input'
         },
         {
           field: 'APIRulePrefix',
           label: 'API回答前缀',
-          bottomHelpMessage: '配置完需要重启，默认为chat1',
+          bottomHelpMessage: '配置完需要重启，默认为chat1，支持用|分隔开多个前缀',
           component: 'Input'
         },
         {
           field: 'API3RulePrefix',
           label: 'API3回答前缀',
-          bottomHelpMessage: '配置完需要重启，默认为chat3',
+          bottomHelpMessage: '配置完需要重启，默认为chat3，支持用|分隔开多个前缀',
           component: 'Input'
         },
         {

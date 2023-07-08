@@ -130,13 +130,13 @@ export class chatgpt extends plugin {
       rule: [
         {
           /** 命令正则匹配 */
-          reg: `^(#)?${API3RulePrefix}[sS]*`,
+          reg: `^(#)?(${API3RulePrefix})[sS]*`,
           /** 执行方法 */
           fnc: 'chatgpt3'
         },
         {
           /** 命令正则匹配 */
-          reg: `^(#)?${APIRulePrefix}[sS]*`,
+          reg: `^(#)?(${APIRulePrefix})[sS]*`,
           /** 执行方法 */
           fnc: 'chatgpt1'
         },
@@ -154,7 +154,7 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
-          reg: `^(#)?${BingRulePrefix}[sS]*`,
+          reg: `^(#)?(${BingRulePrefix})[sS]*`,
           /** 执行方法 */
           fnc: 'bing'
         },
