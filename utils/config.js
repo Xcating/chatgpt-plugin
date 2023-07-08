@@ -140,7 +140,7 @@ const defaultConfig = {
   serpSource: 'ikechan8370',
   extraUrl: 'https://cpe.ikechan8370.com',
   smartMode: false,
-  version: 'Fork-1.0.4-Beta'
+  version: 'Fork-1.0.5-Beta'
 }
 const GEConfig = {
   blockWords: ['屏蔽词1', '屏蔽词b'],
