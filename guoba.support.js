@@ -286,7 +286,7 @@ export function supportGuoba () {
         },
         {
           label: '以下为前缀配置',
-          component: 'SayHello'
+          component: 'Divider'
         },
         {
           field: 'BingRulePrefix',
@@ -307,8 +307,8 @@ export function supportGuoba () {
           component: 'Input'
         },
         {
-          label: '以下为服务超时配置。',
-          component: 'SayHello'
+          label: '以下为打招呼配置。',
+          component: 'Divider'
         },
         {
           field: 'HelloCron',
