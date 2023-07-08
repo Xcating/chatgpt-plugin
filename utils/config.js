@@ -308,10 +308,20 @@ if (fs.existsSync(`${_path}/plugins/chatgpt-plugin/config/config.json`)) {
   }
 }
 else {
-  logger.warn('无法检测到config.json文件，可能是第一次使用，将开始生成')
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[生成配置文件]`), '无法检测到config.json文件，可能是第一次使用，将开始生成')
   const configPath = `${_path}/plugins/chatgpt-plugin/config/config.json` // 相对于当前目录的上一级config文件夹中的config.json
   const configData = JSON.stringify(GEConfig, null, 2)
   fs.writeFileSync(configPath, configData)
+  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[生成配置文件]`), '配置生成成功！正在加载配置文件！')
+  const fullPath = fs.realpathSync(`${_path}/plugins/chatgpt-plugin/config/config.js`)
+  const data = fs.readFileSync(fullPath)
+  if (data) {
+    try {
+      config = JSON.parse(data)
+    } catch (e) {
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[读取配置文件]`), '读取配置文件出错，请检查config/config.json格式',e)
+    }
+  }
 }
 config = Object.assign({}, defaultConfig, config)
 config.version = defaultConfig.version
