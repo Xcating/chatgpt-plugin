@@ -1688,16 +1688,6 @@ async switch2Picture(e) {
             store: new KeyvFile({ filename: 'cache.json' })
           }
           if(Config.BingMiao){
-            bingAIClient = new SydneyAIClient({
-              userToken: bingToken, // "_U" cookie from bing.com
-              cookies,
-              debug: Config.debug,
-              cache: cacheOptions,
-              user: e.sender.user_id,
-              proxy: Config.proxy
-            })
-          }
-          else{
             bingAIClient = new ESydneyAIClient({
               userToken: bingToken, // "_U" cookie from bing.com
               cookies,
@@ -1706,6 +1696,18 @@ async switch2Picture(e) {
               user: e.sender.user_id,
               proxy: Config.proxy
             })
+            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[SydneyAIClient]`), '将使用喵喵版必应客户端，建议配合喵喵设定使用')
+          }
+          else{
+            bingAIClient = new SydneyAIClient({
+              userToken: bingToken, // "_U" cookie from bing.com
+              cookies,
+              debug: Config.debug,
+              cache: cacheOptions,
+              user: e.sender.user_id,
+              proxy: Config.proxy
+            })
+            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[SydneyAIClient]`), '将使用原版必应客户端')
           }
           // Sydney不实现上下文传递，删除上下文索引
           delete conversation.clientId
