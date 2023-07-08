@@ -318,6 +318,7 @@ else {
   if (data) {
     try {
       config = JSON.parse(data)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[生成配置文件]`), '配置文件生成完毕！正在启动...')
     } catch (e) {
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[读取配置文件]`), '读取配置文件出错，请检查config/config.json格式',e)
     }
