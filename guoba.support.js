@@ -11,9 +11,9 @@ export function supportGuoba () {
     pluginInfo: {
       name: 'chatgpt-plugin',
       title: 'ChatGPT-Plugin',
-      author: '@ikechan8370',
+      author: '@ikechan8370&@Xcating',
       authorLink: 'https://github.com/ikechan8370',
-      link: 'https://github.com/ikechan8370/chatgpt-plugin',
+      link: 'https://github.com/Xcating/chatgpt-plugin',
       isV3: true,
       isV2: false,
       description: '基于OpenAI最新推出的chatgpt和微软的 New bing通过api进行聊天的插件，需自备openai账号或有New bing访问权限的必应账号',
