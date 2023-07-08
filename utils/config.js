@@ -313,7 +313,7 @@ else {
   const configData = JSON.stringify(GEConfig, null, 2)
   fs.writeFileSync(configPath, configData)
   logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[生成配置文件]`), '配置生成成功！正在加载配置文件！')
-  const fullPath = fs.realpathSync(`${_path}/plugins/chatgpt-plugin/config/config.js`)
+  const fullPath = fs.realpathSync(`${_path}/plugins/chatgpt-plugin/config/config.json`)
   const data = fs.readFileSync(fullPath)
   if (data) {
     try {
