@@ -71,6 +71,9 @@ import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 //import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 let checkNumber
+const BingRulePrefix = Config.BingRulePrefix
+const APIRulePrefix = Config.APIRulePrefix
+const API3RulePrefix = Config.API3RulePrefix
 try {
   await import('emoji-strip')
 } catch (err) {
@@ -127,13 +130,13 @@ export class chatgpt extends plugin {
       rule: [
         {
           /** 命令正则匹配 */
-          reg: '^#chat3[sS]*',
+          reg: `^(#)?${API3RulePrefix}[sS]*`,
           /** 执行方法 */
           fnc: 'chatgpt3'
         },
         {
           /** 命令正则匹配 */
-          reg: '^#chat1[sS]*',
+          reg: `^(#)?${APIRulePrefix}[sS]*`,
           /** 执行方法 */
           fnc: 'chatgpt1'
         },
@@ -151,7 +154,7 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
-          reg: '^#bing[sS]*',
+          reg: `^(#)?${BingRulePrefix}[sS]*`,
           /** 执行方法 */
           fnc: 'bing'
         },
@@ -1434,7 +1437,6 @@ async switch2Picture(e) {
       }
     }
   }
-
   async chatgpt1 (e) {
     if (!Config.allowOtherMode) {
       return false
@@ -1446,7 +1448,7 @@ async switch2Picture(e) {
       }
       return false
     }
-    let prompt = _.replace(e.raw_message.trimStart(), '#chat1', '').trim()
+    let prompt = _.replace(e.raw_message.trimStart(), `#${APIRulePrefix}`, '').trim()
     if (prompt.length === 0) {
       return false
     }
@@ -1465,7 +1467,7 @@ async switch2Picture(e) {
       }
       return false
     }
-    let prompt = _.replace(e.raw_message.trimStart(), '#chat3', '').trim()
+    let prompt = _.replace(e.raw_message.trimStart(), `#${API3RulePrefix}`, '').trim()
     if (prompt.length === 0) {
       return false
     }
@@ -1520,7 +1522,7 @@ async switch2Picture(e) {
       }
       return false
     }
-    let prompt = _.replace(e.raw_message.trimStart(), '#bing', '').trim()
+    let prompt = _.replace(e.raw_message.trimStart(), `#${BingRulePrefix}`, '').trim()
     if (prompt.length === 0) {
       return false
     }

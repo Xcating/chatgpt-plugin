@@ -61,7 +61,11 @@ export class Entertainment extends plugin {
         {
           reg: '^#url(：|:)',
           fnc: 'screenshotUrl'
-        }
+        },
+        {
+          reg: '^#测试打招呼',
+          fnc: 'testhello'
+        },
       ]
     })
     if(HelloCronX===""){
@@ -70,7 +74,7 @@ export class Entertainment extends plugin {
         cron: '0 ' + Math.ceil(Math.random() * 10) + ' 7-23/' + Config.helloInterval + ' * * ?',
         //cron: Config.HelloCron,
         name: 'ChatGPT主动随机说话',
-        fnc: this.sendRandomMessage.bind(this)
+        fnc: this.sendRandomMessage.bind(this,e)
       }
     ]
   }
@@ -80,12 +84,94 @@ export class Entertainment extends plugin {
           //cron: '0 ' + Math.ceil(Math.random() * 10) + ' 7-23/' + Config.helloInterval + ' * * ?',
           cron: Config.HelloCron,
           name: 'ChatGPT主动随机说话',
-          fnc: this.sendRandomMessage.bind(this)
+          fnc: this.sendRandomMessage.bind(this,e)
         }
       ]
     }
   }
-
+  async testhello (e) {
+    if (Config.debug) {
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), '开始处理：ChatGPT随机打招呼。')
+    }
+    //提示用户ChatGPT要开始打招呼
+    
+    let toSend = Config.initiativeChatGroups || []
+    for (const element of toSend) {
+      if (!element) {
+        continue
+      }
+      let groupId = parseInt(element)
+      if (Bot.getGroupList().get(groupId)) {
+        // 打招呼概率
+        if (Math.floor(Math.random() * 100) < Config.helloProbability) {
+          let message = await generateHello(e)
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `打招呼给群聊${groupId}：` + message)
+          if (Config.defaultUseTTS) {
+            let audio
+            const [defaultVitsTTSRole, defaultAzureTTSRole, defaultVoxTTSRole] = [Config.defaultTTSRole, Config.azureTTSSpeaker, Config.voicevoxTTSSpeaker]
+            let ttsSupportKinds = []
+            if (Config.azureTTSKey) ttsSupportKinds.push(1)
+            if (Config.ttsSpace) ttsSupportKinds.push(2)
+            if (Config.voicevoxSpace) ttsSupportKinds.push(3)
+            if (!ttsSupportKinds.length) {
+              logger.warn('没有配置任何语音服务！')
+              return false
+            }
+            const randomIndex = Math.floor(Math.random() * ttsSupportKinds.length)
+            switch (ttsSupportKinds[randomIndex]) {
+              case 1 : {
+                const isEn = AzureTTS.supportConfigurations.find(config => config.code === defaultAzureTTSRole)?.language.includes('en')
+                if (isEn) {
+                  message = (await translate(message, '英')).replace('\n', '')
+                }
+                audio = await AzureTTS.generateAudio(message, {
+                  defaultAzureTTSRole
+                })
+                break
+              }
+              case 2 : {
+                if (Config.autoJapanese) {
+                  try {
+                    message = await translate(message, '日')
+                  } catch (err) {
+                    logger.error(err)
+                  }
+                }
+                try {
+                  audio = await generateVitsAudio(message, defaultVitsTTSRole, '中日混合（中文用[ZH][ZH]包裹起来，日文用[JA][JA]包裹起来）')
+                } catch (err) {
+                  logger.error(err)
+                }
+                break
+              }
+              case 3 : {
+                message = (await translate(message, '日')).replace('\n', '')
+                try {
+                  audio = await VoiceVoxTTS.generateAudio(message, {
+                    speaker: defaultVoxTTSRole
+                  })
+                } catch (err) {
+                  logger.error(err)
+                }
+                break
+              }
+            }
+            if (useSilk) {
+              await Bot.sendGroupMsg(groupId, await uploadRecord(audio))
+            } else {
+              await Bot.sendGroupMsg(groupId, segment.record(audio))
+            }
+          } else {
+            await Bot.sendGroupMsg(groupId, message)
+          }
+        } else {
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `时机未到，这次就不打招呼给群聊${groupId}了`)
+        }
+      } else {
+        logger.warn('机器人不在要发送的群组里，忽略群。同时建议检查配置文件修改要打招呼的群号。' + groupId)
+      }
+    }
+  }
   async ocr (e) {
     let replyMsg
     let imgOcrText = await getImageOcrText(e)
@@ -327,7 +413,7 @@ ${translateLangLabels}
     }
   }
 
-  async sendRandomMessage () {
+  async sendRandomMessage (e) {
     if (Config.debug) {
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), '开始处理：ChatGPT随机打招呼。')
     }
@@ -342,7 +428,7 @@ ${translateLangLabels}
       if (Bot.getGroupList().get(groupId)) {
         // 打招呼概率
         if (Math.floor(Math.random() * 100) < Config.helloProbability) {
-          let message = await generateHello()
+          let message = await generateHello(e)
           logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[小功能]`), logger.red(`[打招呼]`), `打招呼给群聊${groupId}：` + message)
           if (Config.defaultUseTTS) {
             let audio

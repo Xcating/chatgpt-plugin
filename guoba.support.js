@@ -285,6 +285,28 @@ export function supportGuoba () {
           }
         },
         {
+          label: '以下为前缀配置',
+          component: 'SayHello'
+        },
+        {
+          field: 'BingRulePrefix',
+          label: '必应回答前缀',
+          bottomHelpMessage: '配置完需要重启，默认为bing',
+          component: 'Input'
+        },
+        {
+          field: 'APIRulePrefix',
+          label: 'API回答前缀',
+          bottomHelpMessage: '配置完需要重启，默认为chat1',
+          component: 'Input'
+        },
+        {
+          field: 'API3RulePrefix',
+          label: 'API3回答前缀',
+          bottomHelpMessage: '配置完需要重启，默认为chat3',
+          component: 'Input'
+        },
+        {
           label: '以下为服务超时配置。',
           component: 'SayHello'
         },
