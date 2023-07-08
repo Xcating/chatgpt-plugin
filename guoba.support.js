@@ -315,7 +315,6 @@ export function supportGuoba () {
           label: '打招呼自设定Cron',
           bottomHelpMessage: '大招呼自设定Cron，可不配置，不配置将使用下一条的招呼间隔配置',
           component: 'Input',
-          required: true,
           componentProps: {
             placeholder: '请输入定时表达式',
           },
