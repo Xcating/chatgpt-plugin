@@ -12,7 +12,7 @@ import { translate, translateLangSupports } from '../utils/translate.js'
 import AzureTTS from '../utils/tts/microsoft-azure.js'
 import VoiceVoxTTS from '../utils/tts/voicevox.js'
 import { URL } from 'node:url'
-
+let HelloCronX = Config.HelloCron
 let useSilk = false
 try {
   await import('node-silk')
@@ -64,15 +64,28 @@ export class Entertainment extends plugin {
         }
       ]
     })
+    if(HelloCronX===""){
     this.task = [
       {
-        // 设置十分钟左右的浮动
+        
         cron: '0 ' + Math.ceil(Math.random() * 10) + ' 7-23/' + Config.helloInterval + ' * * ?',
-        // cron: '*/2 * * * *',
+        //cron: Config.HelloCron,
         name: 'ChatGPT主动随机说话',
         fnc: this.sendRandomMessage.bind(this)
       }
     ]
+  }
+    else {
+      this.task = [
+        {
+          
+          //cron: '0 ' + Math.ceil(Math.random() * 10) + ' 7-23/' + Config.helloInterval + ' * * ?',
+          cron: Config.HelloCron,
+          name: 'ChatGPT主动随机说话',
+          fnc: this.sendRandomMessage.bind(this)
+        }
+      ]
+    }
   }
 
   async ocr (e) {

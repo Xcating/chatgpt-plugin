@@ -275,6 +275,61 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'chromeTimeoutMS',
+          label: '浏览器超时时间',
+          helpMessage: '单位：毫秒',
+          bottomHelpMessage: '浏览器默认超时，浏览器可能需要更高的超时时间',
+          component: 'InputNumber',
+          componentProps: {
+            min: 0
+          }
+        },
+        {
+          label: '以下为服务超时配置。',
+          component: 'SayHello'
+        },
+        {
+          field: 'HelloCron',
+          label: '打招呼自设定Cron',
+          bottomHelpMessage: '大招呼自设定Cron，可不配置，不配置将使用下一条的招呼间隔配置',
+          component: 'Input',
+          required: true,
+          componentProps: {
+            placeholder: '请输入定时表达式',
+          },
+        },
+        {
+          field: 'helloInterval',
+          label: '打招呼间隔(小时)',
+          component: 'InputNumber',
+          componentProps: {
+            min: 1,
+            max: 24
+          }
+        },
+        {
+          field: 'initiativeChatGroups',
+          label: '主动发起聊天群聊的群号',
+          bottomHelpMessage: '在这些群聊里会不定时主动说一些随机的打招呼的话，用英文逗号隔开。必须配置了OpenAI Key',
+          component: 'Input'
+        },
+        {
+          field: 'helloPrompt',
+          label: '打招呼prompt',
+          bottomHelpMessage: '将会用这段文字询问ChatGPT，由ChatGPT给出随机的打招呼文字',
+          component: 'Input'
+        },
+        {
+          field: 'helloProbability',
+          label: '打招呼的触发概率(%)',
+          bottomHelpMessage: '设置为100则每次经过间隔时间必定触发主动打招呼事件。',
+          component: 'InputNumber',
+          componentProps: {
+            min: 0,
+            max: 100
+          }
+        },
+        {
           label: '以下为服务超时配置。',
           component: 'Divider'
         },
@@ -727,37 +782,6 @@ export function supportGuoba () {
           componentProps: {
             min: 0,
             max: 2
-          }
-        },
-        {
-          field: 'initiativeChatGroups',
-          label: '主动发起聊天群聊的群号',
-          bottomHelpMessage: '在这些群聊里会不定时主动说一些随机的打招呼的话，用英文逗号隔开。必须配置了OpenAI Key',
-          component: 'Input'
-        },
-        {
-          field: 'helloPrompt',
-          label: '打招呼prompt',
-          bottomHelpMessage: '将会用这段文字询问ChatGPT，由ChatGPT给出随机的打招呼文字',
-          component: 'Input'
-        },
-        {
-          field: 'helloInterval',
-          label: '打招呼间隔(小时)',
-          component: 'InputNumber',
-          componentProps: {
-            min: 1,
-            max: 24
-          }
-        },
-        {
-          field: 'helloProbability',
-          label: '打招呼的触发概率(%)',
-          bottomHelpMessage: '设置为100则每次经过间隔时间必定触发主动打招呼事件。',
-          component: 'InputNumber',
-          componentProps: {
-            min: 0,
-            max: 100
           }
         },
         {
