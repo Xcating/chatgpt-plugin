@@ -357,7 +357,7 @@ export class help extends plugin {
 
   async help (e) {
     if (Config.newhelp && !Config.oldview) { 
-      await renderUrl(e, `http://127.0.0.1:${Config.serverPort || 3321}/help/`, { Viewport: { width: 800, height: 600 } }) 
+      await renderUrl(e, `http://127.0.0.1:${Config.serverPort || 3321}/help/`, { Viewport: { width: 1600, height: 800 } }) 
     } else {
       await render(e, 'chatgpt-plugin', 'help/index', { helpData, version }) 
     }

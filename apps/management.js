@@ -9,7 +9,8 @@ import {
   getVoicevoxRoleList,
   makeForwardMsg,
   parseDuration,
-  renderUrl
+  renderUrl,
+  replaceWithAsterisks
 } from '../utils/common.js'
 import SydneyAIClient from '../utils/SydneyAIClient.js'
 import { convertSpeaker, speakers as vitsRoleList } from '../utils/tts.js'
@@ -273,8 +274,42 @@ export class ChatgptManagement extends plugin {
           fnc: 'ExprotMoji',
           permission: 'master'
         },
+        {
+          reg: '^#chatgpt(查看|预览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?',
+          fnc: 'ModelView',
+          permission: 'master'
+        }
       ]
     })
+  }
+  async ModelView (e){
+    const apiUrl = Config.openAiBaseUrl + '/models'; 
+    const protectiveUrl = replaceWithAsterisks(apiUrl);
+    let messages = [`以下为 ${protectiveUrl} 的模型信息：`]
+    fetch(apiUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Config.apiKey}`
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const models = data.data; // 获取所有的models
+      // 遍历每个model并存储到messages数组中
+      models.forEach((model, index) => {
+        const message = `${index + 1}. 模型名称: ${model.id}, 最大Tokens: ${model.tokens} ,限制：${model.limits}, 访问点：${model.endpoints}, 外号：${model.name}`;
+        messages.push(message);
+        if(Config.debug)
+        {
+          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`), model)
+        }
+      });
+      e.reply(makeForwardMsg(this.e, messages,`模型信息`))
+    })
+    .catch(error => {
+      // 处理错误
+      e.reply('读取模型列表时发生错误：' + error);
+    });
   }
   async ExrateMsg (e){
     if(e.msg.match(/(开|开启|打开)/)){

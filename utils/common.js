@@ -410,7 +410,17 @@ export async function renderUrl (e, url, renderCfg = {}) {
   }
   return renderCfg.retType === 'msgId' ? ret : true
 }
-
+export function replaceWithAsterisks(str) {
+  if (str.length <= 10) {
+    return '*'.repeat(str.length);
+  }
+  
+  const prefix = '*'.repeat(5);
+  const suffix = '*'.repeat(5);
+  const middle = '*'.repeat(str.length - 10);
+  
+  return str.slice(0, 5) + middle + str.slice(-5);
+}
 export function getDefaultReplySetting () {
   return {
     usePicture: Config.defaultUsePicture,
