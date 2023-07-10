@@ -297,7 +297,7 @@ export class ChatgptManagement extends plugin {
       const models = data.data; // 获取所有的models
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
-        const message = `${index + 1}. 模型名称: ${model.id}, 所有者: ${model.owned_by} ,创建时间戳：${model.created}`
+        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}\n创建时间戳：${model.created}`
         messages.push(message)
         if(Config.debug)
         {
