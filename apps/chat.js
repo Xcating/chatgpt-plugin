@@ -2213,12 +2213,19 @@ async switch2Picture(e) {
             serpTool,
             //new QueryUserinfoTool()
           ]
-          try {
-            await import('../../avocado-plugin/apps/avocado.js')
-            tools.push(...[new EliMusicTool(), new EliMovieTool()])
-          } catch (err) {
+          if(Config.UseEli) {
+            try {
+              await import('../../avocado-plugin/apps/avocado.js')
+              tools.push(...[new EliMusicTool(), new EliMovieTool()])
+              logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[工具]`), '勾选使用鳄梨工具，请确保你下载了鳄梨工具')
+            }
+            catch (err) {
+              logger.mark(logger.green('avocado-plugin (鳄梨酱插件) 未安装') + '，安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
+            }
+          } 
+          else {
             tools.push(...[new SendMusicTool(), new SearchMusicTool()])
-            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[工具]`), '【ChatGPT-Plugin】avocado-plugin未安装，安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
+            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[工具]`), '未勾选使用鳄梨工具')
           }
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)

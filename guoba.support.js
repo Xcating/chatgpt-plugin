@@ -407,6 +407,12 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'UseEli',
+          label: '智能模式鳄梨工具',
+          bottomHelpMessage: '选择是否使用鳄梨类工具，搜歌/影视等其他功能',
+          component: 'witch'
+        },
+        {
           field: 'ExrateMsg',
           label: '分段发送',
           bottomHelpMessage: '分割句号和问号分段输出消息',
