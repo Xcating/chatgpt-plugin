@@ -45,7 +45,6 @@ import { getPromptByName } from '../utils/prompts.js'
 import BingDrawClient from '../utils/BingDraw.js'
 import XinghuoClient from '../utils/xinghuo/xinghuo.js'
 import { JinyanTool } from '../utils/tools/JinyanTool.js'
-import { SendMusicTool } from '../utils/tools/SendMusicTool.js'
 import { SendVideoTool } from '../utils/tools/SendBilibiliTool.js'
 import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { EditCardTool } from '../utils/tools/EditCardTool.js'
@@ -64,13 +63,14 @@ import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
-import { SendAvatarTool } from '../utils/tools/SendAvatarTool.js'
+import { QueryUserinfoTool } from '../utils/tools/QueryUserinfoTool.js'
 import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
 import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
-import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
+import { SendMusicTool } from '../utils/tools/SendMusicTool.js'
 import { SendDiceTool } from '../utils/tools/SendDiceTool.js'
+import { SendAvatarTool } from '../utils/tools/SendAvatarTool.js'
+import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
-//import { QueryUserinfoTool } from "../utils/tools/QueryUserinfoTool.js";
 let checkNumber
 const BingRulePrefix = Config.BingRulePrefix
 const APIRulePrefix = Config.APIRulePrefix
@@ -2211,7 +2211,7 @@ async switch2Picture(e) {
             new APTool(),
             // new HandleMessageMsgTool(),
             serpTool,
-            new QueryUserinfoTool()
+            //new QueryUserinfoTool()
           ]
           try {
             await import('../../avocado-plugin/apps/avocado.js')
