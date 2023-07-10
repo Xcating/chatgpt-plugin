@@ -2168,70 +2168,64 @@ async switch2Picture(e) {
             new EditCardTool(),
             new QueryStarRailTool(),
             new WebsiteTool(),
-            new SendAvatarTool(),
             new JinyanTool(),
             new KickOutTool(),
             new WeatherTool(),
             new SendPictureTool(),
             new SendVideoTool(),
-            new SearchMusicTool(),
-            new SendMusicTool(),
             new ImageCaptionTool(),
             new SearchVideoTool(),
+            new SendAvatarTool(),
             new SerpImageTool(),
+            new SearchMusicTool(),
+            new SendMusicTool(),
             new SerpIkechan8370Tool(),
             new SerpTool(),
             new SendAudioMessageTool(),
             new ProcessPictureTool(),
             new APTool(),
-            new QueryGenshinTool(),
-            new SetTitleTool(),
-            //new EliMusicTool(),
-            //new EliMovieTool(),
             new HandleMessageMsgTool(),
-            //new QueryUserinfoTool()
+            new QueryUserinfoTool(),
+            new EliMusicTool(),
+            new EliMovieTool(),
             new SendMessageToSpecificGroupOrUserTool(),
             new SendDiceTool(),
+            new QueryGenshinTool(),
+            new SetTitleTool()
           ]
           // todo 3.0再重构tool的插拔和管理
           let tools = [
             new SendAvatarTool(),
             new SendDiceTool(),
-            //new SendMessageToSpecificGroupOrUserTool(),
-            new EditCardTool(),
+            new SendMessageToSpecificGroupOrUserTool(),
+            // new EditCardTool(),
             new QueryStarRailTool(),
             new QueryGenshinTool(),
+            new ProcessPictureTool(),
             new WebsiteTool(),
-            new JinyanTool(),
-            new SearchMusicTool(),
-            new SendMusicTool(),
+            // new JinyanTool(),
             // new KickOutTool(),
             new WeatherTool(),
             new SendPictureTool(),
             new SendAudioMessageTool(),
             new APTool(),
-            //new EliMusicTool(),
-            //new EliMovieTool(),
-            new HandleMessageMsgTool(),
+            // new HandleMessageMsgTool(),
             serpTool,
-            new SetTitleTool()
-            //new QueryUserinfoTool()
+            new QueryUserinfoTool()
           ]
-          ///
-          //try {
-          //  await import('../../avocado-plugin/apps/avocado.js')
-          //  tools.push(...[, ])
-          //} catch (err) {
-          //  //tools.push(...[new SendMusicTool(), new SearchMusicTool()])
-          //  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[Tools]`),'【🥑ChatGPT-Plugin🥑】🥑插件🥑avocado-plugin🥑未安装' + '，🥑安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
-          //}
+          try {
+            await import('../../avocado-plugin/apps/avocado.js')
+            tools.push(...[new EliMusicTool(), new EliMovieTool()])
+          } catch (err) {
+            tools.push(...[new SendMusicTool(), new SearchMusicTool()])
+            logger.mark(logger.green('【ChatGPT-Plugin】插件avocado-plugin未安装') + '，安装后可查看最近热映电影与体验可玩性更高的点歌工具。\n可前往 https://github.com/Qz-Sean/avocado-plugin 获取')
+          }
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(e.group_id, Bot.uin, true)
             if (botInfo.role !== 'member') {
               // 管理员才给这些工具
-              tools.push(...[new KickOutTool(), new HandleMessageMsgTool()])
+              tools.push(...[new EditCardTool(), new JinyanTool(), new KickOutTool(), new HandleMessageMsgTool(), new SetTitleTool()])
               // 用于撤回和加精的id
-
               if (e.source?.seq) {
                 let source = (await e.group.getChatHistory(e.source?.seq, 1)).pop()
                 option.systemMessage += `\nthe last message is replying to ${source.message_id}"\n`
@@ -2268,38 +2262,42 @@ async switch2Picture(e) {
           } else {
             tools.push(new SerpImageTool())
             tools.push(...[new SearchVideoTool(),
-              new SendVideoTool(),
-              new SearchMusicTool(),
-              new SendMusicTool()])
+              new SendVideoTool()])
           }
-          // if (e.sender.role === 'admin' || e.sender.role === 'owner') {
-          //   tools.push(...[new JinyanTool(), new KickOutTool()])
-          // }
-            let funcMap = {}
-            let fullFuncMap = {}
-            tools.forEach(tool => {
-              funcMap[tool.name] = {
-                function: tool.function()
-              }
-            })
-            fullTools.forEach(tool => {
-              fullFuncMap[tool.name] = {
-                exec: tool.func,
-                function: tool.function()
-              }
-            })
-            if (!option.completionParams) {
-              option.completionParams = {}
+          let funcMap = {}
+          let fullFuncMap = {}
+          tools.forEach(tool => {
+            funcMap[tool.name] = {
+              exec: tool.func,
+              function: tool.function()
             }
-            option.completionParams.functions = Object.keys(funcMap).map(k => funcMap[k].function)
-           
+          })
+          fullTools.forEach(tool => {
+            fullFuncMap[tool.name] = {
+              exec: tool.func,
+              function: tool.function()
+            }
+          })
+          if (!option.completionParams) {
+            option.completionParams = {}
+          }
+          option.completionParams.functions = Object.keys(funcMap).map(k => funcMap[k].function)
           let msg
           try {
             msg = await this.chatGPTApi.sendMessage(prompt, option)
-            logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[API]`),msg)
+            logger.info(msg)
             while (msg.functionCall) {
               let { name, arguments: args } = msg.functionCall
               args = JSON.parse(args)
+              // 感觉换成targetGroupIdOrUserQQNumber这种表意比较清楚的变量名，效果会好一丢丢
+              if (!args.groupId) {
+                args.groupId = e.group_id + '' || e.sender.user_id + ''
+              }
+              try {
+                parseInt(args.groupId)
+              } catch (err) {
+                args.groupId = e.group_id + '' || e.sender.user_id + ''
+              }
               let functionResult = await fullFuncMap[name].exec(Object.assign({ isAdmin, sender }, args), e)
               logger.mark(`function ${name} execution result: ${functionResult}`)
               option.parentMessageId = msg.id
@@ -2307,7 +2305,7 @@ async switch2Picture(e) {
               // 不然普通用户可能会被openai限速
               await delay(300)
               msg = await this.chatGPTApi.sendMessage(functionResult, option, 'function')
-              logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[API]`),msg)
+              logger.info(msg)
             }
           } catch (err) {
             if (err.message?.indexOf('context_length_exceeded') > 0) {
