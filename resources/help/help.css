@@ -1,6 +1,6 @@
 :root {
-  --gradient-text-color: linear-gradient(120deg, #d51a2f, #0cacaa);
-  --gradient-text-color-2: linear-gradient(120deg,#0cacaa , #d51a2f);
+  --gradient-text-color: linear-gradient(120deg, #1a2dd5, #ac0c0c);
+  --gradient-text-color-2: linear-gradient(120deg, #1a2dd5, #ac0c0c);
   ;
 }
 * {
@@ -28,18 +28,12 @@ body {
 .head-box {
   margin: 60px 0 0 0;
   padding-bottom: 0;
-  background-image: var(--gradient-text-color);
-  color: var(--gradient-text-color);
 }
 .head_box .id_text {
   font-size: 24px;
-  background-image: var(--gradient-text-color);
-  color: var(--gradient-text-color);
 }
 .head_box .day_text {
   font-size: 20px;
-  background-image: var(--gradient-text-color);
-  color: var(--gradient-text-color);
 }
 .head_box .chatgpt_logo {
   position: absolute;
@@ -123,7 +117,6 @@ body {
   width: 430px;
   display: flex;
   align-items: center;
-  background: #f1f1f1;
   padding: 8px 6px 8px 6px;
   border-radius: 8px;
   margin: 0 0px 10px 10px;
