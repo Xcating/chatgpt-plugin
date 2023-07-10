@@ -2134,7 +2134,7 @@ async switch2Picture(e) {
           stream: true,
           onProgress: (data) => {
             if (Config.debug) {
-              logger.info(data?.text || data.functionCall || data)
+              logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[调试流信息]`), data?.text || data.functionCall || data)
             }
           }
         }
