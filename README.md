@@ -25,22 +25,7 @@
 [🥑原作者🥑](https://github.com/ikechan8370)
 [🥑鳄梨API3反代🥑](https://github.com/ikechan8370/node-chatgpt-proxy)
 [🥑云崽memes插件🥑](https://github.com/ikechan8370/yunzai-meme)
-## 😍特点
 
-* 支持单人连续对话Conversation
-* API模式下，使用 gpt-3.5-turbo 或 gpt-4 API 或转发/反代支持的其他模型，仅需OpenAI Api Key，开箱即用。**注意收费**
-* 支持问答图片截图和聊天记录导出
-* 支持AI性格调教，角色扮演强烈推荐Bing自定义模式
-* 支持对接vits和Azure等回答直接转语音
-* API3模式下，绕过Cloudflare防护直接访问ChatGPT的SSE API，与官网体验一致，且保留对话记录，在官网可查。免费。
-* (已不再维护)提供基于浏览器的解决方案作为备选，API3不可用的情况下或担心账户安全的用户可以选择使用浏览器模式。
-* 支持新[必应](https://www.bing.com/new)（token负载均衡，限流降级）
-* 2023-03-15 API3支持GPT-4尝鲜，需要Plus用户 (被和谐)
-* 支持[ChatGLM](https://github.com/THUDM/ChatGLM-6B)模型。基于[自建API](https://github.com/ikechan8370/SimpleChatGLM6BAPI)
-* 2023-04-15 支持[Claude by Slack](https://www.anthropic.com/claude-in-slack )和Poe（应该已经坏掉了）。Claude配置参考[这里](https://ikechan8370.com/archives/chatgpt-plugin-for-yunzaipei-zhi-slack-claude)
-* 2023-05-12 支持星火大模型
-* 2023-05-29 支持gpt-4 API.必应无需cookie即可对话（Sydney和自设定模式）
-* 2023-07 支持智能模式，机器人可以实现禁言、群名片/头衔（需给机器人管理员/群主）、分享音乐视频、主动发音频、对接ap,sr和喵喵等插件、联网搜索等，需api模式0613系列模型。智能模式所需的额外api和搜索api分别可以参考[chatgpt-plugin-extras](https://github.com/ikechan8370/chatgpt-plugin-extras) 和 [search-api](https://github.com/ikechan8370/search-api) 自行搭建，其中后者提供了一个公益版本，前者可使用[huggingface](https://huggingface.co/spaces/ikechan8370/cp-extra)部署
 ### 🥵如果觉得这个插件有趣或者对你有帮助，请给源项目点一个star吧！
 
 ## 🤗版本要求
@@ -104,6 +89,24 @@ pnpm i
 
 ---
 
+## 😍特点
+
+* 支持单人连续对话Conversation
+* API模式下，使用 gpt-3.5-turbo 或 gpt-4 API 或转发/反代支持的其他模型，仅需OpenAI Api Key，开箱即用。**注意收费**
+* 支持问答图片截图和聊天记录导出
+* 支持AI性格调教，角色扮演强烈推荐Bing自定义模式
+* 支持对接vits和Azure等回答直接转语音
+* API3模式下，绕过Cloudflare防护直接访问ChatGPT的SSE API，与官网体验一致，且保留对话记录，在官网可查。免费。
+* (已不再维护)提供基于浏览器的解决方案作为备选，API3不可用的情况下或担心账户安全的用户可以选择使用浏览器模式。
+* 支持新[必应](https://www.bing.com/new)（token负载均衡，限流降级）
+* 2023-03-15 API3支持GPT-4尝鲜，需要Plus用户 (被和谐)
+* 支持[ChatGLM](https://github.com/THUDM/ChatGLM-6B)模型。基于[自建API](https://github.com/ikechan8370/SimpleChatGLM6BAPI)
+* 2023-04-15 支持[Claude by Slack](https://www.anthropic.com/claude-in-slack )和Poe（应该已经坏掉了）。Claude配置参考[这里](https://ikechan8370.com/archives/chatgpt-plugin-for-yunzaipei-zhi-slack-claude)
+* 2023-05-12 支持星火大模型
+* 2023-05-29 支持gpt-4 API.必应无需cookie即可对话（Sydney和自设定模式）
+* 2023-07 支持智能模式，机器人可以实现禁言、群名片/头衔（需给机器人管理员/群主）、分享音乐视频、主动发音频、对接ap,sr和喵喵等插件、联网搜索等，需api模式0613系列模型。智能模式所需的额外api和搜索api分别可以参考[chatgpt-plugin-extras](https://github.com/ikechan8370/chatgpt-plugin-extras) 和 [search-api](https://github.com/ikechan8370/search-api) 自行搭建，其中后者提供了一个公益版本，前者可使用[huggingface](https://huggingface.co/spaces/ikechan8370/cp-extra)部署
+
+---
 ### 相关配置
 
 #### 配置文件相关
