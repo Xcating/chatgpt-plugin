@@ -2130,8 +2130,13 @@ async switch2Picture(e) {
         this.chatGPTApi = new ChatGPTAPI(opts)
         let option = {
           timeoutMs: 120000,
-          completionParams
-          // systemMessage: promptPrefix
+          completionParams,
+          stream: true,
+          onProgress: (data) => {
+            if (Config.debug) {
+              logger.info(data?.text || data.functionCall || data)
+            }
+          }
         }
         option.systemMessage = system
         if (conversation) {

@@ -27,8 +27,8 @@ export class EliMovieTool extends AbstractTool {
     let avocado
     try {
     // eslint-disable-next-line camelcase
-      let { AvocadoMovie } = await import('../../../avocado-plugin/apps/avocadoMovie.js')
-      avocado = new AvocadoMovie(e)
+      let { AvocadoRuleALL } = await import('../../../avocado-plugin/apps/avocado.js')
+      avocado = new AvocadoRuleALL(e)
     } catch (err1) {
       return 'the user didn\'t install avocado-plugin. suggest him to install'
     }
