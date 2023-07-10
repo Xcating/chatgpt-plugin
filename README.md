@@ -16,7 +16,7 @@
 ### 🥹推荐的相关文档和参考资料
 🥑本README
 [手册|文档](https://chatgptplugin.ikechan8370.com/)
-[插件常见问题（鹤望兰版）](https://www.wolai.com/4FCxxWAdjbrHF29MCJmAQK) 
+[插件常见问题](https://chatgptplugin.ikechan8370.com/guide) 
 [Yunzai常见问题（LUCK小运版）](https://www.wolai.com/oA43vuW71aBnv7UsEysn4T) 
 [憨憨博客](https://blog.hanhanz.top/)
 
