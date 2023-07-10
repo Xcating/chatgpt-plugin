@@ -286,7 +286,6 @@ export class ChatgptManagement extends plugin {
     const apiUrl = Config.openAiBaseUrl + '/models'; 
     const protectiveUrl = replaceWithAsterisks(apiUrl);
     let messages = [`以下为 ${protectiveUrl} 的模型信息：`]
-    const message = ``
     fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -298,12 +297,7 @@ export class ChatgptManagement extends plugin {
       const models = data.data; // 获取所有的models
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
-        if(model.tokens===undefined){
-          message = `${index + 1}. 模型名称: ${model.id}, 所有者: ${model.owned_by} ,权限：${model.permission} ,创建时间戳：${model.created}`
-        }
-        else{
-          message = `${index + 1}. 模型名称: ${model.id}, 最大Tokens: ${model.tokens} ,限制：${model.limits}, 访问点：${model.endpoints}, 外号：${model.name}`
-        }
+        const message = `${index + 1}. 模型名称: ${model.id}, 所有者: ${model.owned_by} ,权限：${model.permission} ,创建时间戳：${model.created}`
         messages.push(message)
         if(Config.debug)
         {
