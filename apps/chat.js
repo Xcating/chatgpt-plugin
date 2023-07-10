@@ -2185,7 +2185,7 @@ async switch2Picture(e) {
             new ProcessPictureTool(),
             new APTool(),
             new HandleMessageMsgTool(),
-            new QueryUserinfoTool(),
+            //new QueryUserinfoTool(),
             new EliMusicTool(),
             new EliMovieTool(),
             new SendMessageToSpecificGroupOrUserTool(),
