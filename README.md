@@ -48,7 +48,6 @@ Node.js >= 18 / Node.js >= 14(with node-fetch)
 小白尽可能使用18版本以上的nodejs
 
 ## 💎安装与使用方法
-
 ### 🤖安装
 
 在安装之前，请先判断自己需要使用哪种模式，本插件支持官方API/第三方API/~~浏览器~~/必应四种模式。也可以选择**我全都要**(通过qq发送命令`#chatgpt切换浏览器/API/API3/Bing`实时切换)
@@ -88,9 +87,7 @@ pnpm i
 3. 修改配置
 **本插件配置项比较多，强烈建议使用后台面板或[锅巴面板](https://github.com/guoba-yunzai/Guoba-Plugin)修改**
 
-   复制`plugins/chatgpt-plugin/config/config.example.json`并将其改名为`config.json`\
-   编辑`plugins/chatgpt-plugin/config/config.json`文件，修改必要配置项 \
-   **请勿直接修改config.example.json**
+   插件第一次启动时会自动生成config.json，请在config.json内修改配置，或者使用锅巴面板修改
 
 4. 后台面板使用
    初次使用请先私聊机器人 `#设置管理密码` 进登录密码设置
