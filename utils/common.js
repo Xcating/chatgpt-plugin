@@ -411,15 +411,12 @@ export async function renderUrl (e, url, renderCfg = {}) {
   return renderCfg.retType === 'msgId' ? ret : true
 }
 export function replaceWithAsterisks(str) {
-  if (str.length <= 10) {
-    return '*'.repeat(str.length);
-  }
   
-  const prefix = '*'.repeat(5);
-  const suffix = '*'.repeat(5);
-  const middle = '*'.repeat(str.length - 10);
+  const prefix = '*'.repeat(10);
+  const suffix = '*'.repeat(10);
+  const middle = '*'.repeat(str.length - 20);
   
-  return str.slice(0, 5) + middle + str.slice(-5);
+  return str.slice(0, 10) + middle + str.slice(-10);
 }
 export function getDefaultReplySetting () {
   return {
