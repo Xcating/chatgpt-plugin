@@ -285,7 +285,7 @@ export class ChatgptManagement extends plugin {
   async ModelView (e){
     const apiUrl = Config.openAiBaseUrl + '/models'; 
     const protectiveUrl = replaceWithAsterisks(Config.openAiBaseUrl);
-    let messages = [`以下为 链接为：${protectiveUrl} 的模型信息：`]
+    let messages = [`以下为 APIURL为[${protectiveUrl}] 的模型信息：`]
     fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -295,9 +295,11 @@ export class ChatgptManagement extends plugin {
     .then(response => response.json())
     .then(data => {
       const models = data.data; // 获取所有的models
+      const totalModels = models.length; // 模型总数
+      messages.push("API模型总数: " + totalModels)
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
-        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}\n创建时间戳：${model.created}`
+        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}\n时间戳：${model.created}`
         messages.push(message)
         if(Config.debug)
         {
