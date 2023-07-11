@@ -300,7 +300,7 @@ export class ChatgptManagement extends plugin {
       messages.push(`API可用模型总数: ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
-        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}\n快捷切换：#chatgpt切换模型${model.id}`
+        const message = `${index + 1}. 模型名称: ${model.id}\n模型所有者: ${model.owned_by}\n快捷切换模型：#chatgpt切换模型${model.id}`
         messages.push(message)
         if(Config.debug)
         {
