@@ -85,7 +85,7 @@ export class checkDependencies extends plugin {
   }
   async installDependencies(e) {
     if (e.msg.match("强制")) {
-      e.reply(`正在为您安装依赖，请稍等...`);
+      e.reply(`正在为您安装依赖，请稍等...您需要等待大约5~10分钟时间完成依赖安装，不用着急，安装过程无提示，请耐心等待`);
       let { error, stdout, stderr } = await this.execSync(
         `cd ./plugins/chatgpt-plugin && pnpm install -P`
       );
