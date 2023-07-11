@@ -255,7 +255,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用|设置)模型.*$',
+          reg: '^#chatgpt(切换|使用|设置)模型([\\s\\S]*)$', //^#chatgpt(切换|使用|设置)模型.*$
           fnc: 'settingModel',
           permission: 'master'
         },
@@ -285,7 +285,7 @@ export class ChatgptManagement extends plugin {
   async ModelView (e){
     const apiUrl = Config.openAiBaseUrl + '/models'; 
     const protectiveUrl = replaceWithAsterisks(Config.openAiBaseUrl);
-    let messages = [`以下为模型信息：`]
+    let messages = [`以下为API可用模型信息：`]
     fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -300,7 +300,7 @@ export class ChatgptManagement extends plugin {
       messages.push(`API可用模型总数: ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
-        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}`
+        const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}\n快捷切换：#chatgpt切换模型${model.id}`
         messages.push(message)
         if(Config.debug)
         {
@@ -355,38 +355,45 @@ export class ChatgptManagement extends plugin {
     logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换API预设反代')
   }
   async settingModel (e){
-    if(e.msg.match(/(gpt-3.5-16k|gpt3.5-16k|gpt-3.516k|gpt3.516k|GPT3.5-16k|GPT-3.5-16k)/)){
-      await this.reply('切换GPT-3.5-16k模型成功', true)
-      Config.model='gpt-3.5-turbo-16k'
-    }
-    else if(e.msg.match(/(gpt-3.5|gpt3.5|GPT3.5|GPT-3.5)/)){
-      Config.model='gpt-3.5-turbo-0613'
-      await this.reply('切换GPT-3.5模型成功', true)
-    }
-    else if(e.msg.match(/(gpt-4-32k|gpt4-32k|GPT4-32k|GPT-4-32k)/)){
-      Config.model='gpt-4-32k'
-      await this.reply('切换GPT-4-32k模型成功', true)
-    }
-    else if(e.msg.match(/(gpt-4|gpt4|GPT4|GPT-4)/)){
-      Config.model='gpt-4'
-      await this.reply('切换GPT-4模型成功', true)
-    }
-    else {
-      this.setContext('settingModels')
-      await this.reply('你没有指定模型，请发送要切换的模型', true)
-    }
-    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[模型]`), e.msg)
+      let modelX=e.raw_message.trim()
+      modelX = modelX.replace(`#chatgpt切换模型`, '').trim()
+      modelX = modelX.replace(`#chatgpt使用模型`, '').trim()
+      modelX = modelX.replace(`#chatgpt设置模型`, '').trim()
+      modelX = modelX.replace(`喵喵`, '').trim()
+      let mm = await this.e.group.getMemberMap()
+      let me = mm.get(Bot.uin)
+      let card = me.card
+      let nickname = me.nickname
+      if (nickname && card) {
+        if (nickname.startsWith(card)) {
+          // 例如nickname是"滚筒洗衣机"，card是"滚筒"
+          modelX = modelX.replace(`@${nickname}`, '').trim()
+        } else if (card.startsWith(nickname)) {
+          // 例如nickname是"十二"，card是"十二｜本月已发送1000条消息"
+          modelX = modelX.replace(`@${card}`, '').trim()
+          // 如果是好友，显示的还是昵称
+          modelX = modelX.replace(`@${nickname}`, '').trim()
+        } else {
+          // 互不包含，分别替换
+          if (nickname) {
+            modelX = modelX.replace(`@${nickname}`, '').trim()
+          }
+          if (card) {
+            modelX = modelX.replace(`@${card}`, '').trim()
+          }
+        }
+      } else if (nickname) {
+        modelX = modelX.replace(`@${nickname}`, '').trim()
+      } else if (card) {
+        modelX = modelX.replace(`@${card}`, '').trim()
+      }
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[切换模型]`), '要切换的目标模型:' + modelX)
+      Config.model=modelX
+      await this.reply('切换模型'+ modelX +'成功', true)
+      return
+      //this.setContext('settingModels')
+      //await this.reply('你没有指定模型，请发送要切换的模型', true)
     return false
-  }
-  async settingModels () {
-    let Targetmodel = this.e.msg
-    Config.model=Targetmodel
-    if(Config.debug){
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[模型]`), '切换的目标模型:'+Targetmodel)
-    }
-    await this.reply('切换成功', true)
-    this.finish('settingModels')
-    return
   }
   async viewUserSetting (e) {
     const userSetting = await getUserReplySetting(this.e)
