@@ -311,6 +311,7 @@ export class ChatgptManagement extends plugin {
     })
     .catch(error => {
       // 处理错误
+      logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`),'读取模型列表时发生错误：' + error)
       e.reply('读取模型列表时发生错误：' + error);
     });
   }
