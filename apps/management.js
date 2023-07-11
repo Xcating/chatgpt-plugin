@@ -314,6 +314,7 @@ export class ChatgptManagement extends plugin {
   let refreshRes = await newFetch('https://auth0.openai.com/oauth/token', {
       method: 'POST',
       body: JSON.stringify({
+          //redirect_uri: 'com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback',
           refresh_token: Config.OpenAiPlatformRefreshToken,
           client_id: 'DRivsnm2Mu42T3KOpqdtwB3NYviHYzwD',
           grant_type: 'refresh_token'
@@ -329,7 +330,7 @@ export class ChatgptManagement extends plugin {
       if (errMsg.error === 'access_denied') {
           await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置',true)
       } else {
-          await e.reply('获取失败:' + refreshRes.status + "错误" + errMsg,true)
+          await e.reply('获取失败:' + refreshRes.status + "，错误:" + errMsg.error_description,true)
       }
       return false
   }
