@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import chalk from 'chalk'
 import { Config } from './utils/config.js'
-import { createServer } from './server/index.js';
 import { checkPackage } from './utils/DependenciesChecker.js'
 if (!global.segment) {
   global.segment = (await import('oicq')).segment
@@ -65,5 +64,9 @@ try {
   logger.info(`${chalk.red('ChatGPT')}${chalk.yellow('-')}${chalk.gray('Plugin')}${chalk.cyan('加载')}${chalk.red.bold('成功!')}`)
   logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[加载]`), logger.red(`[依赖]`), '插件未检测到依赖！！！！请发送指令#chatgpt安装依赖')
 }
-
+let createServer;
+try {(
+  {createServer} = await import('./server/index.js'));
+  } catch (error) {  console.log('出错啦：', error);}
+await createServer()
 export { apps }
