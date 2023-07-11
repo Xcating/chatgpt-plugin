@@ -1,7 +1,14 @@
 import fs from 'node:fs'
 import chalk from 'chalk'
 import { Config } from './utils/config.js'
-import { createServer } from './server/index.js'
+let createServer
+if (true) {
+  try {
+    createServer = (await import('./server/index.js')).default
+  } catch (e) {
+    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '缺少依赖了')
+  }
+}
 import { checkPackage } from './utils/DependenciesChecker.js'
 if (!global.segment) {
   global.segment = (await import('oicq')).segment
@@ -25,7 +32,7 @@ for (let i in files) {
     logger.error(`加载插件：${logger.red(name)} 错误，请尝试发送指令#chatgpt安装依赖`)
     if(Config.debug)
     {
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
+      logger.debug(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
     }
     continue
   }
@@ -39,12 +46,8 @@ let passed = await checkPackage()
 if (!passed) {
 	logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[加载]`), logger.red(`[依赖]`), '依赖错误')
 }
-let v4
-let uuidv4
-if(passed){
-  v4 = (await import('uuid')).default
-  uuidv4=v4
-  fetch = (await import('node-fetch')).default
+try {
+  await import('keyv')
   logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
   logger.info(logger.cyan.bold(" ________  ___  ___  ________  _________  ________  ________  _________"));
   logger.info(logger.cyan.bold("|\\   ____\\|\\  \\|\\  \\|\\   __  \\|\\___   ___\\\\   ____\\|\\   __  \\|\\___   ___\\"));
@@ -59,8 +62,8 @@ if(passed){
   logger.info(chalk.cyan.bold('ChatGPT-Plugin交流群号 559567232'))
   logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
   await createServer()
-}
-else {
+  // 启动服务器
+} catch (err) {
   logger.info(logger.red.bold(" ________  ___  ___  ________  _________  ________  ________  _________"));
   logger.info(logger.red.bold("|\\   ____\\|\\  \\|\\  \\|\\   __  \\|\\___   ___\\\\   ____\\|\\   __  \\|\\___   ___\\"));
   logger.info(logger.red.bold("\\ \\  \\___|\\ \\  \\\\\\  \\ \\  \\|\\  \\|___ \\  \\_\\ \\  \\___|\\ \\  \\|\\  \\|___ \\  \\_|"));
@@ -71,5 +74,5 @@ else {
   logger.info(`${chalk.red('ChatGPT')}${chalk.yellow('-')}${chalk.gray('Plugin')}${chalk.cyan('加载')}${chalk.red.bold('成功!')}`)
   logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[加载]`), logger.red(`[依赖]`), '插件未检测到依赖！！！！请发送指令#chatgpt安装依赖')
 }
-// 启动服务器
+
 export { apps }
