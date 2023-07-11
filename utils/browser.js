@@ -1,9 +1,24 @@
 import lodash from 'lodash'
 import { Config } from '../utils/config.js'
-import StealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { getOpenAIAuth } from './openai-auth.js'
-import delay from 'delay'
-import { v4 as uuidv4 } from 'uuid'
+let Keyv
+let pTimeout
+let QuickLRU
+let v4
+let uuidv4
+let delay
+let StealthPlugin
+try {
+    Keyv = (await import('keyv')).default
+    pTimeout = (await import('p-timeout')).default
+    QuickLRU = (await import('quick-lru')).default
+    v4 = (await import('uuid')).default
+    delay = (await import('delay')).default
+    StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default
+    uuidv4=v4
+} catch (e) {
+  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+}
 const chatUrl = 'https://chat.openai.com/chat'
 let puppeteer = {}
 

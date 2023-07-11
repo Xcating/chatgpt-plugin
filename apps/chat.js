@@ -1,10 +1,28 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import _ from 'lodash'
 import { Config, defaultOpenAIAPI } from '../utils/config.js'
-import { v4 as uuid } from 'uuid'
-import delay from 'delay'
+let v4
+try {
+  v4 = await import('uuid');
+  // 使用动态导入的 uuid 模块进行操作
+} catch (error) {
+  console.error('导入模块失败:', error.message);
+  // 执行适当的错误处理逻辑
+}
+const uuid=v4
+let delay
+try {
+  delay = (await import('delay')).default
+} catch (e) {
+  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+}
+let BingAIClient
+try {
+  BingAIClient = (await import('@waylaidwanderer/chatgpt-api')).default
+} catch (e) {
+  console.warn('未安装@waylaidwanderer/chatgpt-api，请发送指令#chatgpt安装依赖')
+}
 import { ChatGPTAPI } from '../utils/openai/chatgpt-api.js'
-import { BingAIClient } from '@waylaidwanderer/chatgpt-api'
 import { PoeClient } from '../utils/poe/index.js'
 import AzureTTS, { supportConfigurations } from '../utils/tts/microsoft-azure.js'
 import VoiceVoxTTS from '../utils/tts/voicevox.js'
@@ -32,7 +50,12 @@ import {
   getMaxModelTokens, formatDate, generateAudio, formatDate2
 } from '../utils/common.js'
 import { ChatGPTPuppeteer } from '../utils/browser.js'
-import { KeyvFile } from 'keyv-file'
+let KeyvFile
+try {
+  KeyvFile = (await import('keyv-file')).default
+} catch (e) {
+  console.warn('未安装keyv-file，请发送指令#chatgpt安装依赖')
+}
 import { OfficialChatGPTClient } from '../utils/message.js'
 import fetch from 'node-fetch'
 import { deleteConversation, getConversations, getLatestMessageIdByConversationId } from '../utils/conversation.js'

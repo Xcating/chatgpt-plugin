@@ -1,15 +1,38 @@
-import fetch, {
-  Headers,
-  Request,
-  Response
-} from 'node-fetch'
-import crypto from 'crypto'
-import WebSocket from 'ws'
+let fetch
+let Headers
+let Request
+let Response
+try {
+  fetch = (await import('node-fetch')).default
+  Headers = (await import('node-fetch')).default
+  Request = (await import('node-fetch')).default
+  Response = (await import('node-fetch')).default
+} catch (e) {
+  console.warn('未安装crypto，请发送指令#chatgpt安装依赖')
+}
+let crypto
+try {
+  crypto = (await import('crypto')).default
+} catch (e) {
+  console.warn('未安装crypto，请发送指令#chatgpt安装依赖')
+}
+let WebSocket
+try {
+  WebSocket = (await import('ws')).default
+} catch (e) {
+  console.warn('未安装crypto，请发送指令#chatgpt安装依赖')
+}
 import HttpsProxyAgent from 'https-proxy-agent'
 import { Config, pureSydneyInstruction } from './config.js'
 import { formatDate, getMasterQQ, isCN, getUserData } from './common.js'
-import delay from 'delay'
+let delay
+try {
+  delay = (await import('delay')).default
+} catch (e) {
+  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+}
 import moment from 'moment'
+
 if (!globalThis.fetch) {
   globalThis.fetch = fetch
   globalThis.Headers = Headers
@@ -29,6 +52,7 @@ if (Config.proxy) {
     console.warn('未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent')
   }
 }
+
 
 // async function getWebSocket () {
 //   let WebSocket

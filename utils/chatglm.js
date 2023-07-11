@@ -1,6 +1,14 @@
 import { Config } from './config.js'
-import fetch from 'node-fetch'
-import { v4 as uuidv4 } from 'uuid'
+let v4
+let fetch
+let uuidv4
+try {
+  v4 = (await import('uuid')).default
+  uuidv4=v4
+  fetch = (await import('node-fetch')).default
+} catch (e) {
+  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+}
 async function getKeyv () {
   let Keyv
   try {

@@ -1,8 +1,16 @@
-import { v4 as uuidv4 } from 'uuid'
+let v4
+let createParser
+let uuidv4
+try {
+  v4 = (await import('uuid')).default
+  uuidv4=v4
+  createParser = (await import('eventsource-parser')).default
+} catch (e) {
+  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+}
 import { Config, officialChatGPTAPI } from './config.js'
 import https from 'https'
 import http from 'http'
-import { createParser } from 'eventsource-parser'
 
 // API3
 export class OfficialChatGPTClient {
