@@ -83,6 +83,7 @@ export class checkDependencies extends plugin {
     return true;
   }
   async installDependencies(e) {
+    var exec = require('child_process').exec;
     e.reply("🍵[ChatGPT-Plugin]🥑 正在安装依赖中，请稍等片刻，1~3分钟即可安装完毕", true)
     try {
       await this.execSync(`pnpm -v`);
@@ -102,7 +103,6 @@ export class checkDependencies extends plugin {
       e.reply(`🍵[ChatGPT-Plugin]🥑pnpm安装完成，正在为您安装依赖，请稍等...`);
     }
     //执行的逻辑功能
-    var exec = require('child_process').exec;
     var ls = exec(`cd ${_path}/plugins/chatgpt-plugin && pnpm i`, function (error, stdout, stderr){
       if (error) {
         e.reply("依赖安装失败：\n" +error.stack);
@@ -116,6 +116,7 @@ export class checkDependencies extends plugin {
     return false; //返回false，未完成安装
   }
   async execSync(cmd) {
+    var exec = require('child_process').exec;
     return new Promise((resolve, reject) => {
       exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
         resolve({ error, stdout, stderr });
