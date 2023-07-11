@@ -1429,7 +1429,7 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
 
   async setOpenAIPlatformToken (e) {
     this.setContext('doSetOpenAIPlatformToken')
-    await e.reply('请发送 refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n如果仍不能刷新API3的Token，请退出登录重新获取刷新令牌')
+    await e.reply('请发送 refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n注意！直接右键点击复制当前字符串，不要手动复制\n如果仍不能刷新API3的Token，请退出登录重新获取刷新令牌')
   }
   async doSetOpenAIPlatformToken () {
     let token = this.e.msg
