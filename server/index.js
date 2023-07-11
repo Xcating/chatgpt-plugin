@@ -427,7 +427,6 @@ export async function createServer() {
       }
     }
   })
-  try {
   server.get('/ws', {
     websocket: true
   }, wsFn)
@@ -618,7 +617,4 @@ export async function createServer() {
       server.log.info(`server listening on ${server.server.address().port}`)
     }
   })
-} catch (e) {
-  let wtf='wtf'
-}
 }

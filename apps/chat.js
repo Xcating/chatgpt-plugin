@@ -1,36 +1,14 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import _ from 'lodash'
 import { Config, defaultOpenAIAPI } from '../utils/config.js'
-let v4
-try {
-  v4 = await import('uuid');
-  // 使用动态导入的 uuid 模块进行操作
-} catch (error) {
-  console.error('导入模块失败:', error.message);
-  // 执行适当的错误处理逻辑
-}
-const uuid=v4
-let delay
-try {
-  delay = (await import('delay')).default
-} catch (e) {
-  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
-}
-let BingAIClient
-try {
-  BingAIClient = (await import('@waylaidwanderer/chatgpt-api')).default
-} catch (e) {
-  console.warn('未安装@waylaidwanderer/chatgpt-api，请发送指令#chatgpt安装依赖')
-}
+import { v4 as uuid } from 'uuid'
+import delay from 'delay'
 import { ChatGPTAPI } from '../utils/openai/chatgpt-api.js'
-import { PoeClient } from '../utils/poe/index.js'
-import AzureTTS, { supportConfigurations } from '../utils/tts/microsoft-azure.js'
-import VoiceVoxTTS from '../utils/tts/voicevox.js'
-import { translate } from '../utils/translate.js'
-import { createCaptcha, solveCaptcha } from "../utils/bingCaptcha.js";
-import fs from 'fs'
+import { BingAIClient } from '@waylaidwanderer/chatgpt-api'
 import SydneyAIClient from '../utils/SydneyAIClient.js'
-import ESydneyAIClient from '../utils/E-SydneyAIClient.js'
+import { PoeClient } from '../utils/poe/index.js'
+import AzureTTS from '../utils/tts/microsoft-azure.js'
+import VoiceVoxTTS from '../utils/tts/voicevox.js'
 import {
   render,
   renderUrl,
@@ -50,19 +28,13 @@ import {
   getMaxModelTokens, formatDate, generateAudio, formatDate2
 } from '../utils/common.js'
 import { ChatGPTPuppeteer } from '../utils/browser.js'
-let KeyvFile
-try {
-  KeyvFile = (await import('keyv-file')).default
-} catch (e) {
-  console.warn('未安装keyv-file，请发送指令#chatgpt安装依赖')
-}
+import { KeyvFile } from 'keyv-file'
 import { OfficialChatGPTClient } from '../utils/message.js'
 import fetch from 'node-fetch'
 import { deleteConversation, getConversations, getLatestMessageIdByConversationId } from '../utils/conversation.js'
 import { convertSpeaker, speakers } from '../utils/tts.js'
 import ChatGLMClient from '../utils/chatglm.js'
 import { convertFaces } from '../utils/face.js'
-//import uploadRecord from '../utils/uploadRecord.js'
 import { SlackClaudeClient } from '../utils/slack/slackClient.js'
 import { getPromptByName } from '../utils/prompts.js'
 import BingDrawClient from '../utils/BingDraw.js'
@@ -86,7 +58,6 @@ import { ProcessPictureTool } from '../utils/tools/ProcessPictureTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { QueryGenshinTool } from '../utils/tools/QueryGenshinTool.js'
 import { HandleMessageMsgTool } from '../utils/tools/HandleMessageMsgTool.js'
-//import { QueryUserinfoTool } from '../utils/tools/QueryUserinfoTool.js'
 import { EliMovieTool } from '../utils/tools/EliMovieTool.js'
 import { EliMusicTool } from '../utils/tools/EliMusicTool.js'
 import { SendMusicTool } from '../utils/tools/SendMusicTool.js'
