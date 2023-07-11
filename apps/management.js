@@ -309,7 +309,7 @@ export class ChatgptManagement extends plugin {
   }
   async refreshToken (e){
     if (!Config.OpenAiPlatformRefreshToken) {
-      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置刷新token】进行配置')
+      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置刷新token】进行配置',true)
   }
   let refreshRes = await newFetch('https://auth0.openai.com/oauth/token', {
       method: 'POST',
@@ -327,9 +327,9 @@ export class ChatgptManagement extends plugin {
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), refreshRes.status)
       logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), errMsg)
       if (errMsg.error === 'access_denied') {
-          await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置')
+          await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置',true)
       } else {
-          await e.reply('获取失败')
+          await e.reply('获取失败:' + refreshRes.status + "错误" + errMsg,true)
       }
       return false
   }
