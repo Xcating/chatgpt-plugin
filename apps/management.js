@@ -324,9 +324,8 @@ export class ChatgptManagement extends plugin {
   })
   if (refreshRes.status !== 200) {
       let errMsg = await refreshRes.json()
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), model)
-      console.log(refreshRes.status)
-      console.log(errMsg)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), refreshRes.status)
+      logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), errMsg)
       if (errMsg.error === 'access_denied') {
           await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置')
       } else {
