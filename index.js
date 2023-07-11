@@ -1,14 +1,7 @@
 import fs from 'node:fs'
 import chalk from 'chalk'
 import { Config } from './utils/config.js'
-let createServer
-if (true) {
-  try {
-    createServer = (await import('./server/index.js')).default
-  } catch (e) {
-    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '缺少依赖了')
-  }
-}
+import { createServer } from './server/index.js';
 import { checkPackage } from './utils/DependenciesChecker.js'
 if (!global.segment) {
   global.segment = (await import('oicq')).segment
@@ -61,8 +54,6 @@ try {
   logger.info(chalk.yellow.bold('仓库地址 https://github.com/ikechan8370/chatgpt-plugin'))
   logger.info(chalk.cyan.bold('ChatGPT-Plugin交流群号 559567232'))
   logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
-  await createServer()
-  // 启动服务器
 } catch (err) {
   logger.info(logger.red.bold(" ________  ___  ___  ________  _________  ________  ________  _________"));
   logger.info(logger.red.bold("|\\   ____\\|\\  \\|\\  \\|\\   __  \\|\\___   ___\\\\   ____\\|\\   __  \\|\\___   ___\\"));
