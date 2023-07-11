@@ -296,8 +296,8 @@ export class ChatgptManagement extends plugin {
     .then(data => {
       const models = data.data; // 获取所有的models
       const totalModels = models.length; // 模型总数
-      messages.push("API可用模型总数: " + totalModels)
-      messages.push(`读取模型的APIURL为[ ${protectiveUrl} ]`)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`), `API可用模型总数:  + ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
+      messages.push(`API可用模型总数:  + ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
         const message = `${index + 1}. 模型名称: ${model.id}\n所有者: ${model.owned_by}`
