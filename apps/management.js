@@ -260,7 +260,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(切换|使用)(反代|转发)(预设|设置)(B|b|a|A)',
+          reg: '^#chatgpt(切换|使用)(反代|转发)(预设|设置)(B|A)',
           fnc: 'UrlApiCG',
           permission: 'master'
         },
@@ -341,12 +341,12 @@ export class ChatgptManagement extends plugin {
     logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情切换')
   }
   async UrlApiCG (e){
-    if(e.msg.match(/(A|a)/)){
+    if(e.msg.match(/(A)/)){
       Config.openAiBaseUrl=Config.PresetsAPIUrlA
       e.reply('切换预设API反代-A成功！',e.isGroup)
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-A')
     }
-    if(e.msg.match(/(B|b)/)){
+    if(e.msg.match(/(B)/)){
       Config.openAiBaseUrl=Config.PresetsAPIUrlB
       e.reply('切换预设API反代-B成功！',e.isGroup)
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-B')
