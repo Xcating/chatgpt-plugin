@@ -20,5 +20,5 @@ export async function checkPackage() {
 }
 
 export function packageTips(e) {
-   Bot.pickUser(cfg.masterQQ[0]).sendMsg(`[ChatGPT-Plugin自检]发现缺少依赖：\n${list.join('\n🟨 ')}，将会导致全部功能无法使用，请使用【#chatgpt安装依赖】进行一键安装`)
+   Bot.pickUser(cfg.masterQQ[0]).sendMsg(`[🍵ChatGPT-Plugin🥑] 自检发现缺少依赖：\n${list.join('\n🍵 ')}，缺失依赖🥑将会导致全部功能无法使用，请使用【#chatgpt安装依赖】进行一键安装`)
 }
