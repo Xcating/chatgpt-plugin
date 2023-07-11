@@ -31,7 +31,7 @@ for (let i in files) {
   apps[name] = ret[i].value[Object.keys(ret[i].value)[0]]
 }
 //自检借鉴了渔火的ap-plugin
-let tealist = ["🍵", "🧉", "🧋", "🫖", "☕"]
+let tealist = ["🍵", "🧉", "🧋", "🫖", "☕", "🥑"]
 logger.info('---------------')
 logger.mark(logger.cyan(`[${tealist[Math.floor(Math.random() * tealist.length)]}] chatgpt-plugin插件自检中......`))
 let passed = await checkPackage()
