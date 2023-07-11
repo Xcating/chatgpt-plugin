@@ -25,7 +25,7 @@ for (let i in files) {
     logger.error(`加载插件：${logger.red(name)} 错误，请尝试发送指令#chatgpt安装依赖`)
     if(Config.debug)
     {
-      logger.debug(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
     }
     continue
   }
