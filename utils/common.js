@@ -420,16 +420,6 @@ export function replaceWithAsterisks(str) {
   
   return str.slice(0, 10) + middle + str.slice(-10);
 }
-export function replaceWithAsterisksKey(str) {
-  if (str.length <= 10) {
-    return '*'.repeat(str.length);
-  }
-  const prefix = '*'.repeat(5);
-  const suffix = '*'.repeat(5);
-  const middle = '*'.repeat(str.length - 10);
-  
-  return str.slice(0, 5) + middle + str.slice(-5);
-}
 export function getDefaultReplySetting () {
   return {
     usePicture: Config.defaultUsePicture,

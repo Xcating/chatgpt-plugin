@@ -276,7 +276,7 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#chatgpt(查看|预览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?',
+          reg: '^#chatgpt(查看|预览|浏览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?',
           fnc: 'ModelView',
           permission: 'master'
         }
@@ -286,7 +286,6 @@ export class ChatgptManagement extends plugin {
   async ModelView (e){
     const apiUrl = Config.openAiBaseUrl + '/models'; 
     const protectiveUrl = replaceWithAsterisks(Config.openAiBaseUrl);
-    const protectiveKey = replaceWithAsterisksKey(Config.apiKey);
     let messages = [`以下为API可用模型信息：`]
     fetch(apiUrl, {
       headers: {
@@ -299,7 +298,7 @@ export class ChatgptManagement extends plugin {
       const models = data.data; // 获取所有的models
       const totalModels = models.length; // 模型总数
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`), `API可用模型总数:  + ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
-      messages.push(`API可用模型总数: ${totalModels}\n读取模型的API为: ${protectiveUrl}\n读取模型的KEY为: ${protectiveKey}`)
+      messages.push(`API可用模型总数: ${totalModels}\n读取模型的API为: ${protectiveUrl}`)
       // 遍历每个model并存储到messages数组中
       models.forEach((model, index) => {
         const message = `${index + 1}. 模型名称: ${model.id}\n模型所有者: ${model.owned_by}\n快捷切换模型：#chatgpt切换模型${model.id}`
