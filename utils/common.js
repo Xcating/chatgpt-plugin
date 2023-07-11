@@ -411,7 +411,9 @@ export async function renderUrl (e, url, renderCfg = {}) {
   return renderCfg.retType === 'msgId' ? ret : true
 }
 export function replaceWithAsterisks(str) {
-  
+  if (str.length <= 20) {
+    return '*'.repeat(str.length);
+  }
   const prefix = '*'.repeat(10);
   const suffix = '*'.repeat(10);
   const middle = '*'.repeat(str.length - 20);
