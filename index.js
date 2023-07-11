@@ -67,7 +67,8 @@ try {
 let createServer;
 try {(
   {createServer} = await import('./server/index.js'));
+  await createServer()
   } catch (error) {  logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[加载]`), logger.red(`[依赖]`), '插件未检测到依赖！！！！请发送指令#chatgpt安装依赖');
 }
-await createServer()
+
 export { apps }
