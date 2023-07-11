@@ -253,7 +253,7 @@ export class ChatgptManagement extends plugin {
           fnc: 'getTTSRoleList'
         },
         {
-          reg: '^#chatgpt设置后台(刷新|refresh)(t|T)oken$',
+          reg: '^#chatgpt设置(后台)?(刷新|refresh)(t|T)oken$',
           fnc: 'setOpenAIPlatformToken'
         },
         {
@@ -301,21 +301,19 @@ export class ChatgptManagement extends plugin {
           permission: 'master'
         },
         {
-          reg: '^#(chatgpt)?刷新(token|API3token|accesstoken|access_token|Access_Token)$',
-          fnc: 'regetToken'
+          reg: '^#(chatgpt)?刷新(token|Token|Api3Token|Api3token}API3Token|TOKEN|ACCESSTOKEN|API3token|accesstoken|access_token|Access_Token)$',
+          fnc: 'refreshToken'
       }
       ]
     })
   }
-  async regetToken (e){
+  async refreshToken (e){
     if (!Config.OpenAiPlatformRefreshToken) {
-      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置后台刷新token】进行配置')
+      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置刷新token】进行配置')
   }
-
   let refreshRes = await newFetch('https://auth0.openai.com/oauth/token', {
       method: 'POST',
       body: JSON.stringify({
-          //redirect_uri: 'com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback',
           refresh_token: Config.OpenAiPlatformRefreshToken,
           client_id: 'DRivsnm2Mu42T3KOpqdtwB3NYviHYzwD',
           grant_type: 'refresh_token'
@@ -326,10 +324,11 @@ export class ChatgptManagement extends plugin {
   })
   if (refreshRes.status !== 200) {
       let errMsg = await refreshRes.json()
+      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), model)
       console.log(refreshRes.status)
       console.log(errMsg)
       if (errMsg.error === 'access_denied') {
-          await e.reply('刷新令牌失效，请重新发送【#chatgpt设置后台刷新token】进行配置')
+          await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置')
       } else {
           await e.reply('获取失败')
       }
@@ -1430,16 +1429,15 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
 
   async setOpenAIPlatformToken (e) {
     this.setContext('doSetOpenAIPlatformToken')
-    await e.reply('请发送refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n如果仍不能查看余额，请退出登录重新获取刷新令牌')
+    await e.reply('请发送 refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n如果仍不能刷新API3的Token，请退出登录重新获取刷新令牌')
   }
-
   async doSetOpenAIPlatformToken () {
     let token = this.e.msg
     if (!token) {
       return false
     }
     Config.OpenAiPlatformRefreshToken = token.replaceAll('\'', '')
-    await this.e.reply('设置成功')
+    await this.e.reply('设置刷新Token成功，可使用#chatgpt刷新token来刷新API3的访问token',true)
     this.finish('doSetOpenAIPlatformToken')
   }
 

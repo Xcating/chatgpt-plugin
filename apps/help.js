@@ -228,8 +228,8 @@ let helpData = [
       },
       {
         icon: 'token',
-        title: '#chatgpt设置后台刷新token',
-        desc: '用于查看API余额。注意和配置的key保持同一账号。'
+        title: '#chatgpt设置刷新token',
+        desc: '用于刷新API3的token'
       },
       {
         icon: 'token',
