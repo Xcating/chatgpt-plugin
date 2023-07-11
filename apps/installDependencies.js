@@ -109,7 +109,7 @@ export class checkDependencies extends plugin {
       } else{
         e.reply("🍵[ChatGPT-Plugin]🥑 依赖安装成功！尽情享受ChatGPT-Plugin的所有功能吧！5秒后将重启云崽！")
         common.sleep(5000);
-        new Restart(this.e).restart();
+        new Restart(e).restart();
         return true; //返回true 阻挡消息不再往下
       }
     })
