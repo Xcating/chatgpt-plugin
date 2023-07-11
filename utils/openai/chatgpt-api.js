@@ -54,22 +54,13 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
-let Keyv
-let pTimeout
-let QuickLRU
-let v4
-let uuidv4
-let globalFetch
-try {
-    Keyv = (await import('keyv')).default
-    pTimeout = (await import('p-timeout')).default
-    QuickLRU = (await import('quick-lru')).default
-    v4 = (await import('uuid')).default
-    globalFetch = (await import('node-fetch')).default
-    uuidv4=v4
-} catch (e) {
-  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
-}
+import Keyv from 'keyv';
+import pTimeout from 'p-timeout';
+import QuickLRU from 'quick-lru';
+import { v4 as uuidv4 } from 'uuid';
+import * as tokenizer from './tokenizer.js';
+import * as types from './types.js';
+import globalFetch from 'node-fetch';
 import { fetchSSE } from './fetch-sse.js';
 var CHATGPT_MODEL = 'gpt-3.5-turbo-0613';
 var USER_LABEL_DEFAULT = 'User';
