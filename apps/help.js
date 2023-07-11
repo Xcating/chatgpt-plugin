@@ -173,7 +173,7 @@ let helpData = [
       },
       {
         icon: 'confirm',
-        title: '#chatgpt切换模型',
+        title: '#chatgpt切换模型gpt-3.5-turbo',
         desc: '切换API的回答模型'
       },
       {
@@ -190,6 +190,16 @@ let helpData = [
         icon: 'confirm',
         title: '#chatgpt(开|关)随机表情',
         desc: '开关分割消息，回复时回复随机表情'
+      },
+      {
+        icon: 'confirm',
+        title: '#chatgpt刷新token',
+        desc: '刷新API3访问令牌，需要刷新token才能使用'
+      },
+      {
+        icon: 'token',
+        title: '#chatgpt浏览模型大全',
+        desc: '查看当前API可用模型大全，需要可用的apikey'
       }
     ]
   },

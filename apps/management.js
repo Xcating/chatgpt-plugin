@@ -1412,19 +1412,19 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
 
   async adminPage (e) {
     if (!Config.groupAdminPage && (e.isGroup || !e.isPrivate)) {
-      await this.reply('请私聊发送命令', true)
+      await this.reply('请私聊使用命令', true)
       return true
     }
-    const viewHost = Config.serverHost ? `http://${Config.serverHost}/` : `http://${await getPublicIP()}:${Config.serverPort || 3321}/`
+    const viewHost = 'http://127.0.0.1/3321'
     await this.reply(`请登录${viewHost + 'admin/settings'}进行系统配置`, true)
   }
 
   async userPage (e) {
     if (!Config.groupAdminPage && (e.isGroup || !e.isPrivate)) {
-      await this.reply('请私聊发送命令', true)
+      await this.reply('请私聊使用命令', true)
       return true
     }
-    const viewHost = Config.serverHost ? `http://${Config.serverHost}/` : `http://${await getPublicIP()}:${Config.serverPort || 3321}/`
+    const viewHost = 'http://127.0.0.1/3321'
     await this.reply(`请登录${viewHost + 'admin/dashboard'}进行系统配置`, true)
   }
 
