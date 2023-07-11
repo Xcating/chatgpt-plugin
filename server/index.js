@@ -50,7 +50,7 @@ try {
     logger: Config.debug
   })
 } catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '创建服务器错误，请发送#chatgpt安装依赖')
+  let error='wtf'
 }
 let Statistics = {
   SystemAccess: {
@@ -113,7 +113,7 @@ await server.register(webRoute)
 await server.register(webUser)
 await server.register(SettingView)
 } catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '创建服务器错误，请发送#chatgpt安装依赖')
+  let error='wtf'
 }
 // 无法访问端口的情况下创建与media的通讯
 async function mediaLink() {
@@ -335,7 +335,7 @@ export async function createServer() {
     return reply
   })
 } catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '服务器错误，请发送#chatgpt安装依赖')
+  let wtf='wtf'
 }
   let clients = []
   // 获取消息
@@ -619,6 +619,6 @@ export async function createServer() {
     }
   })
 } catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '服务器错误，请发送#chatgpt安装依赖')
+  let wtf='wtf'
 }
 }
