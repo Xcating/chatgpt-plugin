@@ -10,19 +10,39 @@ import {
   makeForwardMsg,
   parseDuration,
   renderUrl,
-  replaceWithAsterisks,
-  replaceWithAsterisksKey
+  replaceWithAsterisks
 } from '../utils/common.js'
 import SydneyAIClient from '../utils/SydneyAIClient.js'
 import { convertSpeaker, speakers as vitsRoleList } from '../utils/tts.js'
 import md5 from 'md5'
 import path from 'path'
 import fs from 'fs'
+import fetch from 'node-fetch'
 import loader from '../../../lib/plugins/loader.js'
 import VoiceVoxTTS, { supportConfigurations as voxRoleList } from '../utils/tts/voicevox.js'
 import { supportConfigurations as azureRoleList } from '../utils/tts/microsoft-azure.js'
 import { getBots } from '../utils/poe/index.js'
-
+let proxy
+if (Config.proxy) {
+    try {
+        proxy = (await import('https-proxy-agent')).default
+    } catch (e) {
+        console.warn('未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1')
+    }
+}
+const newFetch = (url, options = {}) => {
+  const defaultOptions = Config.proxy
+      ? {
+          agent: proxy(Config.proxy)
+      }
+      : {}
+  console.log(defaultOptions)
+  const mergedOptions = {
+      ...defaultOptions,
+      ...options
+  }
+  return fetch(url, mergedOptions)
+}
 export class ChatgptManagement extends plugin {
   constructor (e) {
     super({
@@ -279,9 +299,45 @@ export class ChatgptManagement extends plugin {
           reg: '^#chatgpt(查看|预览|浏览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?',
           fnc: 'ModelView',
           permission: 'master'
-        }
+        },
+        {
+          reg: '^#(chatgpt)?刷新(token|API3token|accesstoken|access_token|Access_Token)$',
+          fnc: 'regetToken'
+      }
       ]
     })
+  }
+  async regetToken (e){
+    if (!Config.OpenAiPlatformRefreshToken) {
+      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置后台刷新token】进行配置')
+  }
+
+  let refreshRes = await newFetch('https://auth0.openai.com/oauth/token', {
+      method: 'POST',
+      body: JSON.stringify({
+          //redirect_uri: 'com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback',
+          refresh_token: Config.OpenAiPlatformRefreshToken,
+          client_id: 'DRivsnm2Mu42T3KOpqdtwB3NYviHYzwD',
+          grant_type: 'refresh_token'
+      }),
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  })
+  if (refreshRes.status !== 200) {
+      let errMsg = await refreshRes.json()
+      console.log(refreshRes.status)
+      console.log(errMsg)
+      if (errMsg.error === 'access_denied') {
+          await e.reply('刷新令牌失效，请重新发送【#chatgpt设置后台刷新token】进行配置')
+      } else {
+          await e.reply('获取失败')
+      }
+      return false
+  }
+  let newToken = await refreshRes.json()
+  await redis.set('CHATGPT:TOKEN', newToken.access_token)
+  e.reply('刷新ChatGPT-API3-Token成功，可使用#chat3进行对话' , true)
   }
   async ModelView (e){
     const apiUrl = Config.openAiBaseUrl + '/models'; 
