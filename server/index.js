@@ -1,57 +1,28 @@
-let fastify
-try {
-  fastify = (await import('fastify')).default
-} catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '未安装fastify，请发送指令#chatgpt安装依赖')
-}
-///
-let fastifyCookie
-try {
-  fastifyCookie = (await import('@fastify/cookie')).default
-} catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '未安装@fastify/cookie，请发送指令#chatgpt安装依赖')
-}
-///
-let cors
-try {
-  cors = (await import('@fastify/cors')).default
-} catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '未安装@fastify/cors，请发送指令#chatgpt安装依赖')
-}
-///
-let fstatic
-try {
-  fstatic = (await import('@fastify/static')).default
-} catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '未安装@fastify/static，请发送指令#chatgpt安装依赖')
-}
-///
-let websocket
-try {
-  websocket = (await import('@fastify/websocket')).default
-} catch (e) {
-  logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[服务器]`), logger.red(`[依赖]`), '未安装@fastify/websocket，请发送指令#chatgpt安装依赖')
-}
+import fastify from 'fastify'
+import fastifyCookie from '@fastify/cookie'
+import cors from '@fastify/cors'
+import fstatic from '@fastify/static'
+import websocket from '@fastify/websocket'
+
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import schedule from 'node-schedule'
+import websocketclient from 'ws'
 
 import { Config } from '../utils/config.js'
 import { UserInfo, GetUser } from './modules/user_data.js'
-import { getPublicIP, getUserData } from '../utils/common.js'
+import { getPublicIP, getUserData, getMasterQQ, randomString } from '../utils/common.js'
 
 import webRoute from './modules/web_route.js'
 import webUser from './modules/user.js'
 import SettingView from './modules/setting_view.js'
+
 const __dirname = path.resolve()
-try {
-  const server = fastify({
-    logger: Config.debug
-  })
-} catch (e) {
-  let error='wtf'
-}
+const server = fastify({
+  logger: Config.debug
+})
+
 let Statistics = {
   SystemAccess: {
     count: 0,
@@ -95,7 +66,6 @@ async function setUserData(qq, data) {
   fs.writeFileSync(filepath, JSON.stringify(data))
 }
 
-try {
 await server.register(cors, {
   origin: '*'
 })
@@ -112,9 +82,7 @@ await server.register(fastifyCookie)
 await server.register(webRoute)
 await server.register(webUser)
 await server.register(SettingView)
-} catch (e) {
-  let error='wtf'
-}
+
 // 无法访问端口的情况下创建与media的通讯
 async function mediaLink() {
   const ip = await getPublicIP()
@@ -202,7 +170,6 @@ async function mediaLink() {
 
 export async function createServer() {
   // 页面数据获取
-  try {
   server.post('/page', async (request, reply) => {
     const body = request.body || {}
     if (body.code) {
@@ -334,9 +301,6 @@ export async function createServer() {
     reply.send({ state: true })
     return reply
   })
-} catch (e) {
-  let wtf='wtf'
-}
   let clients = []
   // 获取消息
   const wsFn = async (connection, request) => {

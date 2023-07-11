@@ -41,7 +41,7 @@ if (!passed) {
 }
 let v4
 let uuidv4
-try {
+if(passed){
   v4 = (await import('uuid')).default
   uuidv4=v4
   fetch = (await import('node-fetch')).default
@@ -59,7 +59,8 @@ try {
   logger.info(chalk.cyan.bold('ChatGPT-Plugin交流群号 559567232'))
   logger.info(logger.red("-------------\ \ \ ٩(๑˃̵ᴗ˂̵)و / / /-------------"))
   await createServer()
-} catch (e) {
+}
+else {
   logger.info(logger.red.bold(" ________  ___  ___  ________  _________  ________  ________  _________"));
   logger.info(logger.red.bold("|\\   ____\\|\\  \\|\\  \\|\\   __  \\|\\___   ___\\\\   ____\\|\\   __  \\|\\___   ___\\"));
   logger.info(logger.red.bold("\\ \\  \\___|\\ \\  \\\\\\  \\ \\  \\|\\  \\|___ \\  \\_\\ \\  \\___|\\ \\  \\|\\  \\|___ \\  \\_|"));
