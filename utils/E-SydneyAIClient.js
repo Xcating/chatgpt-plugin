@@ -400,13 +400,16 @@ export default class ESydneyAIClient {
       // 'cricinfo',
       // 'cricinfov2',
       'dv3sugg',
-      'gencontentv3'
+      'gencontentv3',
+      "iycapbing",
+      "iyxapbing"
     ]
     if (Config.enableGenerateContents) {
       optionsSets.push(...['gencontentv3'])
     }
     const currentDate = moment().format('YYYY-MM-DDTHH:mm:ssZ')
-
+    const imageDate = await this.kblobImage(opts.imageUrl)
+    console.log(imageDate)
     const obj = {
       arguments: [
         {
@@ -446,6 +449,8 @@ export default class ESydneyAIClient {
             ],
             author: 'user',
             inputMethod: 'Keyboard',
+            imageUrl: imageDate.blobId ? `https://www.bing.com/images/blob?bcid=${imageDate.blobId}` : undefined,
+            originalImageUrl: imageDate.processedBlobId ? `https://www.bing.com/images/blob?bcid=${imageDate.processedBlobId}` : undefined,
             text: message,
             messageType,
             userIpAddress: await generateRandomIP(),
@@ -809,7 +814,38 @@ export default class ESydneyAIClient {
       throw err
     }
   }
-
+  async kblobImage(url) {
+    if (!url) return false
+    const formData = new FormData()
+    formData.append('knowledgeRequest', JSON.stringify({
+      "imageInfo": {
+        "url": url
+      },
+      "knowledgeRequest": {
+        "invokedSkills": ["ImageById"],
+        "subscriptionId": "Bing.Chat.Multimodal",
+        "invokedSkillsRequestData": { "enableFaceBlur": true },
+        "convoData": { "convoid": "", "convotone": "Creative" }
+      }
+    }))
+    const fetchOptions = {
+      headers: {
+        "Referer": "https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx"
+      },
+      method: "POST",
+      body: formData
+    }
+    if (this.opts.proxy) {
+      fetchOptions.agent = proxy(Config.proxy)
+    }
+    let response = await fetch(`https://www.bing.com/images/kblob`, fetchOptions)
+    if (response.ok){
+      let text = await response.text()
+      return JSON.parse(text)
+    } else {
+      return false
+    }
+  }
   /**
      * Iterate through messages, building an array based on the parentMessageId.
      * Each message has an id and a parentMessageId. The parentMessageId is the id of the message that this message is a reply to.

@@ -1224,7 +1224,7 @@ async switch2Picture(e) {
           await redis.set(key, JSON.stringify(previousConversation), Config.conversationPreserveTime > 0 ? { EX: Config.conversationPreserveTime } : {})
         }
       }
-      let response = chatMessage?.text
+      let response = chatMessage?.text?.replace('\n\n\n', '\n')
       // 过滤无法正常显示的emoji
       if (use === 'claude') response = response.replace(/:[a-zA-Z_]+:/g, '')
       let mood = 'blandness'
@@ -1801,6 +1801,11 @@ async switch2Picture(e) {
               }
               bingAIClient = new BingAIClient(bingOption)
             }
+            // 写入图片数据
+            if (Config.sydneyImageRecognition) {
+              const image = await getImg(e)
+              opt.imageUrl = image ? image[0] : undefined
+            }
             response = await bingAIClient.sendMessage(prompt, opt, (token) => {
               reply += token
             })
@@ -2124,7 +2129,7 @@ async switch2Picture(e) {
         }
         this.chatGPTApi = new ChatGPTAPI(opts)
         let option = {
-          timeoutMs: 120000,
+          timeoutMs: 600000,
           completionParams,
           stream: true,
           onProgress: (data) => {
@@ -2289,6 +2294,9 @@ async switch2Picture(e) {
             msg = await this.chatGPTApi.sendMessage(prompt, option)
             logger.info(msg)
             while (msg.functionCall) {
+              if (msg.text) {
+                await e.reply(msg.text.replace('\n\n\n', '\n'))
+              }
               let { name, arguments: args } = msg.functionCall
               args = JSON.parse(args)
               // 感觉换成targetGroupIdOrUserQQNumber这种表意比较清楚的变量名，效果会好一丢丢
@@ -2300,7 +2308,7 @@ async switch2Picture(e) {
               } catch (err) {
                 args.groupId = e.group_id + '' || e.sender.user_id + ''
               }
-              let functionResult = await fullFuncMap[name].exec(Object.assign({ isAdmin, sender }, args), e)
+              let functionResult = await fullFuncMap[name.trim()].exec(Object.assign({ isAdmin, sender }, args), e)
               logger.mark(`function ${name} execution result: ${functionResult}`)
               option.parentMessageId = msg.id
               option.name = name
