@@ -792,6 +792,11 @@ export default class SydneyAIClient {
       }
     } catch (err) {
       await this.conversationsCache.set(conversationKey, conversation)
+      err.conversation = {
+        conversationSignature,
+        conversationId,
+        clientId
+      }
       throw err
     }
   }
@@ -802,11 +807,11 @@ export default class SydneyAIClient {
       "imageInfo": {
         "url": url
       },
-      "knowledgeRequest": {
-        "invokedSkills": ["ImageById"],
-        "subscriptionId": "Bing.Chat.Multimodal",
-        "invokedSkillsRequestData": { "enableFaceBlur": true },
-        "convoData": { "convoid": "", "convotone": "Creative" }
+      knowledgeRequest: {
+        invokedSkills: ['ImageById'],
+        subscriptionId: 'Bing.Chat.Multimodal',
+        invokedSkillsRequestData: { enableFaceBlur: true },
+        convoData: { convoid: '', convotone: 'Creative' }
       }
     }))
     const fetchOptions = {
