@@ -8,6 +8,7 @@ import { BingAIClient } from '@waylaidwanderer/chatgpt-api'
 import SydneyAIClient from '../utils/SydneyAIClient.js'
 import ESydneyAIClient from '../utils/E-SydneyAIClient.js'
 import { PoeClient } from '../utils/poe/index.js'
+import { createCaptcha, solveCaptcha } from '../utils/bingCaptcha.js'
 import AzureTTS from '../utils/tts/microsoft-azure.js'
 import VoiceVoxTTS from '../utils/tts/voicevox.js'
 import {
@@ -248,12 +249,37 @@ export class chatgpt extends plugin {
           reg: '^#(chatgpt)(删除|扔掉)对话',
           fnc: 'deleteConversation',
           permission: 'master'
+        },
+        {
+          reg: '^#chatgpt必应验证码',
+          fnc: 'bingCaptcha'
         }
       ]
     })
     this.toggleMode = toggleMode
   }
-
+  
+  async bingCaptcha (e) {
+    let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
+    if (!bingTokens) {
+      await e.reply('尚未绑定必应token:必应过码必须绑定token')
+      return
+    }
+    bingTokens = bingTokens.map(token => token.Token)
+    let index = e.msg.replace(/^#chatgpt必应验证码/, '')
+    if (!index) {
+      await e.reply('指令不完整：请输入#chatgpt必应验证码+token序号（从1开始），如#chatgpt必应验证码1')
+      return
+    }
+    index = parseInt(index) - 1
+    let bingToken = bingTokens[index]
+    let { id, image } = await createCaptcha(e, bingToken)
+    e.bingCaptchaId = id
+    e.token = bingToken
+    await e.reply(['请崽60秒内输入下面图片以通过必应人机验证', segment.image(`base64://${image}`)])
+    this.setContext('solveBingCaptcha', false, 60)
+    return false
+  }
   /**
    * 获取chatgpt当前对话列表
    * @param e
@@ -1131,15 +1157,15 @@ async switch2Picture(e) {
       if (Config.debug) {
         logger.mark({ conversation })
       }
+      if (chatMessage.image) {
+        this.setContext('solveBingCaptcha', false, 60)
+        await e.reply([chatMessage.text, segment.image(`base64://${chatMessage.image}`)])
+        return false
+      }
       let chatMessage = await this.sendMessage(prompt, conversation, use, e)
       if (use === 'api' && !chatMessage) {
         // 字数超限直接返回
         return false
-      }
-      if (chatMessage.image) {
-        this.setContext('solveBingCaptcha', false, 60)
-        await e.reply([chatMessage.text, segment.image(`base64://${chatMessage.image}`)])
-        return
       }
       logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[Exrate]`), logger.red(`[MoreMessage]`), `ChatGPT回复额外消息`)
         //----------------------
@@ -1867,12 +1893,12 @@ async switch2Picture(e) {
               e.bingCaptchaId = id
               e.token = bingToken
               return {
-                text: '请崽60秒内输入下面图片以通过必应人机验证',
+                text: '请在60秒内输入下面图片以通过必应人机验证',
                 image,
                 error: true,
                 token: bingToken
               }
-            } else if (message && typeof message === 'string' && message.indexOf('限流') > -1) {
+              } else if (message && typeof message === 'string' && message.indexOf('限流') > -1) {
               throttledTokens.push(bingToken)
               let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
               const badBingToken = bingTokens.findIndex(element => element.Token === bingToken)
@@ -2540,7 +2566,7 @@ async switch2Picture(e) {
 
   async solveBingCaptcha (e) {
     let id = e.bingCaptchaId
-    let text = e.msg
+    let text = this.e.msg
     let solveResult = await solveCaptcha(id, text, e.token)
     if (solveResult.result) {
       await e.reply('验证码已通过')
