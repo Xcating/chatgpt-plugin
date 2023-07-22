@@ -1157,12 +1157,12 @@ async switch2Picture(e) {
       if (Config.debug) {
         logger.mark({ conversation })
       }
+      let chatMessage = await this.sendMessage(prompt, conversation, use, e)
       if (chatMessage.image) {
         this.setContext('solveBingCaptcha', false, 60)
         await e.reply([chatMessage.text, segment.image(`base64://${chatMessage.image}`)])
         return false
       }
-      let chatMessage = await this.sendMessage(prompt, conversation, use, e)
       if (use === 'api' && !chatMessage) {
         // 字数超限直接返回
         return false

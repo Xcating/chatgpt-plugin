@@ -811,6 +811,11 @@ export default class ESydneyAIClient {
       }
     } catch (err) {
       await this.conversationsCache.set(conversationKey, conversation)
+      err.conversation = {
+        conversationSignature,
+        conversationId,
+        clientId
+      }
       throw err
     }
   }
