@@ -1,4 +1,11 @@
 import plugin from '../../../lib/plugins/plugin.js'
+import http from 'http';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const axios = require('axios');
+const EventSource = require('eventsource');
+import Anthropic from '@anthropic-ai/sdk';
+import HttpsProxyAgent from 'https-proxy-agent';
 import _ from 'lodash'
 import { Config, defaultOpenAIAPI } from '../utils/config.js'
 import { v4 as uuid } from 'uuid'
@@ -71,6 +78,7 @@ let checkNumber
 const BingRulePrefix = Config.BingRulePrefix
 const APIRulePrefix = Config.APIRulePrefix
 const API3RulePrefix = Config.API3RulePrefix
+const ANTHROPIC_API_KEY = 'abc';
 try {
   await import('emoji-strip')
 } catch (err) {
@@ -90,7 +98,9 @@ if (Config.proxy) {
     logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[依赖管理]`), logger.red(`[缺少依赖]`), '未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent')
   }
 }
-
+const anthropic = new Anthropic({
+  apiKey: 'tes', // defaults to process.env["ANTHROPIC_API_KEY"]
+});
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。
  * 单位：秒
@@ -253,12 +263,11 @@ export class chatgpt extends plugin {
         {
           reg: '^#chatgpt必应验证码',
           fnc: 'bingCaptcha'
-        }
+        },
       ]
     })
     this.toggleMode = toggleMode
   }
-  
   async bingCaptcha (e) {
     let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
     if (!bingTokens) {
