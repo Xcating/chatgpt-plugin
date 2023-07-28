@@ -287,7 +287,6 @@ export class chatgpt extends plugin {
       await this.reply(`${response}`, true)
     }
   }
-
   /**
    * 销毁指定人的对话
    * @param e
@@ -1437,6 +1436,7 @@ async switch2Picture(e) {
         {
           await this.reply(`ChatGPT通信异常,当前模型不存在或不可用，请尝试发送#chatgpt模型大全，并更换其他模型`,true)
         }
+
         else if(msg.includes('OpenAI error 401'))
         {
           if(Config.apikey.startsWith("sk-"))
@@ -1450,6 +1450,10 @@ async switch2Picture(e) {
         else if(msg.includes('OpenAI error 429'))
         {
           await this.reply(`你的APIKEY对应的账号可用额度已到期，请更换`,true)
+        }
+        else if(msg.includes('Error: ChatGPT error 400: {"detail":"Status code is 500 from reverse engineered site"}'))
+        {
+          await this.reply(`鳄梨酱的反代寄了，就是莫名奇妙的 :)`,true)
         }
         else if(msg.includes('OpenAI error 404'))
         {

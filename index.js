@@ -21,9 +21,14 @@ for (let i in files) {
   let name = files[i].replace('.js', '')
 
   if (ret[i].status !== 'fulfilled') {
-    logger.error(`加载插件：${logger.red(name)} 错误，请尝试发送指令#chatgpt安装依赖`)
+    
     if(Config.debug)
     {
+      logger.error(`加载插件：${logger.red(name)} 错误`)
+      logger.error(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
+    }
+    else{
+      logger.error(`加载插件：${logger.red(name)} 错误，请尝试发送指令#chatgpt安装依赖，或者把Yunzai-bot/plugins/chatgpt-plugin/config/config.json 里面的debug后面的值改成true 查看详细信息并联系作者`)
       logger.error(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[启动]`), logger.red(`[DEBUG]`), ret[i].reason)
     }
     continue
