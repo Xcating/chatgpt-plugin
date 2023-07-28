@@ -791,11 +791,16 @@ export default class SydneyAIClient {
         apology: Config.sydneyApologyIgnored && apology
       }
     } catch (err) {
+      try {
       await this.conversationsCache.set(conversationKey, conversation)
       err.conversation = {
         conversationSignature,
         conversationId,
         clientId
+      }
+      } catch (err) {
+        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[必应]`), logger.red(`[SydneyClient]`), '必应记录错误失败，可能是出现了验证码 :)')
+        e.reply("必应记录错误失败，可能是出现了验证码 :)")
       }
       throw err
     }
