@@ -286,7 +286,7 @@ export class chatgpt extends plugin {
           reg: "^#(chatgpt)(删除|扔掉)对话",
           fnc: "deleteConversation",
           permission: "master",
-        },
+        }
       ],
     });
     this.toggleMode = toggleMode;
