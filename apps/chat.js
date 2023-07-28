@@ -1426,25 +1426,113 @@ async switch2Picture(e) {
         await redis.lPop('CHATGPT:CHAT_QUEUE', 0)
       }
     } catch (err) {
-      logger.error(err)
+      let msg = err?.message || err?.data?.message || (typeof (err) === 'object' ? JSON.stringify(err) : err) || '未能确认错误类型！'
+      logger.error(msg)
       if (use !== 'bing') {
         // 异常了也要腾地方（todo 大概率后面的也会异常，要不要一口气全杀了）
         await redis.lPop('CHATGPT:CHAT_QUEUE', 0)
       }
-      if (err === 'Error: {"detail":"Conversation not found"}') {
-        await this.destroyConversations(err)
-        await this.reply('当前对话异常，已经清除，请重试', true, { recallMsg: e.isGroup ? 10 : 0 })
-      } else {
-        if (err.length < 200) {
-          await this.reply(`出现错误：${err}`, true, { recallMsg: e.isGroup ? 10 : 0 })
+      if(use == 'api'){
+        if(msg == 'Error: ChatGPT error 404: {"detail":"Unknown model! Follow list from /api/models!"}')
+        {
+          await this.reply(`ChatGPT通信异常,当前模型不存在或不可用，请尝试发送#chatgpt模型大全，并更换其他模型`,true)
+        }
+        else if(msg.includes('OpenAI error 401'))
+        {
+          if(Config.apikey.startsWith("sk-"))
+          {
+            await this.reply(`你的APIKEY可能遭到了封禁，请更换后尝试`,true)
+          }
+          else{
+            await this.reply(`你的ApiKey出现可能异常，请检查`,true)
+          }
+        }
+        else if(msg.includes('OpenAI error 429'))
+        {
+          await this.reply(`你的APIKEY对应的账号可用额度已到期，请更换`,true)
+        }
+        else if(msg.includes('OpenAI error 404'))
+        {
+          if(Config.openAiBaseUrl.endsWith("/v1"))
+          {
+            await this.reply(`你的OpenAI地址出现错误，无法访问，请带上/v1`,true)
+          }
+          else{
+            await this.reply(`你的OpenAI地址出现错误，无法访问，请检查`,true)
+          }
+        }
+        else if(msg.includes('OpenAI missing required apikey'))
+        {
+          await this.reply(`未设置OpenAI密钥，如果你配置了BingToken还提示这个，请使用 #chatgpt切换Bing 切换到必应模式`,true)
+        }
+        else if(msg.includes('TimeoutError'))
+        {
+          await this.reply(`OpenAI ChatGPT 访问超时，请检查代理或者超时时间设置`,true)
+        }
+        else {
+          if (msg.length < 200) {
+            await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`,true)
+          } else {
+            await this.renderImage(e, use,`通信异常：未知错误 ,错误信息如下: ${msg}`, prompt)
+          }
+        }
+    }
+    if(use=='api3')
+    {
+      if(msg.includes('"statusCode":401'))
+      {
+        await this.reply(`API3 Token过期了，请重新获取`,true)
+      }
+      else if(msg.includes('403'))
+      {
+        await this.reply(`你的API3 Token对应的账号被OpenAI封禁，请更换`,true)
+      }
+      else if(msg.includes('"statusCode":500'))
+      {
+        await this.reply(`你的API3 Token无法使用或错误，请修正`,true)
+      }
+      else {
+        if (msg.length < 200) {
+          await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`,true)
         } else {
-          // 这里是否还需要上传到缓存服务器呐？多半是代理服务器的问题，本地也修不了，应该不用吧。
-          e.reply("通信异常,错误信息如下:" + ` \n \`\`\`${err?.message || err?.data?.message || (typeof (err) === 'object' ? JSON.stringify(err) : err) || '未能确认错误类型！'}\`\`\``)
-          //await this.renderImage(e, use, ` \n \`\`\`${err?.message || err?.data?.message || (typeof (err) === 'object' ? JSON.stringify(err) : err) || '未能确认错误类型！'}\`\`\``, prompt)
+          await this.renderImage(e, use,`通信异常：未知错误 ,错误信息如下: ${msg}`, prompt)
         }
       }
     }
+    if(use=='bing')
+    {
+      if(msg.includes('502'))
+      {
+        await this.reply(`必应服务器出现异常，请等待后重试`,true)
+      }
+      else if(msg.includes('429'))
+      {
+        await this.reply(`必应调用OpenAI时服务器出现异常，请等待后重试`,true)
+      }
+      else if(msg.includes('Sorry, you need to login first to access this service'))
+      {
+        await this.reply(`你的必应Token已经过期了，请重新获取`,true)
+      }
+      else if(msg.includes('CAPTCHA'))
+      {
+        await this.reply(`这个报错理论上不应该出现，应该会自动过验证才对`,true)
+      }
+      else if(msg.includes('404'))
+      {
+        await this.reply(`首先检查自己有没有配置好全局代理或反代，这种情况是很可能是重定向到cn.bing了，如果配置好了全局代理或反代仍这样的话可以发送 #结束对话 重新创建对话试试`,true)
+      }
+      else if(msg.includes('Throttled Request is throttled underfined'))
+      {
+        await this.reply(`你的账号使用Sydney或者自设定模式过多 达到了日限流额 可等待12h后重新获取token再配置解决`,true)
+      }
+      if (msg.length < 200) {
+        await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`,true)
+      } else {
+        await this.renderImage(e, use,`通信异常：未知错误 ,错误信息如下: ${msg}`, prompt)
+      }
+    }
   }
+}
   async chatgpt1 (e) {
     if (!Config.allowOtherMode) {
       return false
