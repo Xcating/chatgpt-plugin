@@ -51,16 +51,22 @@ Node.js >= 18 / Node.js >= 14(with node-fetch)
 推荐使用 git 进行安装，以方便后续升级。在 Yunzai-Bot 根目录夹打开终端，运行下述指令进行安装
 
 ```shell
-# 🤗github源
 git clone --depth=1 https://github.com/Xcating/chatgpt-plugin.git ./plugins/chatgpt-plugin/
-
-# 🤗网络不好连不上github可以使用gitee源，但更新可能不如github及时
-# 🤗别想了没有gitee源
-
-# 🤗以上二选一后执行下面步骤进入目录安装依赖
+```
+```shell
+# 🤗安装完毕后直接启动云崽，然后对机器人发 
+```
+```shell
+#chatgpt安装依赖
+```
+```shell
+# 🤗才可以使用
+---
+# 🤗当然，也可以手动安装依赖，指令：
+```
+```shell
 cd plugins/chatgpt-plugin
 pnpm i
-
 ```
 
 如果是手工下载的 zip 压缩包，请将解压后的 chatgpt-plugin 文件夹（请删除压缩自带的-master或版本号后缀）放置在 Yunzai-Bot 目录下的 plugins 文件夹内
