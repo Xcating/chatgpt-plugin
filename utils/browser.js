@@ -1,128 +1,133 @@
-import lodash from 'lodash'
-import { Config } from '../utils/config.js'
-import { getOpenAIAuth } from './openai-auth.js'
-let Keyv
-let pTimeout
-let QuickLRU
-let v4
-let uuidv4
-let delay
-let StealthPlugin
+import lodash from "lodash";
+import { Config } from "../utils/config.js";
+import { getOpenAIAuth } from "./openai-auth.js";
+let Keyv;
+let pTimeout;
+let QuickLRU;
+let v4;
+let uuidv4;
+let delay;
+let StealthPlugin;
 try {
-    Keyv = (await import('keyv')).default
-    pTimeout = (await import('p-timeout')).default
-    QuickLRU = (await import('quick-lru')).default
-    v4 = (await import('uuid')).default
-    delay = (await import('delay')).default
-    StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default
-    uuidv4=v4
+  Keyv = (await import("keyv")).default;
+  pTimeout = (await import("p-timeout")).default;
+  QuickLRU = (await import("quick-lru")).default;
+  v4 = (await import("uuid")).default;
+  delay = (await import("delay")).default;
+  StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+  uuidv4 = v4;
 } catch (e) {
-  console.warn('未安装delay，请发送指令#chatgpt安装依赖')
+  console.warn("未安装delay，请发送指令#chatgpt安装依赖");
 }
-const chatUrl = 'https://chat.openai.com/chat'
-let puppeteer = {}
+const chatUrl = "https://chat.openai.com/chat";
+let puppeteer = {};
 
 class Puppeteer {
-  constructor () {
+  constructor() {
     let args = [
-      '--exclude-switches',
-      '--no-sandbox',
-      '--remote-debugging-port=51777',
-      '--disable-setuid-sandbox',
-      '--disable-infobars',
-      '--disable-dev-shm-usage',
-      '--disable-blink-features=AutomationControlled',
-      '--ignore-certificate-errors',
-      '--no-first-run',
-      '--no-service-autorun',
-      '--password-store=basic',
-      '--system-developer-mode',
-      '--mute-audio',
-      '--disable-default-apps',
-      '--no-zygote',
-      '--disable-accelerated-2d-canvas',
-      '--disable-web-security'
+      "--exclude-switches",
+      "--no-sandbox",
+      "--remote-debugging-port=51777",
+      "--disable-setuid-sandbox",
+      "--disable-infobars",
+      "--disable-dev-shm-usage",
+      "--disable-blink-features=AutomationControlled",
+      "--ignore-certificate-errors",
+      "--no-first-run",
+      "--no-service-autorun",
+      "--password-store=basic",
+      "--system-developer-mode",
+      "--mute-audio",
+      "--disable-default-apps",
+      "--no-zygote",
+      "--disable-accelerated-2d-canvas",
+      "--disable-web-security",
       // '--shm-size=1gb'
-    ]
+    ];
     if (Config.proxy) {
-      args.push(`--proxy-server=${Config.proxy}`)
+      args.push(`--proxy-server=${Config.proxy}`);
     }
-    this.browser = false
-    this.lock = false
+    this.browser = false;
+    this.lock = false;
     this.config = {
       headless: Config.headless,
-      args
-    }
+      args,
+    };
 
     if (Config.chromePath) {
-      this.config.executablePath = Config.chromePath
+      this.config.executablePath = Config.chromePath;
     }
 
-    this.html = {}
+    this.html = {};
   }
 
-  async initPupp () {
-    if (!lodash.isEmpty(puppeteer)) return puppeteer
-    puppeteer = (await import('puppeteer-extra')).default
-    const pluginStealth = StealthPlugin()
-    puppeteer.use(pluginStealth)
-    if (Config['2captchaToken']) {
-      const pluginCaptcha = (await import('puppeteer-extra-plugin-recaptcha')).default
-      puppeteer.use(pluginCaptcha({
-        provider: {
-          id: '2captcha',
-          token: Config['2captchaToken'] // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
-        },
-        visualFeedback: true
-      }))
+  async initPupp() {
+    if (!lodash.isEmpty(puppeteer)) return puppeteer;
+    puppeteer = (await import("puppeteer-extra")).default;
+    const pluginStealth = StealthPlugin();
+    puppeteer.use(pluginStealth);
+    if (Config["2captchaToken"]) {
+      const pluginCaptcha = (await import("puppeteer-extra-plugin-recaptcha"))
+        .default;
+      puppeteer.use(
+        pluginCaptcha({
+          provider: {
+            id: "2captcha",
+            token: Config["2captchaToken"], // REPLACE THIS WITH YOUR OWN 2CAPTCHA API KEY ⚡
+          },
+          visualFeedback: true,
+        })
+      );
     }
-    return puppeteer
+    return puppeteer;
   }
 
   /**
-     * 初始化chromium
-     */
-  async browserInit () {
-    await this.initPupp()
-    if (this.browser) return this.browser
-    if (this.lock) return false
-    this.lock = true
+   * 初始化chromium
+   */
+  async browserInit() {
+    await this.initPupp();
+    if (this.browser) return this.browser;
+    if (this.lock) return false;
+    this.lock = true;
 
-    logger.mark('chatgpt puppeteer 启动中...')
-    const browserURL = 'http://127.0.0.1:51777'
+    logger.mark("chatgpt puppeteer 启动中...");
+    const browserURL = "http://127.0.0.1:51777";
     try {
-      this.browser = await puppeteer.connect({ browserURL })
+      this.browser = await puppeteer.connect({ browserURL });
     } catch (e) {
       /** 初始化puppeteer */
       this.browser = await puppeteer.launch(this.config).catch((err) => {
-        logger.error(err.toString())
-        if (String(err).includes('correct Chromium')) {
-          logger.error('没有正确安装Chromium，可以尝试执行安装命令：node ./node_modules/puppeteer/install.js')
+        logger.error(err.toString());
+        if (String(err).includes("correct Chromium")) {
+          logger.error(
+            "没有正确安装Chromium，可以尝试执行安装命令：node ./node_modules/puppeteer/install.js"
+          );
         }
-      })
+      });
     }
-    this.lock = false
+    this.lock = false;
 
     if (!this.browser) {
-      logger.error('chatgpt puppeteer 启动失败')
-      return false
+      logger.error("chatgpt puppeteer 启动失败");
+      return false;
     }
 
-    logger.mark('chatgpt puppeteer 启动成功')
+    logger.mark("chatgpt puppeteer 启动成功");
 
     /** 监听Chromium实例是否断开 */
-    this.browser.on('disconnected', (e) => {
-      logger.info('Chromium实例关闭或崩溃！')
-      this.browser = false
-    })
+    this.browser.on("disconnected", (e) => {
+      logger.info("Chromium实例关闭或崩溃！");
+      this.browser = false;
+    });
 
-    return this.browser
+    return this.browser;
   }
 }
 
 export class ChatGPTPuppeteer extends Puppeteer {
-  constructor (opts = {}) {
-    super()
+  constructor(opts = {}) {
+    super();
     const {
       email,
       password,
@@ -131,163 +136,173 @@ export class ChatGPTPuppeteer extends Puppeteer {
       isGoogleLogin = false,
       minimize = true,
       captchaToken,
-      executablePath
-    } = opts
+      executablePath,
+    } = opts;
 
-    this._email = email
-    this._password = password
+    this._email = email;
+    this._password = password;
 
-    this._markdown = !!markdown
-    this._debug = !!debug
-    this._isGoogleLogin = !!isGoogleLogin
-    this._minimize = !!minimize
-    this._captchaToken = captchaToken
-    this._executablePath = executablePath
+    this._markdown = !!markdown;
+    this._debug = !!debug;
+    this._isGoogleLogin = !!isGoogleLogin;
+    this._minimize = !!minimize;
+    this._captchaToken = captchaToken;
+    this._executablePath = executablePath;
   }
 
-  async getBrowser () {
+  async getBrowser() {
     if (this.browser) {
-      return this.browser
+      return this.browser;
     } else {
-      return await this.browserInit()
+      return await this.browserInit();
     }
   }
 
-  async init () {
+  async init() {
     // if (this.inited) {
     //   return true
     // }
-    logger.info('init chatgpt browser')
+    logger.info("init chatgpt browser");
     try {
       // this.browser = await getBrowser({
       //   captchaToken: this._captchaToken,
       //   executablePath: this._executablePath
       // })
-      this.browser = await this.getBrowser()
+      this.browser = await this.getBrowser();
       this._page =
-                (await this.browser.pages())[0] || (await this.browser.newPage())
-      await maximizePage(this._page)
-      this._page.on('request', this._onRequest.bind(this))
-      this._page.on('response', this._onResponse.bind(this))
+        (await this.browser.pages())[0] || (await this.browser.newPage());
+      await maximizePage(this._page);
+      this._page.on("request", this._onRequest.bind(this));
+      this._page.on("response", this._onResponse.bind(this));
       // bypass cloudflare and login
-      let preCookies = await redis.get('CHATGPT:RAW_COOKIES')
+      let preCookies = await redis.get("CHATGPT:RAW_COOKIES");
       if (preCookies) {
-        await this._page.setCookie(...JSON.parse(preCookies))
+        await this._page.setCookie(...JSON.parse(preCookies));
       }
       // const url = this._page.url().replace(/\/$/, '')
       // bypass annoying popup modals
       await this._page.evaluateOnNewDocument(() => {
-        window.localStorage.setItem('oai/apps/hasSeenOnboarding/chat', 'true')
-        const chatGPTUpdateDates = ['2022-12-15', '2022-12-19', '2023-01-09', '2023-01-30', '2023-02-10']
-        chatGPTUpdateDates.forEach(date => {
+        window.localStorage.setItem("oai/apps/hasSeenOnboarding/chat", "true");
+        const chatGPTUpdateDates = [
+          "2022-12-15",
+          "2022-12-19",
+          "2023-01-09",
+          "2023-01-30",
+          "2023-02-10",
+        ];
+        chatGPTUpdateDates.forEach((date) => {
           window.localStorage.setItem(
-                `oai/apps/hasSeenReleaseAnnouncement/${date}`,
-                'true'
-          )
-        })
-      })
+            `oai/apps/hasSeenReleaseAnnouncement/${date}`,
+            "true"
+          );
+        });
+      });
       await this._page.goto(chatUrl, {
-        waitUntil: 'networkidle2'
-      })
-      let timeout = 30000
+        waitUntil: "networkidle2",
+      });
+      let timeout = 30000;
       try {
-        while (timeout > 0 && (await this._page.title()).toLowerCase().indexOf('moment') > -1) {
+        while (
+          timeout > 0 &&
+          (await this._page.title()).toLowerCase().indexOf("moment") > -1
+        ) {
           // if meet captcha
-          if (Config['2captchaToken']) {
-            await this._page.solveRecaptchas()
+          if (Config["2captchaToken"]) {
+            await this._page.solveRecaptchas();
           }
-          await delay(300)
-          timeout = timeout - 300
+          await delay(300);
+          timeout = timeout - 300;
         }
       } catch (e) {
         // navigation后获取title会报错，报错说明已经在navigation了正合我意。
       }
       if (timeout < 0) {
-        logger.error('wait for cloudflare navigation timeout. 可能遇见验证码')
-        throw new Error('wait for cloudflare navigation timeout. 可能遇见验证码')
+        logger.error("wait for cloudflare navigation timeout. 可能遇见验证码");
+        throw new Error(
+          "wait for cloudflare navigation timeout. 可能遇见验证码"
+        );
       }
       try {
-        await this._page.waitForNavigation({ timeout: 3000 })
+        await this._page.waitForNavigation({ timeout: 3000 });
       } catch (e) {}
 
-      if (!await this.getIsAuthenticated()) {
-        await redis.del('CHATGPT:RAW_COOKIES')
-        logger.info('需要登录，准备进行自动化登录')
+      if (!(await this.getIsAuthenticated())) {
+        await redis.del("CHATGPT:RAW_COOKIES");
+        logger.info("需要登录，准备进行自动化登录");
         await getOpenAIAuth({
           email: this._email,
           password: this._password,
           browser: this.browser,
           page: this._page,
-          isGoogleLogin: this._isGoogleLogin
-        })
-        logger.info('登录完成')
+          isGoogleLogin: this._isGoogleLogin,
+        });
+        logger.info("登录完成");
       } else {
-        logger.info('无需登录')
+        logger.info("无需登录");
       }
     } catch (err) {
       if (this.browser) {
-        await this.browser.close()
+        await this.browser.close();
       }
 
-      this.browser = null
-      this._page = null
+      this.browser = null;
+      this._page = null;
 
-      throw err
+      throw err;
     }
 
-    const url = this._page.url().replace(/\/$/, '')
+    const url = this._page.url().replace(/\/$/, "");
 
     if (url !== chatUrl) {
       await this._page.goto(chatUrl, {
-        waitUntil: 'networkidle2'
-      })
+        waitUntil: "networkidle2",
+      });
     }
 
     // dismiss welcome modal (and other modals)
     do {
-      const modalSelector = '[data-headlessui-state="open"]'
+      const modalSelector = '[data-headlessui-state="open"]';
 
       if (!(await this._page.$(modalSelector))) {
-        break
+        break;
       }
 
       try {
-        await this._page.click(`${modalSelector} button:last-child`)
+        await this._page.click(`${modalSelector} button:last-child`);
       } catch (err) {
         // "next" button not found in welcome modal
-        break
+        break;
       }
 
-      await delay(300)
-    } while (true)
+      await delay(300);
+    } while (true);
 
-    if (!await this.getIsAuthenticated()) {
-      return false
+    if (!(await this.getIsAuthenticated())) {
+      return false;
     }
 
     if (this._minimize) {
-      await minimizePage(this._page)
+      await minimizePage(this._page);
     }
 
-    return true
+    return true;
   }
 
   _onRequest = (request) => {
-    const url = request.url()
+    const url = request.url();
     if (!isRelevantRequest(url)) {
-      return
+      return;
     }
 
-    const method = request.method()
-    let body
+    const method = request.method();
+    let body;
 
-    if (method === 'POST') {
-      body = request.postData()
+    if (method === "POST") {
+      body = request.postData();
 
       try {
-        body = JSON.parse(body)
-      } catch (_) {
-      }
+        body = JSON.parse(body);
+      } catch (_) {}
 
       // if (url.endsWith('/conversation') && typeof body === 'object') {
       //   const conversationBody: types.ConversationJSONBody = body
@@ -301,33 +316,32 @@ export class ChatGPTPuppeteer extends Puppeteer {
     }
 
     if (this._debug) {
-      console.log('\nrequest', {
+      console.log("\nrequest", {
         url,
         method,
         headers: request.headers(),
-        body
-      })
+        body,
+      });
     }
-  }
+  };
 
   _onResponse = async (response) => {
-    const request = response.request()
+    const request = response.request();
 
-    const url = response.url()
+    const url = response.url();
     if (!isRelevantRequest(url)) {
-      return
+      return;
     }
 
-    const status = response.status()
+    const status = response.status();
 
-    let body
+    let body;
     try {
-      body = await response.json()
-    } catch (_) {
-    }
+      body = await response.json();
+    } catch (_) {}
 
     if (this._debug) {
-      console.log('\nresponse', {
+      console.log("\nresponse", {
         url,
         ok: response.ok(),
         status,
@@ -337,123 +351,124 @@ export class ChatGPTPuppeteer extends Puppeteer {
         request: {
           method: request.method(),
           headers: request.headers(),
-          body: request.postData()
-        }
-      })
+          body: request.postData(),
+        },
+      });
     }
 
-    if (url.endsWith('/conversation')) {
+    if (url.endsWith("/conversation")) {
       if (status === 403) {
-        await this.handle403Error()
+        await this.handle403Error();
       }
-    } else if (url.endsWith('api/auth/session')) {
+    } else if (url.endsWith("api/auth/session")) {
       if (status === 403) {
-        await this.handle403Error()
+        await this.handle403Error();
       } else {
-        const session = body
+        const session = body;
         if (session?.accessToken) {
-          this._accessToken = session.accessToken
+          this._accessToken = session.accessToken;
         }
       }
     }
-  }
+  };
 
-  async handle403Error () {
-    console.log(`ChatGPT "${this._email}" session expired; refreshing...`)
+  async handle403Error() {
+    console.log(`ChatGPT "${this._email}" session expired; refreshing...`);
     try {
-      await maximizePage(this._page)
+      await maximizePage(this._page);
       await this._page.reload({
-        waitUntil: 'networkidle2',
-        timeout: Config.chromeTimeoutMS // 2 minutes
-      })
+        waitUntil: "networkidle2",
+        timeout: Config.chromeTimeoutMS, // 2 minutes
+      });
       if (this._minimize) {
-        await minimizePage(this._page)
+        await minimizePage(this._page);
       }
     } catch (err) {
       console.error(
-              `ChatGPT "${this._email}" error refreshing session`,
-              err.toString()
-      )
+        `ChatGPT "${this._email}" error refreshing session`,
+        err.toString()
+      );
     }
   }
 
-  async getIsAuthenticated () {
+  async getIsAuthenticated() {
     try {
-      const inputBox = await this._getInputBox()
-      return !!inputBox
+      const inputBox = await this._getInputBox();
+      return !!inputBox;
     } catch (err) {
       // can happen when navigating during login
-      return false
+      return false;
     }
   }
 
-  async sendMessage (
-    message,
-    opts = {}
-  ) {
+  async sendMessage(message, opts = {}) {
     const {
       conversationId,
       parentMessageId = uuidv4(),
       messageId = uuidv4(),
-      action = 'next',
+      action = "next",
       // TODO
       timeoutMs,
       // onProgress,
-      onConversationResponse
-    } = opts
+      onConversationResponse,
+    } = opts;
 
-    const inputBox = await this._getInputBox()
+    const inputBox = await this._getInputBox();
     if (!inputBox || !this._accessToken) {
-      console.log(`chatgpt re-authenticating ${this._email}`)
-      let isAuthenticated = false
+      console.log(`chatgpt re-authenticating ${this._email}`);
+      let isAuthenticated = false;
 
       try {
-        isAuthenticated = await this.init()
+        isAuthenticated = await this.init();
       } catch (err) {
         console.warn(
-                `chatgpt error re-authenticating ${this._email}`,
-                err.toString()
-        )
-        throw err
+          `chatgpt error re-authenticating ${this._email}`,
+          err.toString()
+        );
+        throw err;
       }
-      let timeout = 100000
+      let timeout = 100000;
       if (isAuthenticated) {
         while (!this._accessToken) {
           // wait for async response hook result
-          await delay(300)
-          timeout = timeout - 300
+          await delay(300);
+          timeout = timeout - 300;
           if (timeout < 0) {
-            const error = new Error('Not signed in')
-            error.statusCode = 401
-            throw error
+            const error = new Error("Not signed in");
+            error.statusCode = 401;
+            throw error;
           }
         }
       } else if (!this._accessToken) {
-        const error = new Error('Not signed in')
-        error.statusCode = 401
-        throw error
+        const error = new Error("Not signed in");
+        error.statusCode = 401;
+        throw error;
       }
     }
 
-    const url = 'https://chat.openai.com/backend-api/conversation'
+    const url = "https://chat.openai.com/backend-api/conversation";
     const body = {
       action,
       messages: [
         {
           id: messageId,
-          role: 'user',
+          role: "user",
           content: {
-            content_type: 'text',
-            parts: [message]
-          }
-        }
+            content_type: "text",
+            parts: [message],
+          },
+        },
       ],
-      model: Config.plus ? Config.useGPT4 ? 'gpt-4' : 'text-davinci-002-render-sha' : 'text-davinci-002-render-sha',
-      parent_message_id: parentMessageId
-    }
+      model: Config.plus
+        ? Config.useGPT4
+          ? "gpt-4"
+          : "text-davinci-002-render-sha"
+        : "text-davinci-002-render-sha",
+      parent_message_id: parentMessageId,
+    };
 
     if (conversationId) {
-      body.conversation_id = conversationId
+      body.conversation_id = conversationId;
     }
 
     // console.log('>>> EVALUATE', url, this._accessToken, body)
@@ -463,32 +478,32 @@ export class ChatGPTPuppeteer extends Puppeteer {
       this._accessToken,
       body,
       timeoutMs
-    )
+    );
     // console.log('<<< EVALUATE', result)
 
     if (result.error) {
-      const error = new Error(result.error.message)
-      error.statusCode = result.error.statusCode
-      error.statusText = result.error.statusText
+      const error = new Error(result.error.message);
+      error.statusCode = result.error.statusCode;
+      error.statusText = result.error.statusText;
 
       if (error.statusCode === 403) {
-        await this.handle403Error()
+        await this.handle403Error();
       }
 
-      throw error
+      throw error;
     }
 
     // TODO: support sending partial response events
     if (onConversationResponse) {
-      onConversationResponse(result.conversationResponse)
+      onConversationResponse(result.conversationResponse);
     }
 
     return {
       text: result.response,
       conversationId: result.conversationResponse.conversation_id,
       id: messageId,
-      parentMessageId
-    }
+      parentMessageId,
+    };
 
     // const lastMessage = await this.getLastMessage()
 
@@ -533,79 +548,79 @@ export class ChatGPTPuppeteer extends Puppeteer {
     // }
   }
 
-  async resetThread () {
+  async resetThread() {
     try {
-      await this._page.click('nav > a:nth-child(1)')
+      await this._page.click("nav > a:nth-child(1)");
     } catch (err) {
       // ignore for now
     }
   }
 
-  async close () {
+  async close() {
     if (this.browser) {
-      await this.browser.close()
+      await this.browser.close();
     }
-    this._page = null
-    this.browser = null
+    this._page = null;
+    this.browser = null;
   }
 
-  protected
+  protected;
 
-  async _getInputBox () {
+  async _getInputBox() {
     // [data-id="root"]
-    return this._page?.$('textarea')
+    return this._page?.$("textarea");
   }
 }
 
-export default new ChatGPTPuppeteer()
+export default new ChatGPTPuppeteer();
 
-export async function minimizePage (page) {
-  const session = await page.target().createCDPSession()
-  const goods = await session.send('Browser.getWindowForTarget')
-  const { windowId } = goods
-  await session.send('Browser.setWindowBounds', {
+export async function minimizePage(page) {
+  const session = await page.target().createCDPSession();
+  const goods = await session.send("Browser.getWindowForTarget");
+  const { windowId } = goods;
+  await session.send("Browser.setWindowBounds", {
     windowId,
-    bounds: { windowState: 'minimized' }
-  })
+    bounds: { windowState: "minimized" },
+  });
 }
 
-export async function maximizePage (page) {
-  const session = await page.target().createCDPSession()
-  const goods = await session.send('Browser.getWindowForTarget')
-  const { windowId } = goods
-  await session.send('Browser.setWindowBounds', {
+export async function maximizePage(page) {
+  const session = await page.target().createCDPSession();
+  const goods = await session.send("Browser.getWindowForTarget");
+  const { windowId } = goods;
+  await session.send("Browser.setWindowBounds", {
     windowId,
-    bounds: { windowState: 'normal' }
-  })
+    bounds: { windowState: "normal" },
+  });
 }
 
-export function isRelevantRequest (url) {
-  let pathname
+export function isRelevantRequest(url) {
+  let pathname;
 
   try {
-    const parsedUrl = new URL(url)
-    pathname = parsedUrl.pathname
-    url = parsedUrl.toString()
+    const parsedUrl = new URL(url);
+    pathname = parsedUrl.pathname;
+    url = parsedUrl.toString();
   } catch (_) {
-    return false
+    return false;
   }
 
-  if (!url.startsWith('https://chat.openai.com')) {
-    return false
+  if (!url.startsWith("https://chat.openai.com")) {
+    return false;
   }
 
   if (
-    !pathname.startsWith('/backend-api/') &&
-        !pathname.startsWith('/api/auth/session')
+    !pathname.startsWith("/backend-api/") &&
+    !pathname.startsWith("/api/auth/session")
   ) {
-    return false
+    return false;
   }
 
-  if (pathname.endsWith('backend-api/moderations')) {
-    return false
+  if (pathname.endsWith("backend-api/moderations")) {
+    return false;
   }
 
-  return true
+  return true;
 }
 
 /**
@@ -613,134 +628,131 @@ export function isRelevantRequest (url) {
  * has to be fully self-contained, so we copied a few third-party sources and
  * included them in here.
  */
-export async function browserPostEventStream (
+export async function browserPostEventStream(
   url,
   accessToken,
   body,
   timeoutMs
 ) {
   // Workaround for https://github.com/esbuild-kit/tsx/issues/113
-  globalThis.__name = () => undefined
+  globalThis.__name = () => undefined;
 
-  const BOM = [239, 187, 191]
+  const BOM = [239, 187, 191];
 
-  let conversationResponse
-  let conversationId = body?.conversation_id
-  let messageId = body?.messages?.[0]?.id
-  let response = ''
+  let conversationResponse;
+  let conversationId = body?.conversation_id;
+  let messageId = body?.messages?.[0]?.id;
+  let response = "";
 
   try {
-    console.log('browserPostEventStream', url, accessToken, body)
+    console.log("browserPostEventStream", url, accessToken, body);
 
-    let abortController = null
+    let abortController = null;
     if (timeoutMs) {
-      abortController = new AbortController()
+      abortController = new AbortController();
     }
 
     const res = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(body),
       signal: abortController?.signal,
       headers: {
-        accept: 'text/event-stream',
-        'x-openai-assistant-app-id': '',
+        accept: "text/event-stream",
+        "x-openai-assistant-app-id": "",
         authorization: `Bearer ${accessToken}`,
-        'content-type': 'application/json'
-      }
-    })
+        "content-type": "application/json",
+      },
+    });
 
-    console.log('browserPostEventStream response', res)
+    console.log("browserPostEventStream response", res);
 
     if (!res.ok) {
       return {
         error: {
           message: `ChatGPTAPI error ${res.status || res.statusText}`,
           statusCode: res.status,
-          statusText: res.statusText
+          statusText: res.statusText,
         },
         response: null,
         conversationId,
-        messageId
-      }
+        messageId,
+      };
     }
 
-    const responseP = new Promise(
-      async (resolve, reject) => {
-        function onMessage (data) {
-          if (data === '[DONE]') {
-            return resolve({
-              error: null,
-              response,
-              conversationId,
-              messageId,
-              conversationResponse
-            })
-          }
-          try {
-            const _checkJson = JSON.parse(data)
-          } catch (error) {
-            console.log('warning: parse error.')
-            return
-          }
-          try {
-            const convoResponseEvent =
-                            JSON.parse(data)
-            conversationResponse = convoResponseEvent
-            if (convoResponseEvent.conversation_id) {
-              conversationId = convoResponseEvent.conversation_id
-            }
-
-            if (convoResponseEvent.message?.id) {
-              messageId = convoResponseEvent.message.id
-            }
-
-            const partialResponse =
-                            convoResponseEvent.message?.content?.parts?.[0]
-            if (partialResponse) {
-              response = partialResponse
-            }
-          } catch (err) {
-            console.warn('fetchSSE onMessage unexpected error', err)
-            reject(err)
-          }
+    const responseP = new Promise(async (resolve, reject) => {
+      function onMessage(data) {
+        if (data === "[DONE]") {
+          return resolve({
+            error: null,
+            response,
+            conversationId,
+            messageId,
+            conversationResponse,
+          });
         }
-
-        const parser = createParser((event) => {
-          if (event.type === 'event') {
-            onMessage(event.data)
+        try {
+          const _checkJson = JSON.parse(data);
+        } catch (error) {
+          console.log("warning: parse error.");
+          return;
+        }
+        try {
+          const convoResponseEvent = JSON.parse(data);
+          conversationResponse = convoResponseEvent;
+          if (convoResponseEvent.conversation_id) {
+            conversationId = convoResponseEvent.conversation_id;
           }
-        })
 
-        for await (const chunk of streamAsyncIterable(res.body)) {
-          const str = new TextDecoder().decode(chunk)
-          parser.feed(str)
+          if (convoResponseEvent.message?.id) {
+            messageId = convoResponseEvent.message.id;
+          }
+
+          const partialResponse =
+            convoResponseEvent.message?.content?.parts?.[0];
+          if (partialResponse) {
+            response = partialResponse;
+          }
+        } catch (err) {
+          console.warn("fetchSSE onMessage unexpected error", err);
+          reject(err);
         }
       }
-    )
+
+      const parser = createParser((event) => {
+        if (event.type === "event") {
+          onMessage(event.data);
+        }
+      });
+
+      for await (const chunk of streamAsyncIterable(res.body)) {
+        const str = new TextDecoder().decode(chunk);
+        parser.feed(str);
+      }
+    });
 
     if (timeoutMs) {
       if (abortController) {
         // This will be called when a timeout occurs in order for us to forcibly
         // ensure that the underlying HTTP request is aborted.
         responseP.cancel = () => {
-          abortController.abort()
-        }
+          abortController.abort();
+        };
       }
-      console.log({ pTimeout })
+      console.log({ pTimeout });
       return await pTimeout(responseP, {
         milliseconds: timeoutMs,
-        message: 'ChatGPT timed out waiting for response'
-      })
+        message: "ChatGPT timed out waiting for response",
+      });
     } else {
-      return await responseP
+      return await responseP;
     }
   } catch (err) {
-    const errMessageL = err.toString().toLowerCase()
+    const errMessageL = err.toString().toLowerCase();
 
     if (
       response &&
-            (errMessageL === 'error: typeerror: terminated' ||
-                errMessageL === 'typeerror: terminated')
+      (errMessageL === "error: typeerror: terminated" ||
+        errMessageL === "typeerror: terminated")
     ) {
       // OpenAI sometimes forcefully terminates the socket from their end before
       // the HTTP request has resolved cleanly. In my testing, these cases tend to
@@ -751,83 +763,83 @@ export async function browserPostEventStream (
         response,
         conversationId,
         messageId,
-        conversationResponse
-      }
+        conversationResponse,
+      };
     }
 
     return {
       error: {
         message: err.toString(),
         statusCode: err.statusCode || err.status || err.response?.statusCode,
-        statusText: err.statusText || err.response?.statusText
+        statusText: err.statusText || err.response?.statusText,
       },
       response: null,
       conversationId,
       messageId,
-      conversationResponse
-    }
+      conversationResponse,
+    };
   }
   //  async function pTimeout (promise, option) {
   //    return await pTimeout(promise, option)
   //  }
-  async function * streamAsyncIterable (stream) {
-    const reader = stream.getReader()
+  async function* streamAsyncIterable(stream) {
+    const reader = stream.getReader();
     try {
       while (true) {
-        const { done, value } = await reader.read()
+        const { done, value } = await reader.read();
         if (done) {
-          return
+          return;
         }
-        yield value
+        yield value;
       }
     } finally {
-      reader.releaseLock()
+      reader.releaseLock();
     }
   }
 
   // @see https://github.com/rexxars/eventsource-parser
-  function createParser (onParse) {
+  function createParser(onParse) {
     // Processing state
-    let isFirstChunk
-    let buffer
-    let startingPosition
-    let startingFieldLength
+    let isFirstChunk;
+    let buffer;
+    let startingPosition;
+    let startingFieldLength;
 
     // Event state
-    let eventId
-    let eventName
-    let data
+    let eventId;
+    let eventName;
+    let data;
 
-    reset()
-    return { feed, reset }
+    reset();
+    return { feed, reset };
 
-    function reset () {
-      isFirstChunk = true
-      buffer = ''
-      startingPosition = 0
-      startingFieldLength = -1
+    function reset() {
+      isFirstChunk = true;
+      buffer = "";
+      startingPosition = 0;
+      startingFieldLength = -1;
 
-      eventId = undefined
-      eventName = undefined
-      data = ''
+      eventId = undefined;
+      eventName = undefined;
+      data = "";
     }
 
-    function feed (chunk) {
-      buffer = buffer ? buffer + chunk : chunk
+    function feed(chunk) {
+      buffer = buffer ? buffer + chunk : chunk;
 
       // Strip any UTF8 byte order mark (BOM) at the start of the stream.
       // Note that we do not strip any non - UTF8 BOM, as eventsource streams are
       // always decoded as UTF8 as per the specification.
       if (isFirstChunk && hasBom(buffer)) {
-        buffer = buffer.slice(BOM.length)
+        buffer = buffer.slice(BOM.length);
       }
 
-      isFirstChunk = false
+      isFirstChunk = false;
 
       // Set up chunk-specific processing state
-      const length = buffer.length
-      let position = 0
-      let discardTrailingNewline = false
+      const length = buffer.length;
+      let position = 0;
+      let discardTrailingNewline = false;
 
       // Read the current buffer byte by byte
       while (position < length) {
@@ -837,156 +849,148 @@ export async function browserPostEventStream (
         // @todo refactor to reduce nesting, consider checking previous byte?
         // @todo but consider multiple chunks etc
         if (discardTrailingNewline) {
-          if (buffer[position] === '\n') {
-            ++position
+          if (buffer[position] === "\n") {
+            ++position;
           }
-          discardTrailingNewline = false
+          discardTrailingNewline = false;
         }
 
-        let lineLength = -1
-        let fieldLength = startingFieldLength
-        let character
+        let lineLength = -1;
+        let fieldLength = startingFieldLength;
+        let character;
 
         for (
           let index = startingPosition;
           lineLength < 0 && index < length;
           ++index
         ) {
-          character = buffer[index]
-          if (character === ':' && fieldLength < 0) {
-            fieldLength = index - position
-          } else if (character === '\r') {
-            discardTrailingNewline = true
-            lineLength = index - position
-          } else if (character === '\n') {
-            lineLength = index - position
+          character = buffer[index];
+          if (character === ":" && fieldLength < 0) {
+            fieldLength = index - position;
+          } else if (character === "\r") {
+            discardTrailingNewline = true;
+            lineLength = index - position;
+          } else if (character === "\n") {
+            lineLength = index - position;
           }
         }
 
         if (lineLength < 0) {
-          startingPosition = length - position
-          startingFieldLength = fieldLength
-          break
+          startingPosition = length - position;
+          startingFieldLength = fieldLength;
+          break;
         } else {
-          startingPosition = 0
-          startingFieldLength = -1
+          startingPosition = 0;
+          startingFieldLength = -1;
         }
 
-        parseEventStreamLine(buffer, position, fieldLength, lineLength)
+        parseEventStreamLine(buffer, position, fieldLength, lineLength);
 
-        position += lineLength + 1
+        position += lineLength + 1;
       }
 
       if (position === length) {
         // If we consumed the entire buffer to read the event, reset the buffer
-        buffer = ''
+        buffer = "";
       } else if (position > 0) {
         // If there are bytes left to process, set the buffer to the unprocessed
         // portion of the buffer only
-        buffer = buffer.slice(position)
+        buffer = buffer.slice(position);
       }
     }
 
-    function parseEventStreamLine (
-      lineBuffer,
-      index,
-      fieldLength,
-      lineLength
-    ) {
+    function parseEventStreamLine(lineBuffer, index, fieldLength, lineLength) {
       if (lineLength === 0) {
         // We reached the last line of this event
         if (data.length > 0) {
           onParse({
-            type: 'event',
+            type: "event",
             id: eventId,
             event: eventName || undefined,
-            data: data.slice(0, -1) // remove trailing newline
-          })
+            data: data.slice(0, -1), // remove trailing newline
+          });
 
-          data = ''
-          eventId = undefined
+          data = "";
+          eventId = undefined;
         }
-        eventName = undefined
-        return
+        eventName = undefined;
+        return;
       }
 
-      const noValue = fieldLength < 0
+      const noValue = fieldLength < 0;
       const field = lineBuffer.slice(
         index,
         index + (noValue ? lineLength : fieldLength)
-      )
-      let step = 0
+      );
+      let step = 0;
 
       if (noValue) {
-        step = lineLength
-      } else if (lineBuffer[index + fieldLength + 1] === ' ') {
-        step = fieldLength + 2
+        step = lineLength;
+      } else if (lineBuffer[index + fieldLength + 1] === " ") {
+        step = fieldLength + 2;
       } else {
-        step = fieldLength + 1
+        step = fieldLength + 1;
       }
 
-      const position = index + step
-      const valueLength = lineLength - step
+      const position = index + step;
+      const valueLength = lineLength - step;
       const value = lineBuffer
         .slice(position, position + valueLength)
-        .toString()
+        .toString();
 
-      if (field === 'data') {
-        data += value ? `${value}\n` : '\n'
-      } else if (field === 'event') {
-        eventName = value
-      } else if (field === 'id' && !value.includes('\u0000')) {
-        eventId = value
-      } else if (field === 'retry') {
-        const retry = parseInt(value, 10)
+      if (field === "data") {
+        data += value ? `${value}\n` : "\n";
+      } else if (field === "event") {
+        eventName = value;
+      } else if (field === "id" && !value.includes("\u0000")) {
+        eventId = value;
+      } else if (field === "retry") {
+        const retry = parseInt(value, 10);
         if (!Number.isNaN(retry)) {
-          onParse({ type: 'reconnect-interval', value: retry })
+          onParse({ type: "reconnect-interval", value: retry });
         }
       }
     }
   }
 
-  function hasBom (buffer) {
+  function hasBom(buffer) {
     return BOM.every(
       (charCode, index) => buffer.charCodeAt(index) === charCode
-    )
+    );
   }
 
   // @see https://github.com/sindresorhus/p-timeout
-  function pTimeout (
-    promise,
-    options
-  ) {
+  function pTimeout(promise, options) {
     const {
       milliseconds,
       fallback,
       message,
-      customTimers = { setTimeout, clearTimeout }
-    } = options
+      customTimers = { setTimeout, clearTimeout },
+    } = options;
 
-    let timer
+    let timer;
 
     const cancelablePromise = new Promise((resolve, reject) => {
-      if (typeof milliseconds !== 'number' || Math.sign(milliseconds) !== 1) {
+      if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
         throw new TypeError(
-              `Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``
-        )
+          `Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``
+        );
       }
 
       if (milliseconds === Number.POSITIVE_INFINITY) {
-        resolve(promise)
-        return
+        resolve(promise);
+        return;
       }
 
       if (options.signal) {
-        const { signal } = options
+        const { signal } = options;
         if (signal.aborted) {
-          reject(getAbortedReason(signal))
+          reject(getAbortedReason(signal));
         }
 
-        signal.addEventListener('abort', () => {
-          reject(getAbortedReason(signal))
-        })
+        signal.addEventListener("abort", () => {
+          reject(getAbortedReason(signal));
+        });
       }
 
       timer = customTimers.setTimeout.call(
@@ -994,64 +998,64 @@ export async function browserPostEventStream (
         () => {
           if (fallback) {
             try {
-              resolve(fallback())
+              resolve(fallback());
             } catch (error) {
-              reject(error)
+              reject(error);
             }
 
-            return
+            return;
           }
 
           const errorMessage =
-                        typeof message === 'string'
-                          ? message
-                          : `Promise timed out after ${milliseconds} milliseconds`
+            typeof message === "string"
+              ? message
+              : `Promise timed out after ${milliseconds} milliseconds`;
           const timeoutError =
-                        message instanceof Error ? message : new Error(errorMessage)
+            message instanceof Error ? message : new Error(errorMessage);
 
-          if (typeof promise.cancel === 'function') {
-            promise.cancel()
+          if (typeof promise.cancel === "function") {
+            promise.cancel();
           }
 
-          reject(timeoutError)
+          reject(timeoutError);
         },
         milliseconds
-      )
-      ;(async () => {
+      );
+      (async () => {
         try {
-          resolve(await promise)
+          resolve(await promise);
         } catch (error) {
-          reject(error)
+          reject(error);
         } finally {
-          customTimers.clearTimeout.call(undefined, timer)
+          customTimers.clearTimeout.call(undefined, timer);
         }
-      })()
-    })
+      })();
+    });
 
     cancelablePromise.clear = () => {
-      customTimers.clearTimeout.call(undefined, timer)
-      timer = undefined
-    }
+      customTimers.clearTimeout.call(undefined, timer);
+      timer = undefined;
+    };
 
-    return cancelablePromise
+    return cancelablePromise;
   }
   /**
      TODO: Remove below function and just 'reject(signal.reason)' when targeting Node 18.
      */
-  function getAbortedReason (signal) {
+  function getAbortedReason(signal) {
     const reason =
-            signal.reason === undefined
-              ? getDOMException('This operation was aborted.')
-              : signal.reason
+      signal.reason === undefined
+        ? getDOMException("This operation was aborted.")
+        : signal.reason;
 
-    return reason instanceof Error ? reason : getDOMException(reason)
+    return reason instanceof Error ? reason : getDOMException(reason);
   }
   /**
      TODO: Remove AbortError and just throw DOMException when targeting Node 18.
      */
-  function getDOMException (errorMessage) {
+  function getDOMException(errorMessage) {
     return globalThis.DOMException === undefined
       ? new Error(errorMessage)
-      : new DOMException(errorMessage)
+      : new DOMException(errorMessage);
   }
 }

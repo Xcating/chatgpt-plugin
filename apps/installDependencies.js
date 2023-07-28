@@ -83,12 +83,17 @@ export class checkDependencies extends plugin {
     return true;
   }
   async installDependencies(e) {
-    var exec = require('child_process').exec;
-    e.reply("🍵[ChatGPT-Plugin]🥑 正在安装依赖中，请稍等片刻，1~3分钟即可安装完毕", true)
+    var exec = require("child_process").exec;
+    e.reply(
+      "🍵[ChatGPT-Plugin]🥑 正在安装依赖中，请稍等片刻，1~3分钟即可安装完毕",
+      true
+    );
     try {
       await this.execSync(`pnpm -v`);
     } catch (err) {
-      e.reply(`🍵[ChatGPT-Plugin]🥑检测到您未安装pnpm，正在为您安装pnpm，请稍等...`);
+      e.reply(
+        `🍵[ChatGPT-Plugin]🥑检测到您未安装pnpm，正在为您安装pnpm，请稍等...`
+      );
       let { error, stdout, stderr } = await this.execSync(
         `npm install -g pnpm`
       );
@@ -103,20 +108,25 @@ export class checkDependencies extends plugin {
       e.reply(`🍵[ChatGPT-Plugin]🥑pnpm安装完成，正在为您安装依赖，请稍等...`);
     }
     //执行的逻辑功能
-    var ls = exec(`cd ${_path}/plugins/chatgpt-plugin && pnpm i`, function (error, stdout, stderr){
-      if (error) {
-        e.reply("依赖安装失败：\n" +error.stack);
-      } else{
-        e.reply("🍵[ChatGPT-Plugin]🥑 依赖安装成功！尽情享受ChatGPT-Plugin的所有功能吧！5秒后将重启云崽！")
-        common.sleep(5000);
-        new Restart(e).restart();
-        return true; //返回true 阻挡消息不再往下
+    var ls = exec(
+      `cd ${_path}/plugins/chatgpt-plugin && pnpm i`,
+      function (error, stdout, stderr) {
+        if (error) {
+          e.reply("依赖安装失败：\n" + error.stack);
+        } else {
+          e.reply(
+            "🍵[ChatGPT-Plugin]🥑 依赖安装成功！尽情享受ChatGPT-Plugin的所有功能吧！5秒后将重启云崽！"
+          );
+          common.sleep(5000);
+          new Restart(e).restart();
+          return true; //返回true 阻挡消息不再往下
+        }
       }
-    })
+    );
     return false; //返回false，未完成安装
   }
   async execSync(cmd) {
-    var exec = require('child_process').exec;
+    var exec = require("child_process").exec;
     return new Promise((resolve, reject) => {
       exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
         resolve({ error, stdout, stderr });

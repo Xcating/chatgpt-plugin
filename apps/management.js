@@ -1,5 +1,5 @@
-import plugin from '../../../lib/plugins/plugin.js'
-import { Config } from '../utils/config.js'
+import plugin from "../../../lib/plugins/plugin.js";
+import { Config } from "../utils/config.js";
 import {
   formatDuration,
   getAzureRoleList,
@@ -9,1105 +9,1345 @@ import {
   makeForwardMsg,
   parseDuration,
   renderUrl,
-  replaceWithAsterisks
-} from '../utils/common.js'
-import SydneyAIClient from '../utils/SydneyAIClient.js'
-import { convertSpeaker, speakers as vitsRoleList } from '../utils/tts.js'
-import md5 from 'md5'
-import path from 'path'
+  replaceWithAsterisks,
+} from "../utils/common.js";
+import SydneyAIClient from "../utils/SydneyAIClient.js";
+import { convertSpeaker, speakers as vitsRoleList } from "../utils/tts.js";
+import md5 from "md5";
+import path from "path";
 import { createRequire } from "module";
 import { Restart } from "../../other/restart.js";
 import common from "../../../lib/common/common.js";
-import fs from 'fs'
+import fs from "fs";
 try {
-  await import('node-fetch')
+  await import("node-fetch");
 } catch (e) {
-  console.warn('未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1')
+  console.warn(
+    "未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1"
+  );
 }
-import loader from '../../../lib/plugins/loader.js'
-import VoiceVoxTTS, { supportConfigurations as voxRoleList } from '../utils/tts/voicevox.js'
-import { supportConfigurations as azureRoleList } from '../utils/tts/microsoft-azure.js'
-import { getBots } from '../utils/poe/index.js'
+import loader from "../../../lib/plugins/loader.js";
+import VoiceVoxTTS, {
+  supportConfigurations as voxRoleList,
+} from "../utils/tts/voicevox.js";
+import { supportConfigurations as azureRoleList } from "../utils/tts/microsoft-azure.js";
+import { getBots } from "../utils/poe/index.js";
 const require = createRequire(import.meta.url);
 const { exec, execSync } = require("child_process");
-let proxy
+let proxy;
 const _path = process.cwd();
 if (Config.proxy) {
-    try {
-        proxy = (await import('https-proxy-agent')).default
-    } catch (e) {
-        console.warn('未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1')
-    }
+  try {
+    proxy = (await import("https-proxy-agent")).default;
+  } catch (e) {
+    console.warn(
+      "未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1"
+    );
+  }
 }
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy
-      ? {
-          agent: proxy(Config.proxy)
+    ? {
+        agent: proxy(Config.proxy),
       }
-      : {}
-  console.log(defaultOptions)
+    : {};
+  console.log(defaultOptions);
   const mergedOptions = {
-      ...defaultOptions,
-      ...options
-  }
-  return fetch(url, mergedOptions)
-}
+    ...defaultOptions,
+    ...options,
+  };
+  return fetch(url, mergedOptions);
+};
 export class ChatgptManagement extends plugin {
-  constructor (e) {
+  constructor(e) {
     super({
-      name: 'ChatGPT-Plugin 管理',
-      dsc: '插件的管理项配置，让你轻松掌控各个功能的开闭和管理。包含各种实用的配置选项，让你的聊天更加便捷和高效！',
-      event: 'message',
+      name: "ChatGPT-Plugin 管理",
+      dsc: "插件的管理项配置，让你轻松掌控各个功能的开闭和管理。包含各种实用的配置选项，让你的聊天更加便捷和高效！",
+      event: "message",
       priority: 500,
       rule: [
         {
-          reg: '^#chatgpt开启(问题)?(回复)?确认',
-          fnc: 'turnOnConfirm',
-          permission: 'master'
+          reg: "^#chatgpt开启(问题)?(回复)?确认",
+          fnc: "turnOnConfirm",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt关闭(问题)?(回复)?确认',
-          fnc: 'turnOffConfirm',
-          permission: 'master'
+          reg: "^#chatgpt关闭(问题)?(回复)?确认",
+          fnc: "turnOffConfirm",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(设置|绑定)(token|Token)',
-          fnc: 'setAccessToken',
-          permission: 'master'
+          reg: "^#chatgpt(设置|绑定)(token|Token)",
+          fnc: "setAccessToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(设置|绑定)(Poe|POE)(token|Token)',
-          fnc: 'setPoeCookie',
-          permission: 'master'
+          reg: "^#chatgpt(设置|绑定)(Poe|POE)(token|Token)",
+          fnc: "setPoeCookie",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(Poe|POE)切换(模式)',
-          fnc: 'setPoeBot',
-          permission: 'master'
+          reg: "^#chatgpt(Poe|POE)切换(模式)",
+          fnc: "setPoeBot",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(设置|绑定|添加)(必应|Bing |bing )(token|Token)',
-          fnc: 'setBingAccessToken',
-          permission: 'master'
+          reg: "^#chatgpt(设置|绑定|添加)(必应|Bing |bing )(token|Token)",
+          fnc: "setBingAccessToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(删除|移除)(必应|Bing |bing )(token|Token)',
-          fnc: 'delBingAccessToken',
-          permission: 'master'
+          reg: "^#chatgpt(删除|移除)(必应|Bing |bing )(token|Token)",
+          fnc: "delBingAccessToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(查看|浏览)(必应|Bing |bing )(token|Token)',
-          fnc: 'getBingAccessToken',
-          permission: 'master'
+          reg: "^#chatgpt(查看|浏览)(必应|Bing |bing )(token|Token)",
+          fnc: "getBingAccessToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(迁移|恢复)(必应|Bing |bing )(token|Token)',
-          fnc: 'migrateBingAccessToken',
-          permission: 'master'
+          reg: "^#chatgpt(迁移|恢复)(必应|Bing |bing )(token|Token)",
+          fnc: "migrateBingAccessToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换浏览器$',
-          fnc: 'useBrowserBasedSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换浏览器$",
+          fnc: "useBrowserBasedSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换API$',
-          fnc: 'useOpenAIAPIBasedSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换API$",
+          fnc: "useOpenAIAPIBasedSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换(ChatGLM|chatglm)$',
-          fnc: 'useChatGLMSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换(ChatGLM|chatglm)$",
+          fnc: "useChatGLMSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换API3$',
-          fnc: 'useReversedAPIBasedSolution2',
-          permission: 'master'
+          reg: "^#chatgpt切换API3$",
+          fnc: "useReversedAPIBasedSolution2",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换(必应|Bing)$',
-          fnc: 'useBingSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换(必应|Bing)$",
+          fnc: "useBingSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换(Poe|poe)$',
-          fnc: 'useClaudeBasedSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换(Poe|poe)$",
+          fnc: "useClaudeBasedSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换(Claude|claude|slack)$',
-          fnc: 'useSlackClaudeBasedSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换(Claude|claude|slack)$",
+          fnc: "useSlackClaudeBasedSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt切换星火$',
-          fnc: 'useXinghuoBasedSolution',
-          permission: 'master'
+          reg: "^#chatgpt切换星火$",
+          fnc: "useXinghuoBasedSolution",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(必应|Bing)切换',
-          fnc: 'changeBingTone',
-          permission: 'master'
+          reg: "^#chatgpt(必应|Bing)切换",
+          fnc: "changeBingTone",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(必应|Bing)(开启|关闭)建议(回复)?',
-          fnc: 'bingOpenSuggestedResponses',
-          permission: 'master'
+          reg: "^#chatgpt(必应|Bing)(开启|关闭)建议(回复)?",
+          fnc: "bingOpenSuggestedResponses",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt模式(帮助)?$',
-          fnc: 'modeHelp'
+          reg: "^#chatgpt模式(帮助)?$",
+          fnc: "modeHelp",
         },
         {
-          reg: '^#chatgpt版本(信息)',
-          fnc: 'versionChatGPTPlugin'
+          reg: "^#chatgpt版本(信息)",
+          fnc: "versionChatGPTPlugin",
         },
         {
-          reg: '^#chatgpt(本群)?(群\\d+)?(闭嘴|关机|休眠|下班)',
-          fnc: 'shutUp',
-          permission: 'master'
+          reg: "^#chatgpt(本群)?(群\\d+)?(闭嘴|关机|休眠|下班)",
+          fnc: "shutUp",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(本群)?(群\\d+)?(开启|启动|激活|张嘴|开口|说话|上班)$',
-          fnc: 'openMouth',
-          permission: 'master'
+          reg: "^#chatgpt(本群)?(群\\d+)?(开启|启动|激活|张嘴|开口|说话|上班)$",
+          fnc: "openMouth",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt查看?(闭嘴|关机|休眠|下班|休眠)列表$',
-          fnc: 'listShutUp',
-          permission: 'master'
+          reg: "^#chatgpt查看?(闭嘴|关机|休眠|下班|休眠)列表$",
+          fnc: "listShutUp",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt设置(API|key)(Key|key)$',
-          fnc: 'setAPIKey',
-          permission: 'master'
+          reg: "^#chatgpt设置(API|key)(Key|key)$",
+          fnc: "setAPIKey",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt设置(API|api)设定$',
-          fnc: 'setAPIPromptPrefix',
-          permission: 'master'
+          reg: "^#chatgpt设置(API|api)设定$",
+          fnc: "setAPIPromptPrefix",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt设置星火token$',
-          fnc: 'setXinghuoToken',
-          permission: 'master'
+          reg: "^#chatgpt设置星火token$",
+          fnc: "setXinghuoToken",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt设置(Bing|必应|Sydney|悉尼|sydney|bing)设定$',
-          fnc: 'setBingPromptPrefix',
-          permission: 'master'
+          reg: "^#chatgpt设置(Bing|必应|Sydney|悉尼|sydney|bing)设定$",
+          fnc: "setBingPromptPrefix",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(开启|关闭)画图$',
-          fnc: 'switchDraw',
-          permission: 'master'
+          reg: "^#chatgpt(开启|关闭)画图$",
+          fnc: "switchDraw",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt查看(API|api)设定$',
-          fnc: 'queryAPIPromptPrefix',
-          permission: 'master'
+          reg: "^#chatgpt查看(API|api)设定$",
+          fnc: "queryAPIPromptPrefix",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt查看(Bing|必应|Sydney|悉尼|sydney|bing)设定$',
-          fnc: 'queryBingPromptPrefix',
-          permission: 'master'
+          reg: "^#chatgpt查看(Bing|必应|Sydney|悉尼|sydney|bing)设定$",
+          fnc: "queryBingPromptPrefix",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(打开|关闭|设置)?全局((文本模式|图片模式|语音模式|((azure|vits|vox)?语音角色|角色语音|角色).*)|回复帮助)$',
-          fnc: 'setDefaultReplySetting',
-          permission: 'master'
+          reg: "^#chatgpt(打开|关闭|设置)?全局((文本模式|图片模式|语音模式|((azure|vits|vox)?语音角色|角色语音|角色).*)|回复帮助)$",
+          fnc: "setDefaultReplySetting",
+          permission: "master",
         },
         {
           /** 命令正则匹配 */
-          reg: '^#(关闭|打开)群聊上下文$',
+          reg: "^#(关闭|打开)群聊上下文$",
           /** 执行方法 */
-          fnc: 'enableGroupContext',
-          permission: 'master'
+          fnc: "enableGroupContext",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(允许|禁止|打开|关闭|同意)私聊$',
-          fnc: 'enablePrivateChat',
-          permission: 'master'
+          reg: "^#chatgpt(允许|禁止|打开|关闭|同意)私聊$",
+          fnc: "enablePrivateChat",
+          permission: "master",
         },
         {
-          reg: '^#(设置|修改)管理密码',
-          fnc: 'setAdminPassword',
-          permission: 'master'
+          reg: "^#(设置|修改)管理密码",
+          fnc: "setAdminPassword",
+          permission: "master",
         },
         {
-          reg: '^#(设置|修改)用户密码',
-          fnc: 'setUserPassword'
+          reg: "^#(设置|修改)用户密码",
+          fnc: "setUserPassword",
         },
         {
-          reg: '^#chatgpt系统(设置|配置|管理)',
-          fnc: 'adminPage',
-          permission: 'master'
+          reg: "^#chatgpt系统(设置|配置|管理)",
+          fnc: "adminPage",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt用户(设置|配置|管理)',
-          fnc: 'userPage'
+          reg: "^#chatgpt用户(设置|配置|管理)",
+          fnc: "userPage",
         },
         {
-          reg: '^#?(chatgpt)(对话|管理|娱乐|绘图|人物设定|聊天记录)?指令表(帮助|搜索(.+))?',
-          fnc: 'commandHelp'
+          reg: "^#?(chatgpt)(对话|管理|娱乐|绘图|人物设定|聊天记录)?指令表(帮助|搜索(.+))?",
+          fnc: "commandHelp",
         },
         {
-          reg: '^#语音切换.*',
-          fnc: 'ttsSwitch',
-          permission: 'master'
+          reg: "^#语音切换.*",
+          fnc: "ttsSwitch",
+          permission: "master",
         },
         {
-          reg: '^#(chatgpt)?(vits|azure|vox)?语音(角色列表|服务)$',
-          fnc: 'getTTSRoleList'
+          reg: "^#(chatgpt)?(vits|azure|vox)?语音(角色列表|服务)$",
+          fnc: "getTTSRoleList",
         },
         {
-          reg: '^#chatgpt设置(后台)?(刷新|refresh)(t|T)oken$',
-          fnc: 'setOpenAIPlatformToken'
+          reg: "^#chatgpt设置(后台)?(刷新|refresh)(t|T)oken$",
+          fnc: "setOpenAIPlatformToken",
         },
         {
-          reg: '^#(chatgpt)?查看回复设置$',
-          fnc: 'viewUserSetting'
+          reg: "^#(chatgpt)?查看回复设置$",
+          fnc: "viewUserSetting",
         },
         {
-          reg: '^#chatgpt导出配置',
-          fnc: 'exportConfig',
-          permission: 'master'
+          reg: "^#chatgpt导出配置",
+          fnc: "exportConfig",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt导入配置',
-          fnc: 'importConfig',
-          permission: 'master'
+          reg: "^#chatgpt导入配置",
+          fnc: "importConfig",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(开启|关闭)(智能|智障)模式$',
-          fnc: 'switchSmartMode',
-          permission: 'master'
+          reg: "^#chatgpt(开启|关闭)(智能|智障)模式$",
+          fnc: "switchSmartMode",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(切换|使用|设置)模型([\\s\\S]*)$', //^#chatgpt(切换|使用|设置)模型.*$
-          fnc: 'settingModel',
-          permission: 'master'
+          reg: "^#chatgpt(切换|使用|设置)模型([\\s\\S]*)$", //^#chatgpt(切换|使用|设置)模型.*$
+          fnc: "settingModel",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(切换|使用)(反代|转发)(预设|设置)(B|A)',
-          fnc: 'UrlApiCG',
-          permission: 'master'
+          reg: "^#chatgpt(切换|使用)(反代|转发)(预设|设置)(B|A)",
+          fnc: "UrlApiCG",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(关闭|关|开启|开|打开)(分割消息|额外消息|分割|分片|分片发送)',
-          fnc: 'ExrateMsg',
-          permission: 'master'
+          reg: "^#chatgpt(关闭|关|开启|开|打开)(分割消息|额外消息|分割|分片|分片发送)",
+          fnc: "ExrateMsg",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(关闭|关|开|开启|打开)(回复表情|表情回复|表情|随机表情|发送表情|回复随机表情)',
-          fnc: 'ExprotMoji',
-          permission: 'master'
+          reg: "^#chatgpt(关闭|关|开|开启|打开)(回复表情|表情回复|表情|随机表情|发送表情|回复随机表情)",
+          fnc: "ExprotMoji",
+          permission: "master",
         },
         {
-          reg: '^#chatgpt(查看|预览|浏览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?',
-          fnc: 'ModelView',
-          permission: 'master'
+          reg: "^#chatgpt(查看|预览|浏览)?(模型|API模型|model|models)(大全|列表|查看|全部|查看所有模型)?",
+          fnc: "ModelView",
+          permission: "master",
         },
         {
-          reg: '^#(chatgpt)?刷新(token|Token|Api3Token|Api3token}API3Token|TOKEN|ACCESSTOKEN|API3token|accesstoken|access_token|Access_Token)$',
-          fnc: 'refreshToken'
-        }
-      ]
-    })
-  }
-  async refreshToken (e){
-    if (!Config.OpenAiPlatformRefreshToken) {
-      e.reply('当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置刷新token】进行配置',true)
-  }
-  let refreshRes = await newFetch('https://auth0.openai.com/oauth/token', {
-      method: 'POST',
-      body: JSON.stringify({
-          //redirect_uri: 'com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback',
-          refresh_token: Config.OpenAiPlatformRefreshToken,
-          client_id: 'DRivsnm2Mu42T3KOpqdtwB3NYviHYzwD',
-          grant_type: 'refresh_token'
-      }),
-      headers: {
-          'Content-Type': 'application/json'
-      }
-  })
-  if (refreshRes.status !== 200) {
-      let errMsg = await refreshRes.json()
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), refreshRes.status)
-      logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[刷新token]`), errMsg)
-      if (errMsg.error === 'access_denied') {
-          await e.reply('刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置',true)
-      } else {
-          await e.reply('获取失败:' + refreshRes.status + "，错误:" + errMsg.error_description,true)
-      }
-      return false
-  }
-  let newToken = await refreshRes.json()
-  await redis.set('CHATGPT:TOKEN', newToken.access_token)
-  e.reply('刷新ChatGPT-API3-Token成功，可使用#chat3进行对话' , true)
-  }
-  async ModelView (e){
-    const apiUrl = Config.openAiBaseUrl + '/models'; 
-    const protectiveUrl = replaceWithAsterisks(Config.openAiBaseUrl);
-    let messages = [`以下为API可用模型信息：`]
-    fetch(apiUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Config.apiKey}`
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      const models = data.data; // 获取所有的models
-      const totalModels = models.length; // 模型总数
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`), `API可用模型总数:  + ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`)
-      messages.push(`API可用模型总数: ${totalModels}\n读取模型的API为: ${protectiveUrl}`)
-      // 遍历每个model并存储到messages数组中
-      models.forEach((model, index) => {
-        const message = `${index + 1}. 模型名称: ${model.id}\n模型所有者: ${model.owned_by}\n快捷切换模型：#chatgpt切换模型${model.id}`
-        messages.push(message)
-        if(Config.debug)
-        {
-          logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`), model)
-        }
-      });
-      e.reply(makeForwardMsg(this.e, messages,`模型信息`))
-    })
-    .catch(error => {
-      // 处理错误
-      logger.warn(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[查看模型]`),'读取模型列表时发生错误：' + error)
-      e.reply('读取模型列表时发生错误：' + error);
+          reg: "^#(chatgpt)?刷新(token|Token|Api3Token|Api3token}API3Token|TOKEN|ACCESSTOKEN|API3token|accesstoken|access_token|Access_Token)$",
+          fnc: "refreshToken",
+        },
+      ],
     });
   }
-  async ExrateMsg (e){
-    if(e.msg.match(/(开|开启|打开)/)){
-      Config.ExrateMsg=true
-      e.reply('分割消息打开成功！',e.isGroup)
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息开')
+  async refreshToken(e) {
+    if (!Config.OpenAiPlatformRefreshToken) {
+      e.reply(
+        "当前未配置platform.openai.com的刷新token，请发送【#chatgpt设置刷新token】进行配置",
+        true
+      );
     }
-    else {
-      Config.ExrateMsg=false
-      e.reply('分割消息关闭成功')
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息关')
-    }
-    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '分割消息切换')
-    
-  }
-  async ExprotMoji (e){
-    if(e.msg.match(/(开|开启|打开)/)){
-      Config.ExprotMoji=true
-      e.reply('回复随机表情打开成功！',e.isGroup)
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情开')
-    }
-    else {
-      Config.ExprotMoji=false
-      e.reply('回复随机表情关闭成功')
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情关')
-    }
-    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[消息]`), '回复随机表情切换')
-  }
-  async UrlApiCG (e){
-    if(e.msg.match(/(A)/)){
-      Config.openAiBaseUrl=Config.PresetsAPIUrlA
-      e.reply('切换预设API反代-A成功！',e.isGroup)
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-A')
-    }
-    if(e.msg.match(/(B)/)){
-      Config.openAiBaseUrl=Config.PresetsAPIUrlB
-      e.reply('切换预设API反代-B成功！',e.isGroup)
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换预设API反代-B')
-    }
-    logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[API]`), '切换API预设反代')
-  }
-  async settingModel (e){
-      let modelX=e.raw_message.trim()
-      modelX = modelX.replace(`#chatgpt切换模型`, '').trim()
-      modelX = modelX.replace(`#chatgpt使用模型`, '').trim()
-      modelX = modelX.replace(`#chatgpt设置模型`, '').trim()
-      modelX = modelX.replace(`喵喵`, '').trim()
-      let mm = await this.e.group.getMemberMap()
-      let me = mm.get(Bot.uin)
-      let card = me.card
-      let nickname = me.nickname
-      if (nickname && card) {
-        if (nickname.startsWith(card)) {
-          // 例如nickname是"滚筒洗衣机"，card是"滚筒"
-          modelX = modelX.replace(`@${nickname}`, '').trim()
-        } else if (card.startsWith(nickname)) {
-          // 例如nickname是"十二"，card是"十二｜本月已发送1000条消息"
-          modelX = modelX.replace(`@${card}`, '').trim()
-          // 如果是好友，显示的还是昵称
-          modelX = modelX.replace(`@${nickname}`, '').trim()
-        } else {
-          // 互不包含，分别替换
-          if (nickname) {
-            modelX = modelX.replace(`@${nickname}`, '').trim()
-          }
-          if (card) {
-            modelX = modelX.replace(`@${card}`, '').trim()
-          }
-        }
-      } else if (nickname) {
-        modelX = modelX.replace(`@${nickname}`, '').trim()
-      } else if (card) {
-        modelX = modelX.replace(`@${card}`, '').trim()
+    let refreshRes = await newFetch("https://auth0.openai.com/oauth/token", {
+      method: "POST",
+      body: JSON.stringify({
+        //redirect_uri: 'com.openai.chat://auth0.openai.com/ios/com.openai.chat/callback',
+        refresh_token: Config.OpenAiPlatformRefreshToken,
+        client_id: "DRivsnm2Mu42T3KOpqdtwB3NYviHYzwD",
+        grant_type: "refresh_token",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (refreshRes.status !== 200) {
+      let errMsg = await refreshRes.json();
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[配置]`),
+        logger.red(`[刷新token]`),
+        refreshRes.status
+      );
+      logger.warn(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[配置]`),
+        logger.red(`[刷新token]`),
+        errMsg
+      );
+      if (errMsg.error === "access_denied") {
+        await e.reply(
+          "刷新令牌登录失效，请重新发送【#chatgpt设置刷新token】进行配置",
+          true
+        );
+      } else {
+        await e.reply(
+          "获取失败:" +
+            refreshRes.status +
+            "，错误:" +
+            errMsg.error_description,
+          true
+        );
       }
-      logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[配置]`), logger.red(`[切换模型]`), '要切换的目标模型:' + modelX)
-      Config.model=modelX
-      await this.reply('切换模型'+ modelX +'成功', true)
-      return
-      //this.setContext('settingModels')
-      //await this.reply('你没有指定模型，请发送要切换的模型', true)
-    return false
+      return false;
+    }
+    let newToken = await refreshRes.json();
+    await redis.set("CHATGPT:TOKEN", newToken.access_token);
+    e.reply("刷新ChatGPT-API3-Token成功，可使用#chat3进行对话", true);
   }
-  async viewUserSetting (e) {
-    const userSetting = await getUserReplySetting(this.e)
+  async ModelView(e) {
+    const apiUrl = Config.openAiBaseUrl + "/models";
+    const protectiveUrl = replaceWithAsterisks(Config.openAiBaseUrl);
+    let messages = [`以下为API可用模型信息：`];
+    fetch(apiUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Config.apiKey}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const models = data.data; // 获取所有的models
+        const totalModels = models.length; // 模型总数
+        logger.info(
+          logger.cyan("[ChatGPT-plugin]"),
+          logger.yellow(`[配置]`),
+          logger.red(`[查看模型]`),
+          `API可用模型总数:  + ${totalModels}\n读取模型的API为[ ${protectiveUrl} ]`
+        );
+        messages.push(
+          `API可用模型总数: ${totalModels}\n读取模型的API为: ${protectiveUrl}`
+        );
+        // 遍历每个model并存储到messages数组中
+        models.forEach((model, index) => {
+          const message = `${index + 1}. 模型名称: ${model.id}\n模型所有者: ${
+            model.owned_by
+          }\n快捷切换模型：#chatgpt切换模型${model.id}`;
+          messages.push(message);
+          if (Config.debug) {
+            logger.info(
+              logger.cyan("[ChatGPT-plugin]"),
+              logger.yellow(`[配置]`),
+              logger.red(`[查看模型]`),
+              model
+            );
+          }
+        });
+        e.reply(makeForwardMsg(this.e, messages, `模型信息`));
+      })
+      .catch((error) => {
+        // 处理错误
+        logger.warn(
+          logger.cyan("[ChatGPT-plugin]"),
+          logger.yellow(`[配置]`),
+          logger.red(`[查看模型]`),
+          "读取模型列表时发生错误：" + error
+        );
+        e.reply("读取模型列表时发生错误：" + error);
+      });
+  }
+  async ExrateMsg(e) {
+    if (e.msg.match(/(开|开启|打开)/)) {
+      Config.ExrateMsg = true;
+      e.reply("分割消息打开成功！", e.isGroup);
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[消息]`),
+        "分割消息开"
+      );
+    } else {
+      Config.ExrateMsg = false;
+      e.reply("分割消息关闭成功");
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[消息]`),
+        "分割消息关"
+      );
+    }
+    logger.info(
+      logger.cyan("[ChatGPT-plugin]"),
+      logger.yellow(`[管理]`),
+      logger.red(`[消息]`),
+      "分割消息切换"
+    );
+  }
+  async ExprotMoji(e) {
+    if (e.msg.match(/(开|开启|打开)/)) {
+      Config.ExprotMoji = true;
+      e.reply("回复随机表情打开成功！", e.isGroup);
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[消息]`),
+        "回复随机表情开"
+      );
+    } else {
+      Config.ExprotMoji = false;
+      e.reply("回复随机表情关闭成功");
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[消息]`),
+        "回复随机表情关"
+      );
+    }
+    logger.info(
+      logger.cyan("[ChatGPT-plugin]"),
+      logger.yellow(`[管理]`),
+      logger.red(`[消息]`),
+      "回复随机表情切换"
+    );
+  }
+  async UrlApiCG(e) {
+    if (e.msg.match(/(A)/)) {
+      Config.openAiBaseUrl = Config.PresetsAPIUrlA;
+      e.reply("切换预设API反代-A成功！", e.isGroup);
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[API]`),
+        "切换预设API反代-A"
+      );
+    }
+    if (e.msg.match(/(B)/)) {
+      Config.openAiBaseUrl = Config.PresetsAPIUrlB;
+      e.reply("切换预设API反代-B成功！", e.isGroup);
+      logger.info(
+        logger.cyan("[ChatGPT-plugin]"),
+        logger.yellow(`[管理]`),
+        logger.red(`[API]`),
+        "切换预设API反代-B"
+      );
+    }
+    logger.info(
+      logger.cyan("[ChatGPT-plugin]"),
+      logger.yellow(`[管理]`),
+      logger.red(`[API]`),
+      "切换API预设反代"
+    );
+  }
+  async settingModel(e) {
+    let modelX = e.raw_message.trim();
+    modelX = modelX.replace(`#chatgpt切换模型`, "").trim();
+    modelX = modelX.replace(`#chatgpt使用模型`, "").trim();
+    modelX = modelX.replace(`#chatgpt设置模型`, "").trim();
+    modelX = modelX.replace(`喵喵`, "").trim();
+    let mm = await this.e.group.getMemberMap();
+    let me = mm.get(Bot.uin);
+    let card = me.card;
+    let nickname = me.nickname;
+    if (nickname && card) {
+      if (nickname.startsWith(card)) {
+        // 例如nickname是"滚筒洗衣机"，card是"滚筒"
+        modelX = modelX.replace(`@${nickname}`, "").trim();
+      } else if (card.startsWith(nickname)) {
+        // 例如nickname是"十二"，card是"十二｜本月已发送1000条消息"
+        modelX = modelX.replace(`@${card}`, "").trim();
+        // 如果是好友，显示的还是昵称
+        modelX = modelX.replace(`@${nickname}`, "").trim();
+      } else {
+        // 互不包含，分别替换
+        if (nickname) {
+          modelX = modelX.replace(`@${nickname}`, "").trim();
+        }
+        if (card) {
+          modelX = modelX.replace(`@${card}`, "").trim();
+        }
+      }
+    } else if (nickname) {
+      modelX = modelX.replace(`@${nickname}`, "").trim();
+    } else if (card) {
+      modelX = modelX.replace(`@${card}`, "").trim();
+    }
+    logger.info(
+      logger.cyan("[ChatGPT-plugin]"),
+      logger.yellow(`[配置]`),
+      logger.red(`[切换模型]`),
+      "要切换的目标模型:" + modelX
+    );
+    Config.model = modelX;
+    await this.reply("切换模型" + modelX + "成功", true);
+    return;
+    //this.setContext('settingModels')
+    //await this.reply('你没有指定模型，请发送要切换的模型', true)
+    return false;
+  }
+  async viewUserSetting(e) {
+    const userSetting = await getUserReplySetting(this.e);
     const replyMsg = `${this.e.sender.user_id}的回复设置:
-图片模式: ${userSetting.usePicture === true ? '开启' : '关闭'}
-语音模式: ${userSetting.useTTS === true ? '开启' : '关闭'}
+图片模式: ${userSetting.usePicture === true ? "开启" : "关闭"}
+语音模式: ${userSetting.useTTS === true ? "开启" : "关闭"}
 Vits语音角色: ${userSetting.ttsRole}
 Azure语音角色: ${userSetting.ttsRoleAzure}
 VoiceVox语音角色: ${userSetting.ttsRoleVoiceVox}
-${userSetting.useTTS === true ? '当前语音模式为' + Config.ttsMode : ''}`
-    await this.reply(replyMsg.replace(/\n\s*$/, ''), e.isGroup)
-    return true
+${userSetting.useTTS === true ? "当前语音模式为" + Config.ttsMode : ""}`;
+    await this.reply(replyMsg.replace(/\n\s*$/, ""), e.isGroup);
+    return true;
   }
 
-  async getTTSRoleList (e) {
-    const matchCommand = e.msg.match(/^#(chatgpt)?(vits|azure|vox)?语音(服务|角色列表)/)
-    if (matchCommand[3] === '服务') {
-      await this.reply(`当前支持vox、vits、azure语音服务，可使用'#(vox|azure|vits)语音角色列表'查看支持的语音角色。
+  async getTTSRoleList(e) {
+    const matchCommand = e.msg.match(
+      /^#(chatgpt)?(vits|azure|vox)?语音(服务|角色列表)/
+    );
+    if (matchCommand[3] === "服务") {
+      await this
+        .reply(`当前支持vox、vits、azure语音服务，可使用'#(vox|azure|vits)语音角色列表'查看支持的语音角色。
       
 vits语音：主要有赛马娘，原神中文，原神日语，崩坏 3 的音色、结果有随机性，语调可能很奇怪。
       
 vox语音：Voicevox 是一款由日本 DeNA 开发的语音合成软件，它可以将文本转换为自然流畅的语音。Voicevox 支持多种语言和声音，可以用于制作各种语音内容，如动画、游戏、广告等。Voicevox 还提供了丰富的调整选项，可以调整声音的音调、速度、音量等参数，以满足不同需求。除了桌面版软件外，Voicevox 还提供了 Web 版本和 API 接口，方便开发者在各种平台上使用。
 
 azure语音：Azure 语音是微软 Azure 平台提供的一项语音服务，它可以帮助开发者将语音转换为文本、将文本转换为语音、实现自然语言理解和对话等功能。Azure 语音支持多种语言和声音，可以用于构建各种语音应用程序，如智能客服、语音助手、自动化电话系统等。Azure 语音还提供了丰富的 API 和 SDK，方便开发者在各种平台上集成使用。
-      `)
-      return true
+      `);
+      return true;
     }
-    let userReplySetting = await getUserReplySetting(this.e)
+    let userReplySetting = await getUserReplySetting(this.e);
     if (!userReplySetting.useTTS && matchCommand[2] === undefined) {
-      await this.reply('当前不是语音模式,如果想查看不同语音模式下支持的角色列表,可使用"#(vox|azure|vits)语音角色列表"查看')
-      return false
+      await this.reply(
+        '当前不是语音模式,如果想查看不同语音模式下支持的角色列表,可使用"#(vox|azure|vits)语音角色列表"查看'
+      );
+      return false;
     }
-    let ttsMode = Config.ttsMode
-    let roleList = []
-    if (matchCommand[2] === 'vits') {
-      roleList = getVitsRoleList(this.e)
-    } else if (matchCommand[2] === 'vox') {
-      roleList = getVoicevoxRoleList()
-    } else if (matchCommand[2] === 'azure') {
-      roleList = getAzureRoleList()
+    let ttsMode = Config.ttsMode;
+    let roleList = [];
+    if (matchCommand[2] === "vits") {
+      roleList = getVitsRoleList(this.e);
+    } else if (matchCommand[2] === "vox") {
+      roleList = getVoicevoxRoleList();
+    } else if (matchCommand[2] === "azure") {
+      roleList = getAzureRoleList();
     } else if (matchCommand[2] === undefined) {
       switch (ttsMode) {
-        case 'vits-uma-genshin-honkai':
-          roleList = getVitsRoleList(this.e)
-          break
-        case 'voicevox':
-          roleList = getVoicevoxRoleList()
-          break
-        case 'azure':
-          roleList = getAzureRoleList()
-          break
+        case "vits-uma-genshin-honkai":
+          roleList = getVitsRoleList(this.e);
+          break;
+        case "voicevox":
+          roleList = getVoicevoxRoleList();
+          break;
+        case "azure":
+          roleList = getAzureRoleList();
+          break;
         default:
-          break
+          break;
       }
     } else {
-      await this.reply('设置错误,请使用"#chatgpt语音服务"查看支持的语音配置')
-      return false
+      await this.reply('设置错误,请使用"#chatgpt语音服务"查看支持的语音配置');
+      return false;
     }
     if (roleList.length > 300) {
-      let chunks = roleList.match(/[^、]+(?:、[^、]+){0,30}/g)
-      roleList = await makeForwardMsg(e, chunks, `${Config.ttsMode}语音角色列表`)
+      let chunks = roleList.match(/[^、]+(?:、[^、]+){0,30}/g);
+      roleList = await makeForwardMsg(
+        e,
+        chunks,
+        `${Config.ttsMode}语音角色列表`
+      );
     }
-    await this.reply(roleList)
+    await this.reply(roleList);
   }
 
-  async ttsSwitch (e) {
-    let userReplySetting = await getUserReplySetting(this.e)
+  async ttsSwitch(e) {
+    let userReplySetting = await getUserReplySetting(this.e);
     if (!userReplySetting.useTTS) {
-      let replyMsg
+      let replyMsg;
       if (userReplySetting.usePicture) {
-        replyMsg = `当前为${!userReplySetting.useTTS ? '图片模式' : ''}，请先切换到语音模式吧~`
+        replyMsg = `当前为${
+          !userReplySetting.useTTS ? "图片模式" : ""
+        }，请先切换到语音模式吧~`;
       } else {
-        replyMsg = `当前为${!userReplySetting.useTTS ? '文本模式' : ''}，请先切换到语音模式吧~`
+        replyMsg = `当前为${
+          !userReplySetting.useTTS ? "文本模式" : ""
+        }，请先切换到语音模式吧~`;
       }
-      await this.reply(replyMsg, e.isGroup)
-      return false
+      await this.reply(replyMsg, e.isGroup);
+      return false;
     }
-    let regExp = /#语音切换(.*)/
-    let ttsMode = e.msg.match(regExp)[1]
-    if (['vits', 'azure', 'voicevox'].includes(ttsMode)) {
-      if (ttsMode === 'vits') {
-        Config.ttsMode = 'vits-uma-genshin-honkai'
+    let regExp = /#语音切换(.*)/;
+    let ttsMode = e.msg.match(regExp)[1];
+    if (["vits", "azure", "voicevox"].includes(ttsMode)) {
+      if (ttsMode === "vits") {
+        Config.ttsMode = "vits-uma-genshin-honkai";
       } else {
-        Config.ttsMode = ttsMode
+        Config.ttsMode = ttsMode;
       }
-      await this.reply(`语音回复已切换至${Config.ttsMode}模式${Config.ttsMode === 'azure' ? '，建议重新开始对话以获得更好的对话效果！' : ''}`)
+      await this.reply(
+        `语音回复已切换至${Config.ttsMode}模式${
+          Config.ttsMode === "azure"
+            ? "，建议重新开始对话以获得更好的对话效果！"
+            : ""
+        }`
+      );
     } else {
-      await this.reply('暂不支持此模式，当前支持vits，azure，voicevox。')
+      await this.reply("暂不支持此模式，当前支持vits，azure，voicevox。");
     }
-    return false
+    return false;
   }
 
-  async commandHelp (e) {
+  async commandHelp(e) {
     if (/^#(chatgpt)?指令表帮助$/.exec(e.msg.trim())) {
-      await this.reply('#chatgpt指令表: 查看本插件的所有指令\n' +
-          '#chatgpt(对话|管理|娱乐|绘图|人物设定|聊天记录)指令表: 查看对应功能分类的指令表\n' +
-          '#chatgpt指令表搜索xxx: 查看包含对应关键词的指令')
-      return false
+      await this.reply(
+        "#chatgpt指令表: 查看本插件的所有指令\n" +
+          "#chatgpt(对话|管理|娱乐|绘图|人物设定|聊天记录)指令表: 查看对应功能分类的指令表\n" +
+          "#chatgpt指令表搜索xxx: 查看包含对应关键词的指令"
+      );
+      return false;
     }
     const categories = {
-      对话: '对话',
-      管理: '管理',
-      娱乐: '娱乐',
-      绘图: '绘图',
-      人物设定: '人物设定',
-      聊天记录: '聊天记录'
-    }
+      对话: "对话",
+      管理: "管理",
+      娱乐: "娱乐",
+      绘图: "绘图",
+      人物设定: "人物设定",
+      聊天记录: "聊天记录",
+    };
 
-    function getCategory (e, plugin) {
+    function getCategory(e, plugin) {
       for (const key in categories) {
         if (e.msg.includes(key) && plugin.name.includes(categories[key])) {
-          return '功能名称: '
+          return "功能名称: ";
         }
       }
-      return ''
+      return "";
     }
-    const commandSet = []
-    const plugins = await Promise.all(loader.priority.map(p => new p.class()))
+    const commandSet = [];
+    const plugins = await Promise.all(
+      loader.priority.map((p) => new p.class())
+    );
 
     for (const plugin of plugins) {
-      const name = plugin.name
-      const rule = plugin.rule
+      const name = plugin.name;
+      const rule = plugin.rule;
       if (/^chatgpt/i.test(name) && rule) {
-        commandSet.push({ name, dsc: plugin.dsc, rule })
+        commandSet.push({ name, dsc: plugin.dsc, rule });
       }
     }
     if (/^#(chatgpt)?指令表搜索(.+)/.test(e.msg.trim())) {
-      let cmd = e.msg.trim().match(/#(chatgpt)?指令表搜索(.+)/)[2]
+      let cmd = e.msg.trim().match(/#(chatgpt)?指令表搜索(.+)/)[2];
       if (!cmd) {
-        await this.reply('(⊙ˍ⊙)')
-        return 0
+        await this.reply("(⊙ˍ⊙)");
+        return 0;
       } else {
-        let searchResults = []
-        commandSet.forEach(plugin => {
-          plugin.rule.forEach(item => {
+        let searchResults = [];
+        commandSet.forEach((plugin) => {
+          plugin.rule.forEach((item) => {
             if (item.reg.toLowerCase().includes(cmd.toLowerCase())) {
-              searchResults.push(item.reg)
+              searchResults.push(item.reg);
             }
-          })
-        })
+          });
+        });
         if (!searchResults.length) {
-          await this.reply('没有找到符合的结果，换个关键词吧！', e.isGroup)
-          return 0
+          await this.reply("没有找到符合的结果，换个关键词吧！", e.isGroup);
+          return 0;
         } else if (searchResults.length <= 5) {
-          await this.reply(searchResults.join('\n'), e.isGroup)
-          return 1
+          await this.reply(searchResults.join("\n"), e.isGroup);
+          return 1;
         } else {
-          let msg = await makeForwardMsg(e, searchResults, e.msg.slice(1).startsWith('chatgpt') ? e.msg.slice(8) : 'chatgpt' + e.msg.slice(1))
-          await this.reply(msg)
-          return 1
+          let msg = await makeForwardMsg(
+            e,
+            searchResults,
+            e.msg.slice(1).startsWith("chatgpt")
+              ? e.msg.slice(8)
+              : "chatgpt" + e.msg.slice(1)
+          );
+          await this.reply(msg);
+          return 1;
         }
       }
     }
     const generatePrompt = (plugin, command) => {
-      const category = getCategory(e, plugin)
-      const commandsStr = command.length ? `正则指令:\n${command.join('\n')}\n` : '正则指令: 无\n'
-      const description = `功能介绍：${plugin.dsc}\n`
-      return `${category}${plugin.name}\n${description}${commandsStr}`
-    }
+      const category = getCategory(e, plugin);
+      const commandsStr = command.length
+        ? `正则指令:\n${command.join("\n")}\n`
+        : "正则指令: 无\n";
+      const description = `功能介绍：${plugin.dsc}\n`;
+      return `${category}${plugin.name}\n${description}${commandsStr}`;
+    };
 
-    const prompts = []
+    const prompts = [];
     for (const plugin of commandSet) {
-      const commands = plugin.rule.map(v => v.reg.includes('[#*0-9]') ? '表情合成功能只需要发送两个emoji表情即可' : v.reg)
-      const category = getCategory(e, plugin)
-      if (category || (!e.msg.includes('对话') && !e.msg.includes('管理') && !e.msg.includes('娱乐') && !e.msg.includes('绘图') && !e.msg.includes('人物设定') && !e.msg.includes('聊天记录'))) {
-        prompts.push(generatePrompt(plugin, commands))
+      const commands = plugin.rule.map((v) =>
+        v.reg.includes("[#*0-9]")
+          ? "表情合成功能只需要发送两个emoji表情即可"
+          : v.reg
+      );
+      const category = getCategory(e, plugin);
+      if (
+        category ||
+        (!e.msg.includes("对话") &&
+          !e.msg.includes("管理") &&
+          !e.msg.includes("娱乐") &&
+          !e.msg.includes("绘图") &&
+          !e.msg.includes("人物设定") &&
+          !e.msg.includes("聊天记录"))
+      ) {
+        prompts.push(generatePrompt(plugin, commands));
       }
     }
-    let msg = await makeForwardMsg(e, prompts, e.msg.slice(1).startsWith('chatgpt') ? e.msg.slice(1) : ('chatgpt' + e.msg.slice(1)))
-    await this.reply(msg)
-    return true
+    let msg = await makeForwardMsg(
+      e,
+      prompts,
+      e.msg.slice(1).startsWith("chatgpt")
+        ? e.msg.slice(1)
+        : "chatgpt" + e.msg.slice(1)
+    );
+    await this.reply(msg);
+    return true;
   }
 
- 
-  async enablePrivateChat (e) {
-    Config.enablePrivateChat = !!e.msg.match(/(允许|打开|同意)/)
-    await this.reply('设置成功', e.isGroup)
-    return false
+  async enablePrivateChat(e) {
+    Config.enablePrivateChat = !!e.msg.match(/(允许|打开|同意)/);
+    await this.reply("设置成功", e.isGroup);
+    return false;
   }
 
-  async enableGroupContext (e) {
-    const reg = /(关闭|打开)/
-    const match = e.msg.match(reg)
+  async enableGroupContext(e) {
+    const reg = /(关闭|打开)/;
+    const match = e.msg.match(reg);
     if (match) {
-      const action = match[1]
-      if (action === '关闭') {
-        Config.enableGroupContext = false // 关闭
-        await this.reply('已关闭群聊上下文功能', true)
+      const action = match[1];
+      if (action === "关闭") {
+        Config.enableGroupContext = false; // 关闭
+        await this.reply("已关闭群聊上下文功能", true);
       } else {
-        Config.enableGroupContext = true // 打开
-        await this.reply('已打开群聊上下文功能', true)
+        Config.enableGroupContext = true; // 打开
+        await this.reply("已打开群聊上下文功能", true);
       }
     }
-    return false
+    return false;
   }
 
-  async setDefaultReplySetting (e) {
-    const reg = /^#chatgpt(打开|关闭|设置)?全局((文本模式|图片模式|语音模式|((azure|vits|vox)?语音角色|角色语音|角色)(.*))|回复帮助)/
-    const matchCommand = e.msg.match(reg)
-    const settingType = matchCommand[2]
-    let replyMsg = ''
-    let ttsSupportKinds = []
-    if (Config.azureTTSKey) ttsSupportKinds.push(1)
-    if (Config.ttsSpace) ttsSupportKinds.push(2)
-    if (Config.voicevoxSpace) ttsSupportKinds.push(3)
+  async setDefaultReplySetting(e) {
+    const reg =
+      /^#chatgpt(打开|关闭|设置)?全局((文本模式|图片模式|语音模式|((azure|vits|vox)?语音角色|角色语音|角色)(.*))|回复帮助)/;
+    const matchCommand = e.msg.match(reg);
+    const settingType = matchCommand[2];
+    let replyMsg = "";
+    let ttsSupportKinds = [];
+    if (Config.azureTTSKey) ttsSupportKinds.push(1);
+    if (Config.ttsSpace) ttsSupportKinds.push(2);
+    if (Config.voicevoxSpace) ttsSupportKinds.push(3);
     switch (settingType) {
-      case '图片模式':
-        if (matchCommand[1] === '打开') {
-          Config.defaultUsePicture = true
-          Config.defaultUseTTS = false
-          replyMsg = 'ChatGPT将默认以图片回复'
-        } else if (matchCommand[1] === '关闭') {
-          Config.defaultUsePicture = false
+      case "图片模式":
+        if (matchCommand[1] === "打开") {
+          Config.defaultUsePicture = true;
+          Config.defaultUseTTS = false;
+          replyMsg = "ChatGPT将默认以图片回复";
+        } else if (matchCommand[1] === "关闭") {
+          Config.defaultUsePicture = false;
           if (Config.defaultUseTTS) {
-            replyMsg = 'ChatGPT将默认以语音回复'
+            replyMsg = "ChatGPT将默认以语音回复";
           } else {
-            replyMsg = 'ChatGPT将默认以文本回复'
+            replyMsg = "ChatGPT将默认以文本回复";
           }
-        } else if (matchCommand[1] === '设置') {
-          replyMsg = '请使用“#chatgpt打开全局图片模式”或“#chatgpt关闭全局图片模式”命令来设置回复模式'
-        } break
-      case '文本模式':
-        if (matchCommand[1] === '打开') {
-          Config.defaultUsePicture = false
-          Config.defaultUseTTS = false
-          replyMsg = 'ChatGPT将默认以文本回复'
-        } else if (matchCommand[1] === '关闭') {
-          if (Config.defaultUseTTS) {
-            replyMsg = 'ChatGPT将默认以语音回复'
-          } else if (Config.defaultUsePicture) {
-            replyMsg = 'ChatGPT将默认以图片回复'
-          } else {
-            Config.defaultUseTTS = true
-            replyMsg = 'ChatGPT将默认以语音回复'
-          }
-        } else if (matchCommand[1] === '设置') {
-          replyMsg = '请使用“#chatgpt打开全局文本模式”或“#chatgpt关闭全局文本模式”命令来设置回复模式'
-        } break
-      case '语音模式':
-        if (!ttsSupportKinds.length) {
-          replyMsg = '您没有配置任何语音服务，请前往锅巴面板进行配置'
-          break
+        } else if (matchCommand[1] === "设置") {
+          replyMsg =
+            "请使用“#chatgpt打开全局图片模式”或“#chatgpt关闭全局图片模式”命令来设置回复模式";
         }
-        if (matchCommand[1] === '打开') {
-          Config.defaultUseTTS = true
-          Config.defaultUsePicture = false
-          replyMsg = 'ChatGPT将默认以语音回复'
-        } else if (matchCommand[1] === '关闭') {
-          Config.defaultUseTTS = false
-          if (Config.defaultUsePicture) {
-            replyMsg = 'ChatGPT将默认以图片回复'
+        break;
+      case "文本模式":
+        if (matchCommand[1] === "打开") {
+          Config.defaultUsePicture = false;
+          Config.defaultUseTTS = false;
+          replyMsg = "ChatGPT将默认以文本回复";
+        } else if (matchCommand[1] === "关闭") {
+          if (Config.defaultUseTTS) {
+            replyMsg = "ChatGPT将默认以语音回复";
+          } else if (Config.defaultUsePicture) {
+            replyMsg = "ChatGPT将默认以图片回复";
           } else {
-            replyMsg = 'ChatGPT将默认以文本回复'
+            Config.defaultUseTTS = true;
+            replyMsg = "ChatGPT将默认以语音回复";
           }
-        } else if (matchCommand[1] === '设置') {
-          replyMsg = '请使用“#chatgpt打开全局语音模式”或“#chatgpt关闭全局语音模式”命令来设置回复模式'
-        } break
-      case '回复帮助':
-        replyMsg = '可使用以下命令配置全局回复:\n#chatgpt(打开/关闭)全局(语音/图片/文本)模式\n#chatgpt设置全局(vox|azure|vits)语音角色+角色名称(留空则为随机)\n'
-        break
+        } else if (matchCommand[1] === "设置") {
+          replyMsg =
+            "请使用“#chatgpt打开全局文本模式”或“#chatgpt关闭全局文本模式”命令来设置回复模式";
+        }
+        break;
+      case "语音模式":
+        if (!ttsSupportKinds.length) {
+          replyMsg = "您没有配置任何语音服务，请前往锅巴面板进行配置";
+          break;
+        }
+        if (matchCommand[1] === "打开") {
+          Config.defaultUseTTS = true;
+          Config.defaultUsePicture = false;
+          replyMsg = "ChatGPT将默认以语音回复";
+        } else if (matchCommand[1] === "关闭") {
+          Config.defaultUseTTS = false;
+          if (Config.defaultUsePicture) {
+            replyMsg = "ChatGPT将默认以图片回复";
+          } else {
+            replyMsg = "ChatGPT将默认以文本回复";
+          }
+        } else if (matchCommand[1] === "设置") {
+          replyMsg =
+            "请使用“#chatgpt打开全局语音模式”或“#chatgpt关闭全局语音模式”命令来设置回复模式";
+        }
+        break;
+      case "回复帮助":
+        replyMsg =
+          "可使用以下命令配置全局回复:\n#chatgpt(打开/关闭)全局(语音/图片/文本)模式\n#chatgpt设置全局(vox|azure|vits)语音角色+角色名称(留空则为随机)\n";
+        break;
       default:
         if (!ttsSupportKinds) {
-          replyMsg = '您没有配置任何语音服务，请前往锅巴面板进行配置'
-          break
+          replyMsg = "您没有配置任何语音服务，请前往锅巴面板进行配置";
+          break;
         }
         if (settingType.match(/(语音角色|角色语音|角色)/)) {
-          const voiceKind = matchCommand[5]
-          let speaker = matchCommand[6] || ''
+          const voiceKind = matchCommand[5];
+          let speaker = matchCommand[6] || "";
           if (voiceKind === undefined) {
-            await this.reply('请选择需要设置的语音类型。使用"#chatgpt语音服务"查看支持的语音类型')
-            return false
+            await this.reply(
+              '请选择需要设置的语音类型。使用"#chatgpt语音服务"查看支持的语音类型'
+            );
+            return false;
           }
-          if (!speaker.length || speaker === '随机') {
-            replyMsg = `设置成功,ChatGpt将在${voiceKind}语音模式下随机挑选角色进行回复`
-            if (voiceKind === 'vits') Config.defaultTTSRole = '随机'
-            if (voiceKind === 'azure') Config.azureTTSSpeaker = '随机'
-            if (voiceKind === 'vox') Config.voicevoxTTSSpeaker = '随机'
+          if (!speaker.length || speaker === "随机") {
+            replyMsg = `设置成功,ChatGpt将在${voiceKind}语音模式下随机挑选角色进行回复`;
+            if (voiceKind === "vits") Config.defaultTTSRole = "随机";
+            if (voiceKind === "azure") Config.azureTTSSpeaker = "随机";
+            if (voiceKind === "vox") Config.voicevoxTTSSpeaker = "随机";
           } else {
-            if (ttsSupportKinds.includes(1) && voiceKind === 'azure') {
+            if (ttsSupportKinds.includes(1) && voiceKind === "azure") {
               if (getAzureRoleList().includes(speaker)) {
-                Config.defaultUseTTS = azureRoleList.filter(s => s.name === speaker)[0].code
-                replyMsg = `ChatGPT默认语音角色已被设置为“${speaker}”`
+                Config.defaultUseTTS = azureRoleList.filter(
+                  (s) => s.name === speaker
+                )[0].code;
+                replyMsg = `ChatGPT默认语音角色已被设置为“${speaker}”`;
               } else {
-                await this.reply(`抱歉，没有"${speaker}"这个角色，目前azure模式下支持的角色有${azureRoleList.map(item => item.name).join('、')}`)
-                return false
+                await this.reply(
+                  `抱歉，没有"${speaker}"这个角色，目前azure模式下支持的角色有${azureRoleList
+                    .map((item) => item.name)
+                    .join("、")}`
+                );
+                return false;
               }
-            } else if (ttsSupportKinds.includes(2) && voiceKind === 'vits') {
-              const ttsRole = convertSpeaker(speaker)
+            } else if (ttsSupportKinds.includes(2) && voiceKind === "vits") {
+              const ttsRole = convertSpeaker(speaker);
               if (vitsRoleList.includes(ttsRole)) {
-                Config.defaultTTSRole = ttsRole
-                replyMsg = `ChatGPT默认语音角色已被设置为“${ttsRole}”`
+                Config.defaultTTSRole = ttsRole;
+                replyMsg = `ChatGPT默认语音角色已被设置为“${ttsRole}”`;
               } else {
-                replyMsg = `抱歉，我还不认识“${ttsRole}”这个语音角色,可使用'#vits角色列表'查看可配置的角色`
+                replyMsg = `抱歉，我还不认识“${ttsRole}”这个语音角色,可使用'#vits角色列表'查看可配置的角色`;
               }
-            } else if (ttsSupportKinds.includes(3) && voiceKind === 'vox') {
+            } else if (ttsSupportKinds.includes(3) && voiceKind === "vox") {
               if (getVoicevoxRoleList().includes(speaker)) {
-                let regex = /^(.*?)-(.*)$/
-                let match = regex.exec(speaker)
-                let style = null
+                let regex = /^(.*?)-(.*)$/;
+                let match = regex.exec(speaker);
+                let style = null;
                 if (match) {
-                  speaker = match[1]
-                  style = match[2]
+                  speaker = match[1];
+                  style = match[2];
                 }
-                let chosen = VoiceVoxTTS.supportConfigurations.filter(s => s.name === speaker)
+                let chosen = VoiceVoxTTS.supportConfigurations.filter(
+                  (s) => s.name === speaker
+                );
                 if (chosen.length === 0) {
-                  await this.reply(`抱歉，没有"${speaker}"这个角色，目前voicevox模式下支持的角色有${VoiceVoxTTS.supportConfigurations.map(item => item.name).join('、')}`)
-                  break
+                  await this.reply(
+                    `抱歉，没有"${speaker}"这个角色，目前voicevox模式下支持的角色有${VoiceVoxTTS.supportConfigurations
+                      .map((item) => item.name)
+                      .join("、")}`
+                  );
+                  break;
                 }
-                if (style && !chosen[0].styles.find(item => item.name === style)) {
-                  await this.reply(`抱歉，"${speaker}"这个角色没有"${style}"这个风格，目前支持的风格有${chosen[0].styles.map(item => item.name).join('、')}`)
-                  break
+                if (
+                  style &&
+                  !chosen[0].styles.find((item) => item.name === style)
+                ) {
+                  await this.reply(
+                    `抱歉，"${speaker}"这个角色没有"${style}"这个风格，目前支持的风格有${chosen[0].styles
+                      .map((item) => item.name)
+                      .join("、")}`
+                  );
+                  break;
                 }
-                Config.ttsRoleVoiceVox = chosen[0].name + (style ? `-${style}` : '')
-                replyMsg = `ChatGPT默认语音角色已被设置为“${speaker}”`
+                Config.ttsRoleVoiceVox =
+                  chosen[0].name + (style ? `-${style}` : "");
+                replyMsg = `ChatGPT默认语音角色已被设置为“${speaker}”`;
               } else {
-                await this.reply(`抱歉，没有"${speaker}"这个角色，目前voicevox模式下支持的角色有${voxRoleList.map(item => item.name).join('、')}`)
-                return false
+                await this.reply(
+                  `抱歉，没有"${speaker}"这个角色，目前voicevox模式下支持的角色有${voxRoleList
+                    .map((item) => item.name)
+                    .join("、")}`
+                );
+                return false;
               }
             } else {
-              replyMsg = `${voiceKind}语音角色设置错误,请检查语音配置~`
+              replyMsg = `${voiceKind}语音角色设置错误,请检查语音配置~`;
             }
           }
         } else {
-          replyMsg = "无法识别的设置类型\n请使用'#chatgpt全局回复帮助'查看正确命令"
+          replyMsg =
+            "无法识别的设置类型\n请使用'#chatgpt全局回复帮助'查看正确命令";
         }
     }
-    await this.reply(replyMsg, true)
+    await this.reply(replyMsg, true);
   }
 
-  async turnOnConfirm (e) {
-    await redis.set('CHATGPT:CONFIRM', 'on')
-    await this.reply('已开启消息确认', true)
-    return false
+  async turnOnConfirm(e) {
+    await redis.set("CHATGPT:CONFIRM", "on");
+    await this.reply("已开启消息确认", true);
+    return false;
   }
 
-  async turnOffConfirm (e) {
-    await redis.set('CHATGPT:CONFIRM', 'off')
-    await this.reply('已关闭消息确认', true)
-    return false
+  async turnOffConfirm(e) {
+    await redis.set("CHATGPT:CONFIRM", "off");
+    await this.reply("已关闭消息确认", true);
+    return false;
   }
 
-  async setAccessToken (e) {
-    this.setContext('saveToken')
-    await this.reply('请发送ChatGPT AccessToken', true)
-    return false
+  async setAccessToken(e) {
+    this.setContext("saveToken");
+    await this.reply("请发送ChatGPT AccessToken", true);
+    return false;
   }
 
-  async setPoeCookie () {
-    this.setContext('savePoeToken')
-    await this.reply('请发送Poe Cookie', true)
-    return false
+  async setPoeCookie() {
+    this.setContext("savePoeToken");
+    await this.reply("请发送Poe Cookie", true);
+    return false;
   }
 
-  async savePoeToken (e) {
-    if (!this.e.msg) return
-    let token = this.e.msg
-    await redis.set('CHATGPT:POE_TOKEN', token)
-    await this.reply('Poe cookie设置成功', true)
-    this.finish('savePoeToken')
+  async savePoeToken(e) {
+    if (!this.e.msg) return;
+    let token = this.e.msg;
+    await redis.set("CHATGPT:POE_TOKEN", token);
+    await this.reply("Poe cookie设置成功", true);
+    this.finish("savePoeToken");
   }
-  async setPoeBot (e) {
-    let bot = e.msg.replace(/#chatgpt(Poe|POE)切换(模式)/, '')
-    let bots = getBots()
-    let reversed = {}
-    Object.keys(bots).forEach(k => {
-      reversed[bots[k]] = k
-    })
+  async setPoeBot(e) {
+    let bot = e.msg.replace(/#chatgpt(Poe|POE)切换(模式)/, "");
+    let bots = getBots();
+    let reversed = {};
+    Object.keys(bots).forEach((k) => {
+      reversed[bots[k]] = k;
+    });
     if (reversed[bot]) {
-      await redis.set('CHATGPT:POE_BOT', reversed[bot])
-      await e.reply(`poe已切换至${bot}(${reversed[bot]})模式`)
+      await redis.set("CHATGPT:POE_BOT", reversed[bot]);
+      await e.reply(`poe已切换至${bot}(${reversed[bot]})模式`);
     } else {
-      await e.reply('目前poe模式仅支持' + Object.keys(reversed).join(', '))
+      await e.reply("目前poe模式仅支持" + Object.keys(reversed).join(", "));
     }
   }
 
-  async setBingAccessToken (e) {
-    this.setContext('saveBingToken')
-    await this.reply('请发送Bing Cookie Token.("_U" cookie from bing.com)', true)
-    return false
+  async setBingAccessToken(e) {
+    this.setContext("saveBingToken");
+    await this.reply(
+      '请发送Bing Cookie Token.("_U" cookie from bing.com)',
+      true
+    );
+    return false;
   }
 
-  async migrateBingAccessToken () {
-    let token = await redis.get('CHATGPT:BING_TOKEN')
+  async migrateBingAccessToken() {
+    let token = await redis.get("CHATGPT:BING_TOKEN");
     if (token) {
-      token = token.split('|')
-      token = token.map((item, index) => (
-        {
-          Token: item,
-          State: '正常',
-          Usage: 0
-        }
-      ))
+      token = token.split("|");
+      token = token.map((item, index) => ({
+        Token: item,
+        State: "正常",
+        Usage: 0,
+      }));
     } else {
-      token = []
+      token = [];
     }
-    let tokens = await redis.get('CHATGPT:BING_TOKENS')
+    let tokens = await redis.get("CHATGPT:BING_TOKENS");
     if (tokens) {
-      tokens = JSON.parse(tokens)
+      tokens = JSON.parse(tokens);
     } else {
-      tokens = []
+      tokens = [];
     }
-    await redis.set('CHATGPT:BING_TOKENS', JSON.stringify([...token, ...tokens]))
-    await this.reply('迁移完成', true)
+    await redis.set(
+      "CHATGPT:BING_TOKENS",
+      JSON.stringify([...token, ...tokens])
+    );
+    await this.reply("迁移完成", true);
   }
 
-  async getBingAccessToken (e) {
-    let tokens = await redis.get('CHATGPT:BING_TOKENS')
-    if (tokens) tokens = JSON.parse(tokens)
-    else tokens = []
-    tokens = tokens.length > 0
-      ? tokens.map((item, index) => (
-            `【${index}】 Token：${item.Token.substring(0, 5 / 2) + '...' + item.Token.substring(item.Token.length - 5 / 2, item.Token.length)}`
-      )).join('\n')
-      : '无必应Token记录'
-    await this.reply(`${tokens}`, true)
-    return false
+  async getBingAccessToken(e) {
+    let tokens = await redis.get("CHATGPT:BING_TOKENS");
+    if (tokens) tokens = JSON.parse(tokens);
+    else tokens = [];
+    tokens =
+      tokens.length > 0
+        ? tokens
+            .map(
+              (item, index) =>
+                `【${index}】 Token：${
+                  item.Token.substring(0, 5 / 2) +
+                  "..." +
+                  item.Token.substring(
+                    item.Token.length - 5 / 2,
+                    item.Token.length
+                  )
+                }`
+            )
+            .join("\n")
+        : "无必应Token记录";
+    await this.reply(`${tokens}`, true);
+    return false;
   }
 
-  async delBingAccessToken (e) {
-    this.setContext('deleteBingToken')
-    let tokens = await redis.get('CHATGPT:BING_TOKENS')
-    if (tokens) tokens = JSON.parse(tokens)
-    else tokens = []
-    tokens = tokens.length > 0
-      ? tokens.map((item, index) => (
-            `【${index}】 Token：${item.Token.substring(0, 5 / 2) + '...' + item.Token.substring(item.Token.length - 5 / 2, item.Token.length)}`
-      )).join('\n')
-      : '无必应Token记录'
-    await this.reply(`请发送要删除的token编号\n${tokens}`, true)
-    if (tokens.length == 0) this.finish('saveBingToken')
-    return false
+  async delBingAccessToken(e) {
+    this.setContext("deleteBingToken");
+    let tokens = await redis.get("CHATGPT:BING_TOKENS");
+    if (tokens) tokens = JSON.parse(tokens);
+    else tokens = [];
+    tokens =
+      tokens.length > 0
+        ? tokens
+            .map(
+              (item, index) =>
+                `【${index}】 Token：${
+                  item.Token.substring(0, 5 / 2) +
+                  "..." +
+                  item.Token.substring(
+                    item.Token.length - 5 / 2,
+                    item.Token.length
+                  )
+                }`
+            )
+            .join("\n")
+        : "无必应Token记录";
+    await this.reply(`请发送要删除的token编号\n${tokens}`, true);
+    if (tokens.length == 0) this.finish("saveBingToken");
+    return false;
   }
 
-  async saveBingToken () {
-    if (!this.e.msg) return
-    let token = this.e.msg
+  async saveBingToken() {
+    if (!this.e.msg) return;
+    let token = this.e.msg;
     if (token.length < 100) {
-      await this.reply('Bing Token格式错误，请确定获取了有效的_U Cookie或完整的Cookie', true)
-      this.finish('saveBingToken')
-      return
+      await this.reply(
+        "Bing Token格式错误，请确定获取了有效的_U Cookie或完整的Cookie",
+        true
+      );
+      this.finish("saveBingToken");
+      return;
     }
-    let cookie
-    if (token?.indexOf('=') > -1) {
-      cookie = token
+    let cookie;
+    if (token?.indexOf("=") > -1) {
+      cookie = token;
     }
     const bingAIClient = new SydneyAIClient({
       userToken: token, // "_U" cookie from bing.com
       cookie,
-      debug: Config.debug
-    })
+      debug: Config.debug,
+    });
     // 异步就好了，不卡着这个context了
-    bingAIClient.createNewConversation().then(async res => {
+    bingAIClient.createNewConversation().then(async (res) => {
       if (res.clientId) {
-        logger.info(logger.cyan('[ChatGPT-plugin]'), logger.yellow(`[管理]`), logger.red(`[必应]`), 'Bing Token 有效')
+        logger.info(
+          logger.cyan("[ChatGPT-plugin]"),
+          logger.yellow(`[管理]`),
+          logger.red(`[必应]`),
+          "Bing Token 有效"
+        );
       } else {
-        logger.error('bing token 无效', res)
+        logger.error("bing token 无效", res);
         // 移除无效token
-        if (await redis.exists('CHATGPT:BING_TOKENS') != 0) {
-          let bingToken = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
-          const element = bingToken.findIndex(element => element.token === token)
+        if ((await redis.exists("CHATGPT:BING_TOKENS")) != 0) {
+          let bingToken = JSON.parse(await redis.get("CHATGPT:BING_TOKENS"));
+          const element = bingToken.findIndex(
+            (element) => element.token === token
+          );
           if (element >= 0) {
-            bingToken[element].State = '异常'
-            await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingToken))
+            bingToken[element].State = "异常";
+            await redis.set("CHATGPT:BING_TOKENS", JSON.stringify(bingToken));
           }
         }
-        await this.reply(`经检测，Bing Token无效。来自Bing的错误提示：${res.result?.message}`)
+        await this.reply(
+          `经检测，Bing Token无效。来自Bing的错误提示：${res.result?.message}`
+        );
       }
-    })
-    let bingToken = []
-    if (await redis.exists('CHATGPT:BING_TOKENS') != 0) {
-      bingToken = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
-      if (!bingToken.some(element => element.token === token)) {
+    });
+    let bingToken = [];
+    if ((await redis.exists("CHATGPT:BING_TOKENS")) != 0) {
+      bingToken = JSON.parse(await redis.get("CHATGPT:BING_TOKENS"));
+      if (!bingToken.some((element) => element.token === token)) {
         bingToken.push({
           Token: token,
-          State: '正常',
-          Usage: 0
-        })
+          State: "正常",
+          Usage: 0,
+        });
       }
     } else {
-      bingToken = [{
-        Token: token,
-        State: '正常',
-        Usage: 0
-      }]
+      bingToken = [
+        {
+          Token: token,
+          State: "正常",
+          Usage: 0,
+        },
+      ];
     }
-    await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingToken))
-    await this.reply('Bing Token设置成功', true)
-    this.finish('saveBingToken')
+    await redis.set("CHATGPT:BING_TOKENS", JSON.stringify(bingToken));
+    await this.reply("Bing Token设置成功", true);
+    this.finish("saveBingToken");
   }
 
-  async deleteBingToken () {
-    if (!this.e.msg) return
-    let tokenId = this.e.msg
-    if (await redis.exists('CHATGPT:BING_TOKENS') != 0) {
-      let bingToken = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
+  async deleteBingToken() {
+    if (!this.e.msg) return;
+    let tokenId = this.e.msg;
+    if ((await redis.exists("CHATGPT:BING_TOKENS")) != 0) {
+      let bingToken = JSON.parse(await redis.get("CHATGPT:BING_TOKENS"));
       if (tokenId >= 0 && tokenId < bingToken.length) {
-        const removeToken = bingToken[tokenId].Token
-        bingToken.splice(tokenId, 1)
-        await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingToken))
-        await this.reply(`Token ${removeToken.substring(0, 5 / 2) + '...' + removeToken.substring(removeToken.length - 5 / 2, removeToken.length)} 移除成功`, true)
-        this.finish('deleteBingToken')
+        const removeToken = bingToken[tokenId].Token;
+        bingToken.splice(tokenId, 1);
+        await redis.set("CHATGPT:BING_TOKENS", JSON.stringify(bingToken));
+        await this.reply(
+          `Token ${
+            removeToken.substring(0, 5 / 2) +
+            "..." +
+            removeToken.substring(
+              removeToken.length - 5 / 2,
+              removeToken.length
+            )
+          } 移除成功`,
+          true
+        );
+        this.finish("deleteBingToken");
       } else {
-        await this.reply('Token编号错误！', true)
-        this.finish('deleteBingToken')
+        await this.reply("Token编号错误！", true);
+        this.finish("deleteBingToken");
       }
     } else {
-      await this.reply('Token记录异常', true)
-      this.finish('deleteBingToken')
+      await this.reply("Token记录异常", true);
+      this.finish("deleteBingToken");
     }
   }
 
-  async saveToken () {
-    if (!this.e.msg) return
-    let token = this.e.msg
-    if (!token.startsWith('ey') || token.length < 20) {
-      await this.reply('ChatGPT AccessToken格式错误', true)
-      this.finish('saveToken')
-      return
+  async saveToken() {
+    if (!this.e.msg) return;
+    let token = this.e.msg;
+    if (!token.startsWith("ey") || token.length < 20) {
+      await this.reply("ChatGPT AccessToken格式错误", true);
+      this.finish("saveToken");
+      return;
     }
-    await redis.set('CHATGPT:TOKEN', token)
-    await this.reply('ChatGPT AccessToken设置成功', true)
-    this.finish('saveToken')
+    await redis.set("CHATGPT:TOKEN", token);
+    await this.reply("ChatGPT AccessToken设置成功", true);
+    this.finish("saveToken");
   }
 
-  async useBrowserBasedSolution (e) {
-    await redis.set('CHATGPT:USE', 'browser')
-    await this.reply('已切换到基于浏览器的解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误')
+  async useBrowserBasedSolution(e) {
+    await redis.set("CHATGPT:USE", "browser");
+    await this.reply(
+      "已切换到基于浏览器的解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误"
+    );
   }
 
-  async useOpenAIAPIBasedSolution (e) {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'api') {
-      await redis.set('CHATGPT:USE', 'api')
-      await this.reply('已切换到基于OpenAI API的解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误')
+  async useOpenAIAPIBasedSolution(e) {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "api") {
+      await redis.set("CHATGPT:USE", "api");
+      await this.reply(
+        "已切换到基于OpenAI API的解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误"
+      );
     } else {
-      await this.reply('当前已经是API模式了')
+      await this.reply("当前已经是API模式了");
     }
   }
 
-  async useChatGLMSolution (e) {
-    await redis.set('CHATGPT:USE', 'chatglm')
-    await this.reply('已切换到ChatGLM-6B解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误')
+  async useChatGLMSolution(e) {
+    await redis.set("CHATGPT:USE", "chatglm");
+    await this.reply(
+      "已切换到ChatGLM-6B解决方案，如果已经对话过建议执行`#结束对话`避免引起404错误"
+    );
   }
 
-  async useReversedAPIBasedSolution2 (e) {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'api3') {
-      await redis.set('CHATGPT:USE', 'api3')
-      await this.reply('已切换到基于第三方Reversed Conversastion API(API3)的解决方案')
+  async useReversedAPIBasedSolution2(e) {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "api3") {
+      await redis.set("CHATGPT:USE", "api3");
+      await this.reply(
+        "已切换到基于第三方Reversed Conversastion API(API3)的解决方案"
+      );
     } else {
-      await this.reply('当前已经是API3模式了')
+      await this.reply("当前已经是API3模式了");
     }
   }
 
-  async useBingSolution (e) {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'bing') {
-      await redis.set('CHATGPT:USE', 'bing')
-      await this.reply('已切换到基于微软新必应的解决方案，如果已经对话过务必执行`#结束对话`避免引起404错误')
+  async useBingSolution(e) {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "bing") {
+      await redis.set("CHATGPT:USE", "bing");
+      await this.reply(
+        "已切换到基于微软新必应的解决方案，如果已经对话过务必执行`#结束对话`避免引起404错误"
+      );
     } else {
-      await this.reply('当前已经是必应Bing模式了')
+      await this.reply("当前已经是必应Bing模式了");
     }
   }
 
-  async useClaudeBasedSolution (e) {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'poe') {
-      await redis.set('CHATGPT:USE', 'poe')
-      await this.reply('已切换到基于Quora\'s POE的解决方案')
+  async useClaudeBasedSolution(e) {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "poe") {
+      await redis.set("CHATGPT:USE", "poe");
+      await this.reply("已切换到基于Quora's POE的解决方案");
     } else {
-      await this.reply('当前已经是POE模式了')
+      await this.reply("当前已经是POE模式了");
     }
   }
 
-  async useSlackClaudeBasedSolution () {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'claude') {
-      await redis.set('CHATGPT:USE', 'claude')
-      await this.reply('已切换到基于slack claude机器人的解决方案')
+  async useSlackClaudeBasedSolution() {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "claude") {
+      await redis.set("CHATGPT:USE", "claude");
+      await this.reply("已切换到基于slack claude机器人的解决方案");
     } else {
-      await this.reply('当前已经是claude模式了')
+      await this.reply("当前已经是claude模式了");
     }
   }
 
-  async useXinghuoBasedSolution () {
-    let use = await redis.get('CHATGPT:USE')
-    if (use !== 'xh') {
-      await redis.set('CHATGPT:USE', 'xh')
-      await this.reply('已切换到基于星火的解决方案')
+  async useXinghuoBasedSolution() {
+    let use = await redis.get("CHATGPT:USE");
+    if (use !== "xh") {
+      await redis.set("CHATGPT:USE", "xh");
+      await this.reply("已切换到基于星火的解决方案");
     } else {
-      await this.reply('当前已经是星火模式了')
+      await this.reply("当前已经是星火模式了");
     }
   }
 
-  async changeBingTone (e) {
-    let tongStyle = e.msg.replace(/^#chatgpt(必应|Bing)切换/, '')
+  async changeBingTone(e) {
+    let tongStyle = e.msg.replace(/^#chatgpt(必应|Bing)切换/, "");
     if (!tongStyle) {
-      return
+      return;
     }
     let map = {
-      精准: 'precise',
-      创意: 'creative',
-      均衡: 'balanced',
-      Sydney: 'Sydney',
-      sydney: 'Sydney',
-      悉尼: 'Sydney',
-      自设定: 'Custom',
-      自定义: 'Custom'
-    }
+      精准: "precise",
+      创意: "creative",
+      均衡: "balanced",
+      Sydney: "Sydney",
+      sydney: "Sydney",
+      悉尼: "Sydney",
+      自设定: "Custom",
+      自定义: "Custom",
+    };
     if (map[tongStyle]) {
-      Config.toneStyle = map[tongStyle]
-      await e.reply('切换成功')
+      Config.toneStyle = map[tongStyle];
+      await e.reply("切换成功");
     } else {
-      await e.reply('没有这种风格。支持的风格：精准、创意、均衡、悉尼、自设定')
+      await e.reply("没有这种风格。支持的风格：精准、创意、均衡、悉尼、自设定");
     }
   }
 
-  async bingOpenSuggestedResponses (e) {
-    Config.enableSuggestedResponses = e.msg.indexOf('开启') > -1
-    await e.reply('操作成功')
+  async bingOpenSuggestedResponses(e) {
+    Config.enableSuggestedResponses = e.msg.indexOf("开启") > -1;
+    await e.reply("操作成功");
   }
 
-  async checkAuth (e) {
+  async checkAuth(e) {
     if (!e.isMaster) {
       e.reply(`只有主人才能命令ChatGPT哦~
-    (*/ω＼*)`)
-      return false
+    (*/ω＼*)`);
+      return false;
     }
-    return true
+    return true;
   }
 
-  async versionChatGPTPlugin (e) {
-    await renderUrl(e, `http://127.0.0.1:${Config.serverPort || 3321}/version`, { Viewport: { width: 800, height: 600 } })
+  async versionChatGPTPlugin(e) {
+    await renderUrl(
+      e,
+      `http://127.0.0.1:${Config.serverPort || 3321}/version`,
+      { Viewport: { width: 800, height: 600 } }
+    );
   }
 
-  async modeHelp () {
-    let mode = await redis.get('CHATGPT:USE')
+  async modeHelp() {
+    let mode = await redis.get("CHATGPT:USE");
     const modeMap = {
-      browser: '浏览器',
+      browser: "浏览器",
       // apiReverse: 'API2',
-      api: 'API',
-      bing: '必应',
-      api3: 'API3',
-      chatglm: 'ChatGLM-6B',
-      claude: 'Claude',
-      poe: 'Poe'
-    }
-    let modeText = modeMap[mode || 'api']
+      api: "API",
+      bing: "必应",
+      api3: "API3",
+      chatglm: "ChatGLM-6B",
+      claude: "Claude",
+      poe: "Poe",
+    };
+    let modeText = modeMap[mode || "api"];
     let message = `API模式和浏览器模式如何选择？
 
 API模式会调用 OpenAI 官方提供的 gpt-3.5-turbo API，只需要提供 API Key。一般情况下，该种方式响应速度更快，不会像 chatGPT 官网一样总出现不可用的现象，但要注意 gpt-3.5-turbo 的 API 调用是收费的，新用户有 $5 的试用金可用于支付，价格为 $0.0020/1K tokens。（问题和回答加起来算 token）
@@ -1128,451 +1368,502 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
 
 您可以使用 "#chatgpt切换浏览器/API/API3/Bing/ChatGLM/Claude/Poe/星火" 来切换到指定模式。
 
-当前为 ${modeText} 模式。`
-    await this.reply(message)
+当前为 ${modeText} 模式。`;
+    await this.reply(message);
   }
 
-  async shutUp (e) {
-    let duration = e.msg.replace(/^#chatgpt(本群)?(群\d+)?(关闭|闭嘴|关机|休眠|下班)/, '')
-    let scope
-    let time = 3600000
-    if (duration === '永久') {
-      time = 0
+  async shutUp(e) {
+    let duration = e.msg.replace(
+      /^#chatgpt(本群)?(群\d+)?(关闭|闭嘴|关机|休眠|下班)/,
+      ""
+    );
+    let scope;
+    let time = 3600000;
+    if (duration === "永久") {
+      time = 0;
     } else if (duration) {
-      time = parseDuration(duration)
+      time = parseDuration(duration);
     }
-    const match = e.msg.match(/#chatgpt群(\d+)?(关闭|闭嘴|关机|休眠|下班)(.*)/)
-    if (e.msg.indexOf('本群') > -1) {
+    const match = e.msg.match(/#chatgpt群(\d+)?(关闭|闭嘴|关机|休眠|下班)(.*)/);
+    if (e.msg.indexOf("本群") > -1) {
       if (e.isGroup) {
-        scope = e.group.group_id
+        scope = e.group.group_id;
         if (await redis.get(`CHATGPT:SHUT_UP:${scope}`)) {
-          await redis.del(`CHATGPT:SHUT_UP:${scope}`)
-          await redis.set(`CHATGPT:SHUT_UP:${scope}`, '1', { EX: time })
-          await e.reply(`好的，已切换休眠状态：倒计时${formatDuration(time)}`)
+          await redis.del(`CHATGPT:SHUT_UP:${scope}`);
+          await redis.set(`CHATGPT:SHUT_UP:${scope}`, "1", { EX: time });
+          await e.reply(`好的，已切换休眠状态：倒计时${formatDuration(time)}`);
         } else {
-          await redis.set(`CHATGPT:SHUT_UP:${scope}`, '1', { EX: time })
-          await e.reply(`好的，已切换休眠状态：倒计时${formatDuration(time)}`)
+          await redis.set(`CHATGPT:SHUT_UP:${scope}`, "1", { EX: time });
+          await e.reply(`好的，已切换休眠状态：倒计时${formatDuration(time)}`);
         }
       } else {
-        await e.reply('主人，这里好像不是群哦')
-        return false
+        await e.reply("主人，这里好像不是群哦");
+        return false;
       }
     } else if (match) {
-      const groupId = parseInt(match[1], 10)
+      const groupId = parseInt(match[1], 10);
       if (Bot.getGroupList().get(groupId)) {
         if (await redis.get(`CHATGPT:SHUT_UP:${groupId}`)) {
-          await redis.del(`CHATGPT:SHUT_UP:${groupId}`)
-          await redis.set(`CHATGPT:SHUT_UP:${groupId}`, '1', { EX: time })
-          await e.reply(`好的，即将在群${groupId}中休眠${formatDuration(time)}`)
+          await redis.del(`CHATGPT:SHUT_UP:${groupId}`);
+          await redis.set(`CHATGPT:SHUT_UP:${groupId}`, "1", { EX: time });
+          await e.reply(
+            `好的，即将在群${groupId}中休眠${formatDuration(time)}`
+          );
         } else {
-          await redis.set(`CHATGPT:SHUT_UP:${groupId}`, '1', { EX: time })
-          await e.reply(`好的，即将在群${groupId}中休眠${formatDuration(time)}`)
+          await redis.set(`CHATGPT:SHUT_UP:${groupId}`, "1", { EX: time });
+          await e.reply(
+            `好的，即将在群${groupId}中休眠${formatDuration(time)}`
+          );
         }
       } else {
-        await e.reply('主人还没告诉我群号呢')
-        return false
+        await e.reply("主人还没告诉我群号呢");
+        return false;
       }
     } else {
-      if (await redis.get('CHATGPT:SHUT_UP:ALL')) {
-        await redis.del('CHATGPT:SHUT_UP:ALL')
-        await redis.set('CHATGPT:SHUT_UP:ALL', '1', { EX: time })
-        await e.reply(`好的，我会延长休眠时间${formatDuration(time)}`)
+      if (await redis.get("CHATGPT:SHUT_UP:ALL")) {
+        await redis.del("CHATGPT:SHUT_UP:ALL");
+        await redis.set("CHATGPT:SHUT_UP:ALL", "1", { EX: time });
+        await e.reply(`好的，我会延长休眠时间${formatDuration(time)}`);
       } else {
-        await redis.set('CHATGPT:SHUT_UP:ALL', '1', { EX: time })
-        await e.reply(`好的，我会延长休眠时间${formatDuration(time)}`)
+        await redis.set("CHATGPT:SHUT_UP:ALL", "1", { EX: time });
+        await e.reply(`好的，我会延长休眠时间${formatDuration(time)}`);
       }
     }
   }
 
-  async openMouth (e) {
-    const match = e.msg.match(/^#chatgpt群(\d+)/)
-    if (e.msg.indexOf('本群') > -1) {
-      if (await redis.get('CHATGPT:SHUT_UP:ALL')) {
-        await e.reply('当前为休眠模式，没办法做出回应呢')
-        return false
+  async openMouth(e) {
+    const match = e.msg.match(/^#chatgpt群(\d+)/);
+    if (e.msg.indexOf("本群") > -1) {
+      if (await redis.get("CHATGPT:SHUT_UP:ALL")) {
+        await e.reply("当前为休眠模式，没办法做出回应呢");
+        return false;
       }
       if (e.isGroup) {
-        let scope = e.group.group_id
+        let scope = e.group.group_id;
         if (await redis.get(`CHATGPT:SHUT_UP:${scope}`)) {
-          await redis.del(`CHATGPT:SHUT_UP:${scope}`)
-          await e.reply('好的主人，我又可以和大家聊天啦')
+          await redis.del(`CHATGPT:SHUT_UP:${scope}`);
+          await e.reply("好的主人，我又可以和大家聊天啦");
         } else {
-          await e.reply('主人，我已经启动过了哦')
+          await e.reply("主人，我已经启动过了哦");
         }
       } else {
-        await e.reply('主人，这里好像不是群哦')
-        return false
+        await e.reply("主人，这里好像不是群哦");
+        return false;
       }
     } else if (match) {
-      if (await redis.get('CHATGPT:SHUT_UP:ALL')) {
-        await e.reply('当前为休眠模式，没办法做出回应呢')
-        return false
+      if (await redis.get("CHATGPT:SHUT_UP:ALL")) {
+        await e.reply("当前为休眠模式，没办法做出回应呢");
+        return false;
       }
-      const groupId = parseInt(match[1], 10)
+      const groupId = parseInt(match[1], 10);
       if (Bot.getGroupList().get(groupId)) {
         if (await redis.get(`CHATGPT:SHUT_UP:${groupId}`)) {
-          await redis.del(`CHATGPT:SHUT_UP:${groupId}`)
-          await e.reply(`好的主人，我终于又可以在群${groupId}和大家聊天了`)
+          await redis.del(`CHATGPT:SHUT_UP:${groupId}`);
+          await e.reply(`好的主人，我终于又可以在群${groupId}和大家聊天了`);
         } else {
-          await e.reply(`主人，我在群${groupId}中已经是启动状态了哦`)
+          await e.reply(`主人，我在群${groupId}中已经是启动状态了哦`);
         }
       } else {
-        await e.reply('主人还没告诉我群号呢')
-        return false
+        await e.reply("主人还没告诉我群号呢");
+        return false;
       }
     } else {
-      let keys = await redis.keys('CHATGPT:SHUT_UP:*')
-      if (await redis.get('CHATGPT:SHUT_UP:ALL')) {
-        await redis.del('CHATGPT:SHUT_UP:ALL')
+      let keys = await redis.keys("CHATGPT:SHUT_UP:*");
+      if (await redis.get("CHATGPT:SHUT_UP:ALL")) {
+        await redis.del("CHATGPT:SHUT_UP:ALL");
         for (let i = 0; i < keys.length; i++) {
-          await redis.del(keys[i])
+          await redis.del(keys[i]);
         }
-        await e.reply('好的，我会开启所有群聊响应')
+        await e.reply("好的，我会开启所有群聊响应");
       } else if (keys || keys.length > 0) {
         for (let i = 0; i < keys.length; i++) {
-          await redis.del(keys[i])
+          await redis.del(keys[i]);
         }
-        await e.reply('已经开启过全群响应啦')
+        await e.reply("已经开启过全群响应啦");
       } else {
-        await e.reply('我没有在任何群休眠哦')
+        await e.reply("我没有在任何群休眠哦");
       }
     }
   }
 
-  async listShutUp () {
-    let keys = await redis.keys('CHATGPT:SHUT_UP:*')
+  async listShutUp() {
+    let keys = await redis.keys("CHATGPT:SHUT_UP:*");
     if (!keys || keys.length === 0) {
-      await this.reply('已经开启过全群响应啦', true)
+      await this.reply("已经开启过全群响应啦", true);
     } else {
-      let list = []
+      let list = [];
       for (let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let groupId = key.replace('CHATGPT:SHUT_UP:', '')
-        let ttl = await redis.ttl(key)
-        let ttlFormat = formatDuration(ttl)
-        list.push({ groupId, ttlFormat })
+        let key = keys[i];
+        let groupId = key.replace("CHATGPT:SHUT_UP:", "");
+        let ttl = await redis.ttl(key);
+        let ttlFormat = formatDuration(ttl);
+        list.push({ groupId, ttlFormat });
       }
-      await this.reply(list.map(item => item.groupId !== 'ALL' ? `群聊${item.groupId}: ${item.ttlFormat}` : `全局: ${item.ttlFormat}`).join('\n'))
+      await this.reply(
+        list
+          .map((item) =>
+            item.groupId !== "ALL"
+              ? `群聊${item.groupId}: ${item.ttlFormat}`
+              : `全局: ${item.ttlFormat}`
+          )
+          .join("\n")
+      );
     }
   }
 
-  async setAPIKey (e) {
-    this.setContext('saveAPIKey')
-    await this.reply('请发送OpenAI API Key.', true)
-    return false
+  async setAPIKey(e) {
+    this.setContext("saveAPIKey");
+    await this.reply("请发送OpenAI API Key.", true);
+    return false;
   }
 
-  async saveAPIKey () {
-    if (!this.e.msg) return
-    let token = this.e.msg
-    if (!token.startsWith('sk-')) {
-      await this.reply('OpenAI API Key格式错误', true)
-      this.finish('saveAPIKey')
-      return
-    }
-    // todo
-    Config.apiKey = token
-    await this.reply('OpenAI API Key设置成功', true)
-    this.finish('saveAPIKey')
-  }
-
-  async setXinghuoToken () {
-    this.setContext('saveXinghuoToken')
-    await this.reply('请发送星火的ssoSessionId', true)
-    return false
-  }
-
-  async saveXinghuoToken () {
-    if (!this.e.msg) return
-    let token = this.e.msg
-    // todo
-    Config.xinghuoToken = token
-    await this.reply('星火ssoSessionId设置成功', true)
-    this.finish('saveXinghuoToken')
-  }
-
-  async setAPIPromptPrefix (e) {
-    this.setContext('saveAPIPromptPrefix')
-    await this.reply('请发送用于API模式的设定', true)
-    return false
-  }
-
-  async saveAPIPromptPrefix (e) {
-    if (!this.e.msg) return
-    if (this.e.msg === '取消') {
-      await this.reply('已取消设置API设定', true)
-      this.finish('saveAPIPromptPrefix')
-      return
+  async saveAPIKey() {
+    if (!this.e.msg) return;
+    let token = this.e.msg;
+    if (!token.startsWith("sk-")) {
+      await this.reply("OpenAI API Key格式错误", true);
+      this.finish("saveAPIKey");
+      return;
     }
     // todo
-    Config.promptPrefixOverride = this.e.msg
-    await this.reply('API模式的设定设置成功', true)
-    this.finish('saveAPIPromptPrefix')
+    Config.apiKey = token;
+    await this.reply("OpenAI API Key设置成功", true);
+    this.finish("saveAPIKey");
   }
 
-  async setBingPromptPrefix (e) {
-    this.setContext('saveBingPromptPrefix')
-    await this.reply('请发送用于Bing Sydney模式的设定', true)
-    return false
+  async setXinghuoToken() {
+    this.setContext("saveXinghuoToken");
+    await this.reply("请发送星火的ssoSessionId", true);
+    return false;
   }
 
-  async saveBingPromptPrefix (e) {
-    if (!this.e.msg) return
-    if (this.e.msg === '取消') {
-      await this.reply('已取消设置Sydney设定', true)
-      this.finish('saveBingPromptPrefix')
-      return
+  async saveXinghuoToken() {
+    if (!this.e.msg) return;
+    let token = this.e.msg;
+    // todo
+    Config.xinghuoToken = token;
+    await this.reply("星火ssoSessionId设置成功", true);
+    this.finish("saveXinghuoToken");
+  }
+
+  async setAPIPromptPrefix(e) {
+    this.setContext("saveAPIPromptPrefix");
+    await this.reply("请发送用于API模式的设定", true);
+    return false;
+  }
+
+  async saveAPIPromptPrefix(e) {
+    if (!this.e.msg) return;
+    if (this.e.msg === "取消") {
+      await this.reply("已取消设置API设定", true);
+      this.finish("saveAPIPromptPrefix");
+      return;
     }
-    Config.sydney = this.e.msg
-    await this.reply('Bing Sydney模式的设定设置成功', true)
-    this.finish('saveBingPromptPrefix')
+    // todo
+    Config.promptPrefixOverride = this.e.msg;
+    await this.reply("API模式的设定设置成功", true);
+    this.finish("saveAPIPromptPrefix");
   }
 
-  async switchDraw (e) {
-    if (e.msg.indexOf('开启') > -1) {
+  async setBingPromptPrefix(e) {
+    this.setContext("saveBingPromptPrefix");
+    await this.reply("请发送用于Bing Sydney模式的设定", true);
+    return false;
+  }
+
+  async saveBingPromptPrefix(e) {
+    if (!this.e.msg) return;
+    if (this.e.msg === "取消") {
+      await this.reply("已取消设置Sydney设定", true);
+      this.finish("saveBingPromptPrefix");
+      return;
+    }
+    Config.sydney = this.e.msg;
+    await this.reply("Bing Sydney模式的设定设置成功", true);
+    this.finish("saveBingPromptPrefix");
+  }
+
+  async switchDraw(e) {
+    if (e.msg.indexOf("开启") > -1) {
       if (Config.enableDraw) {
-        await this.reply('当前已经开启chatgpt画图功能', true)
+        await this.reply("当前已经开启chatgpt画图功能", true);
       } else {
-        Config.enableDraw = true
-        await this.reply('chatgpt画图功能开启成功', true)
+        Config.enableDraw = true;
+        await this.reply("chatgpt画图功能开启成功", true);
       }
     } else {
       if (!Config.enableDraw) {
-        await this.reply('当前未开启chatgpt画图功能', true)
+        await this.reply("当前未开启chatgpt画图功能", true);
       } else {
-        Config.enableDraw = false
-        await this.reply('chatgpt画图功能关闭成功', true)
+        Config.enableDraw = false;
+        await this.reply("chatgpt画图功能关闭成功", true);
       }
     }
   }
 
-  async queryAPIPromptPrefix (e) {
-    await this.reply(Config.promptPrefixOverride, true)
+  async queryAPIPromptPrefix(e) {
+    await this.reply(Config.promptPrefixOverride, true);
   }
 
-  async queryBingPromptPrefix (e) {
-    await this.reply(Config.sydney, true)
+  async queryBingPromptPrefix(e) {
+    await this.reply(Config.sydney, true);
   }
 
-  async setAdminPassword (e) {
+  async setAdminPassword(e) {
     if (e.isGroup || !e.isPrivate) {
-      await this.reply('请私聊发送命令', true)
-      return true
+      await this.reply("请私聊发送命令", true);
+      return true;
     }
-    this.setContext('saveAdminPassword')
-    await this.reply('请发送系统管理密码', true)
-    return false
+    this.setContext("saveAdminPassword");
+    await this.reply("请发送系统管理密码", true);
+    return false;
   }
 
-  async setUserPassword (e) {
+  async setUserPassword(e) {
     if (e.isGroup || !e.isPrivate) {
-      await this.reply('请私聊发送命令', true)
-      return true
+      await this.reply("请私聊发送命令", true);
+      return true;
     }
-    this.setContext('saveUserPassword')
-    await this.reply('请发送系统用户密码', true)
-    return false
+    this.setContext("saveUserPassword");
+    await this.reply("请发送系统用户密码", true);
+    return false;
   }
 
-  async saveAdminPassword (e) {
-    if (!this.e.msg) return
-    const passwd = this.e.msg
-    await redis.set('CHATGPT:ADMIN_PASSWD', md5(passwd))
-    await this.reply('设置成功', true)
-    this.finish('saveAdminPassword')
+  async saveAdminPassword(e) {
+    if (!this.e.msg) return;
+    const passwd = this.e.msg;
+    await redis.set("CHATGPT:ADMIN_PASSWD", md5(passwd));
+    await this.reply("设置成功", true);
+    this.finish("saveAdminPassword");
   }
 
-  async saveUserPassword (e) {
-    if (!this.e.msg) return
-    const passwd = this.e.msg
-    const dir = 'resources/ChatGPTCache/user'
-    const filename = `${this.e.user_id}.json`
-    const filepath = path.join(dir, filename)
-    fs.mkdirSync(dir, { recursive: true })
+  async saveUserPassword(e) {
+    if (!this.e.msg) return;
+    const passwd = this.e.msg;
+    const dir = "resources/ChatGPTCache/user";
+    const filename = `${this.e.user_id}.json`;
+    const filepath = path.join(dir, filename);
+    fs.mkdirSync(dir, { recursive: true });
     if (fs.existsSync(filepath)) {
-      fs.readFile(filepath, 'utf8', (err, data) => {
+      fs.readFile(filepath, "utf8", (err, data) => {
         if (err) {
-          console.error(err)
-          return
+          console.error(err);
+          return;
         }
-        const config = JSON.parse(data)
-        config.passwd = md5(passwd)
-        fs.writeFile(filepath, JSON.stringify(config), 'utf8', (err) => {
+        const config = JSON.parse(data);
+        config.passwd = md5(passwd);
+        fs.writeFile(filepath, JSON.stringify(config), "utf8", (err) => {
           if (err) {
-            console.error(err)
+            console.error(err);
           }
-        })
-      })
+        });
+      });
     } else {
-      fs.writeFile(filepath, JSON.stringify({
-        user: this.e.user_id,
-        passwd: md5(passwd),
-        chat: []
-      }), 'utf8', (err) => {
-        if (err) {
-          console.error(err)
+      fs.writeFile(
+        filepath,
+        JSON.stringify({
+          user: this.e.user_id,
+          passwd: md5(passwd),
+          chat: [],
+        }),
+        "utf8",
+        (err) => {
+          if (err) {
+            console.error(err);
+          }
         }
-      })
+      );
     }
-    await this.reply('设置完成', true)
-    this.finish('saveUserPassword')
+    await this.reply("设置完成", true);
+    this.finish("saveUserPassword");
   }
 
-  async adminPage (e) {
+  async adminPage(e) {
     if (!Config.groupAdminPage && (e.isGroup || !e.isPrivate)) {
-      await this.reply('请私聊使用命令', true)
-      return true
+      await this.reply("请私聊使用命令", true);
+      return true;
     }
-    const viewHost = 'http://127.0.0.1/3321'
-    await this.reply(`请登录${viewHost + 'admin/settings'}进行系统配置`, true)
+    const viewHost = "http://127.0.0.1/3321";
+    await this.reply(`请登录${viewHost + "admin/settings"}进行系统配置`, true);
   }
 
-  async userPage (e) {
+  async userPage(e) {
     if (!Config.groupAdminPage && (e.isGroup || !e.isPrivate)) {
-      await this.reply('请私聊使用命令', true)
-      return true
+      await this.reply("请私聊使用命令", true);
+      return true;
     }
-    const viewHost = 'http://127.0.0.1/3321'
-    await this.reply(`请登录${viewHost + 'admin/dashboard'}进行系统配置`, true)
+    const viewHost = "http://127.0.0.1/3321";
+    await this.reply(`请登录${viewHost + "admin/dashboard"}进行系统配置`, true);
   }
 
-  async setOpenAIPlatformToken (e) {
-    let msg
-    let HelperIMG = `file:///${_path}/plugins/chatgpt-plugin/resources/helper/Refresh_Token_Helper.png`
-    msg = [`请发送 refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n注意！直接右键点击复制当前字符串，不要手动复制\n如果仍不能刷新API3的Token，请退出登录重新获取刷新令牌`,
-      segment.image(`${HelperIMG}`)]
-    this.setContext('doSetOpenAIPlatformToken')
-    await e.reply(msg)
+  async setOpenAIPlatformToken(e) {
+    let msg;
+    let HelperIMG = `file:///${_path}/plugins/chatgpt-plugin/resources/helper/Refresh_Token_Helper.png`;
+    msg = [
+      `请发送 refreshToken\n你可以在已登录的platform.openai.com后台界面打开调试窗口，在终端中执行\nJSON.parse(localStorage.getItem(Object.keys(localStorage).filter(k => k.includes(\'auth0\'))[0])).body.refresh_token\n注意！直接右键点击复制当前字符串，不要手动复制\n如果仍不能刷新API3的Token，请退出登录重新获取刷新令牌`,
+      segment.image(`${HelperIMG}`),
+    ];
+    this.setContext("doSetOpenAIPlatformToken");
+    await e.reply(msg);
   }
-  async doSetOpenAIPlatformToken () {
-    let token = this.e.msg
+  async doSetOpenAIPlatformToken() {
+    let token = this.e.msg;
     if (!token) {
-      return false
+      return false;
     }
-    Config.OpenAiPlatformRefreshToken = token.replaceAll('\'', '')
-    await this.e.reply('设置刷新Token成功，可使用#chatgpt刷新token来刷新API3的访问token',true)
-    this.finish('doSetOpenAIPlatformToken')
+    Config.OpenAiPlatformRefreshToken = token.replaceAll("'", "");
+    await this.e.reply(
+      "设置刷新Token成功，可使用#chatgpt刷新token来刷新API3的访问token",
+      true
+    );
+    this.finish("doSetOpenAIPlatformToken");
   }
-  async exportConfig (e) {
+  async exportConfig(e) {
     if (e.isGroup || !e.isPrivate) {
-      await this.reply('请私聊发送命令', true)
-      return true
+      await this.reply("请私聊发送命令", true);
+      return true;
     }
-    let redisConfig = {}
-    if (await redis.exists('CHATGPT:BING_TOKENS') != 0) {
-      let bingTokens = await redis.get('CHATGPT:BING_TOKENS')
-      if (bingTokens) { bingTokens = JSON.parse(bingTokens) } else bingTokens = []
-      redisConfig.bingTokens = bingTokens
+    let redisConfig = {};
+    if ((await redis.exists("CHATGPT:BING_TOKENS")) != 0) {
+      let bingTokens = await redis.get("CHATGPT:BING_TOKENS");
+      if (bingTokens) {
+        bingTokens = JSON.parse(bingTokens);
+      } else bingTokens = [];
+      redisConfig.bingTokens = bingTokens;
     } else {
-      redisConfig.bingTokens = []
+      redisConfig.bingTokens = [];
     }
-    if (await redis.exists('CHATGPT:CONFIRM') != 0) {
-      redisConfig.turnConfirm = await redis.get('CHATGPT:CONFIRM') === 'on'
+    if ((await redis.exists("CHATGPT:CONFIRM")) != 0) {
+      redisConfig.turnConfirm = (await redis.get("CHATGPT:CONFIRM")) === "on";
     }
-    if (await redis.exists('CHATGPT:USE') != 0) {
-      redisConfig.useMode = await redis.get('CHATGPT:USE')
+    if ((await redis.exists("CHATGPT:USE")) != 0) {
+      redisConfig.useMode = await redis.get("CHATGPT:USE");
     }
-    const filepath = path.join('plugins/chatgpt-plugin/resources', 'view.json')
-    const configView = JSON.parse(fs.readFileSync(filepath, 'utf8'))
+    const filepath = path.join("plugins/chatgpt-plugin/resources", "view.json");
+    const configView = JSON.parse(fs.readFileSync(filepath, "utf8"));
     const configJson = JSON.stringify({
       chatConfig: Config,
       redisConfig,
-      view: configView
-    })
-    console.log(configJson)
-    const buf = Buffer.from(configJson)
-    e.friend.sendFile(buf, `ChatGPT-Plugin Config ${new Date()}.json`)
-    return true
+      view: configView,
+    });
+    console.log(configJson);
+    const buf = Buffer.from(configJson);
+    e.friend.sendFile(buf, `ChatGPT-Plugin Config ${new Date()}.json`);
+    return true;
   }
 
-  async importConfig (e) {
+  async importConfig(e) {
     if (e.isGroup || !e.isPrivate) {
-      await this.reply('请私聊发送命令', true)
-      return true
+      await this.reply("请私聊发送命令", true);
+      return true;
     }
-    this.setContext('doImportConfig')
-    await e.reply('请发送配置文件')
+    this.setContext("doImportConfig");
+    await e.reply("请发送配置文件");
   }
 
-  async doImportConfig (e) {
-    const file = this.e.message.find(item => item.type === 'file')
+  async doImportConfig(e) {
+    const file = this.e.message.find((item) => item.type === "file");
     if (file) {
-      const fileUrl = await this.e.friend.getFileUrl(file.fid)
+      const fileUrl = await this.e.friend.getFileUrl(file.fid);
       if (fileUrl) {
         try {
-          let changeConfig = []
-          const response = await fetch(fileUrl)
-          const data = await response.json()
-          const chatdata = data.chatConfig || {}
+          let changeConfig = [];
+          const response = await fetch(fileUrl);
+          const data = await response.json();
+          const chatdata = data.chatConfig || {};
           for (let [keyPath, value] of Object.entries(chatdata)) {
-            if (keyPath === 'blockWords' || keyPath === 'promptBlockWords' || keyPath === 'initiativeChatGroups') { value = value.toString().split(/[,，;；\|]/) }
+            if (
+              keyPath === "blockWords" ||
+              keyPath === "promptBlockWords" ||
+              keyPath === "initiativeChatGroups"
+            ) {
+              value = value.toString().split(/[,，;；\|]/);
+            }
             if (Config[keyPath] != value) {
               changeConfig.push({
                 item: keyPath,
-                value: typeof (value) === 'object' ? JSON.stringify(value) : value,
-                old: typeof (Config[keyPath]) === 'object' ? JSON.stringify(Config[keyPath]) : Config[keyPath],
-                type: 'config'
-              })
-              Config[keyPath] = value
+                value:
+                  typeof value === "object" ? JSON.stringify(value) : value,
+                old:
+                  typeof Config[keyPath] === "object"
+                    ? JSON.stringify(Config[keyPath])
+                    : Config[keyPath],
+                type: "config",
+              });
+              Config[keyPath] = value;
             }
           }
-          const redisConfig = data.redisConfig || {}
+          const redisConfig = data.redisConfig || {};
           if (redisConfig.bingTokens != null) {
             changeConfig.push({
-              item: 'bingTokens',
+              item: "bingTokens",
               value: JSON.stringify(redisConfig.bingTokens),
-              old: await redis.get('CHATGPT:BING_TOKENS'),
-              type: 'redis'
-            })
-            await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(redisConfig.bingTokens))
+              old: await redis.get("CHATGPT:BING_TOKENS"),
+              type: "redis",
+            });
+            await redis.set(
+              "CHATGPT:BING_TOKENS",
+              JSON.stringify(redisConfig.bingTokens)
+            );
           }
           if (redisConfig.turnConfirm != null) {
             changeConfig.push({
-              item: 'turnConfirm',
-              value: redisConfig.turnConfirm ? 'on' : 'off',
-              old: await redis.get('CHATGPT:CONFIRM'),
-              type: 'redis'
-            })
-            await redis.set('CHATGPT:CONFIRM', redisConfig.turnConfirm ? 'on' : 'off')
+              item: "turnConfirm",
+              value: redisConfig.turnConfirm ? "on" : "off",
+              old: await redis.get("CHATGPT:CONFIRM"),
+              type: "redis",
+            });
+            await redis.set(
+              "CHATGPT:CONFIRM",
+              redisConfig.turnConfirm ? "on" : "off"
+            );
           }
           if (redisConfig.useMode != null) {
             changeConfig.push({
-              item: 'useMode',
+              item: "useMode",
               value: redisConfig.useMode,
-              old: await redis.get('CHATGPT:USE'),
-              type: 'redis'
-            })
-            await redis.set('CHATGPT:USE', redisConfig.useMode)
+              old: await redis.get("CHATGPT:USE"),
+              type: "redis",
+            });
+            await redis.set("CHATGPT:USE", redisConfig.useMode);
           }
-          await this.reply(await makeForwardMsg(this.e, changeConfig.map(msg => `修改项:${msg.item}\n旧数据\n\n${msg.old}\n\n新数据\n ${msg.value}`)))
+          await this.reply(
+            await makeForwardMsg(
+              this.e,
+              changeConfig.map(
+                (msg) =>
+                  `修改项:${msg.item}\n旧数据\n\n${msg.old}\n\n新数据\n ${msg.value}`
+              )
+            )
+          );
         } catch (error) {
-          console.error(error)
-          await e.reply('配置文件错误')
+          console.error(error);
+          await e.reply("配置文件错误");
         }
       }
     } else {
-      await this.reply('未找到配置文件', false)
-      return false
+      await this.reply("未找到配置文件", false);
+      return false;
     }
 
-    this.finish('doImportConfig')
+    this.finish("doImportConfig");
   }
 
-  async switchSmartMode (e) {
-    if (e.msg.includes('开启')) {
+  async switchSmartMode(e) {
+    if (e.msg.includes("开启")) {
       if (Config.smartMode) {
-        await e.reply('已经开了，别再乱发消息了')
-        return
+        await e.reply("已经开了，别再乱发消息了");
+        return;
       }
-      Config.smartMode = true
-      await e.reply('好的，已经打开智障模式')
+      Config.smartMode = true;
+      await e.reply("好的，已经打开智障模式");
     } else {
       if (!Config.smartMode) {
-        await e.reply('已经关了，开个几把')
-        return
+        await e.reply("已经关了，开个几把");
+        return;
       }
-      Config.smartMode = false
-      await e.reply('好的，已经关闭智障模式')
+      Config.smartMode = false;
+      await e.reply("好的，已经关闭智障模式");
     }
   }
 }

@@ -1,10 +1,10 @@
-import { Config } from '../utils/config.js'
-import delay from 'delay'
-import random from 'random'
+import { Config } from "../utils/config.js";
+import delay from "delay";
+import random from "random";
 
-let hasRecaptchaPlugin = !!Config['2captchaToken']
+let hasRecaptchaPlugin = !!Config["2captchaToken"];
 
-export async function getOpenAIAuth (opt) {
+export async function getOpenAIAuth(opt) {
   let {
     email,
     password,
@@ -12,218 +12,216 @@ export async function getOpenAIAuth (opt) {
     page,
     timeoutMs = Config.chromeTimeoutMS,
     isGoogleLogin = false,
-    captchaToken = Config['2captchaToken'],
-    executablePath = Config.chromePath
-  } = opt
-  const origBrowser = browser
-  const origPage = page
+    captchaToken = Config["2captchaToken"],
+    executablePath = Config.chromePath,
+  } = opt;
+  const origBrowser = browser;
+  const origPage = page;
 
   try {
-    const userAgent = await browser.userAgent()
+    const userAgent = await browser.userAgent();
     if (!page) {
-      page = (await browser.pages())[0] || (await browser.newPage())
-      page.setDefaultTimeout(timeoutMs)
+      page = (await browser.pages())[0] || (await browser.newPage());
+      page.setDefaultTimeout(timeoutMs);
     }
-    await page.goto('https://chat.openai.com/auth/login', {
-      waitUntil: 'networkidle2'
-    })
-    logger.mark('chatgpt checkForChatGPTAtCapacity')
+    await page.goto("https://chat.openai.com/auth/login", {
+      waitUntil: "networkidle2",
+    });
+    logger.mark("chatgpt checkForChatGPTAtCapacity");
 
-    await checkForChatGPTAtCapacity(page)
+    await checkForChatGPTAtCapacity(page);
 
     // NOTE: this is where you may encounter a CAPTCHA
     if (hasRecaptchaPlugin) {
-      logger.mark('RecaptchaPlugin key exists, try to solve recaptchas')
-      await page.solveRecaptchas()
+      logger.mark("RecaptchaPlugin key exists, try to solve recaptchas");
+      await page.solveRecaptchas();
     }
 
-    logger.mark('chatgpt checkForChatGPTAtCapacity again')
-    await checkForChatGPTAtCapacity(page)
+    logger.mark("chatgpt checkForChatGPTAtCapacity again");
+    await checkForChatGPTAtCapacity(page);
 
     // once we get to this point, the Cloudflare cookies should be available
 
     // login as well (optional)
     if (email && password) {
-      let retry = 3
+      let retry = 3;
       while (retry > 0) {
         try {
           await waitForConditionOrAtCapacity(page, () =>
-            page.waitForSelector('#__next .btn-primary', { timeout: timeoutMs / 3 })
-          )
+            page.waitForSelector("#__next .btn-primary", {
+              timeout: timeoutMs / 3,
+            })
+          );
         } catch (e) {
-          await checkForChatGPTAtCapacity(page)
+          await checkForChatGPTAtCapacity(page);
         }
-        retry--
+        retry--;
       }
       await waitForConditionOrAtCapacity(page, () =>
-        page.waitForSelector('#__next .btn-primary', { timeout: timeoutMs / 3 })
-      )
-      await delay(500)
+        page.waitForSelector("#__next .btn-primary", { timeout: timeoutMs / 3 })
+      );
+      await delay(500);
 
       // click login button and wait for navigation to finish
       do {
         await Promise.all([
           page.waitForNavigation({
-            waitUntil: 'networkidle2',
-            timeout: timeoutMs
+            waitUntil: "networkidle2",
+            timeout: timeoutMs,
           }),
-          page.click('#__next .btn-primary')
-        ])
-        await delay(1000)
-      } while (page.url().endsWith('/auth/login'))
-      logger.mark('进入登录页面')
-      await checkForChatGPTAtCapacity(page)
+          page.click("#__next .btn-primary"),
+        ]);
+        await delay(1000);
+      } while (page.url().endsWith("/auth/login"));
+      logger.mark("进入登录页面");
+      await checkForChatGPTAtCapacity(page);
 
-      let submitP
+      let submitP;
 
       if (isGoogleLogin) {
-        await page.click('button[data-provider="google"]')
-        await page.waitForSelector('input[type="email"]')
-        await page.type('input[type="email"]', email, { delay: 10 })
+        await page.click('button[data-provider="google"]');
+        await page.waitForSelector('input[type="email"]');
+        await page.type('input[type="email"]', email, { delay: 10 });
         await Promise.all([
           page.waitForNavigation(),
-          await page.keyboard.press('Enter')
-        ])
-        await page.waitForSelector('input[type="password"]', { visible: true })
-        await page.type('input[type="password"]', password, { delay: 10 })
-        submitP = () => page.keyboard.press('Enter')
+          await page.keyboard.press("Enter"),
+        ]);
+        await page.waitForSelector('input[type="password"]', { visible: true });
+        await page.type('input[type="password"]', password, { delay: 10 });
+        submitP = () => page.keyboard.press("Enter");
       } else {
-        await page.waitForSelector('#username')
-        await page.type('#username', email, { delay: 20 })
-        await delay(100)
+        await page.waitForSelector("#username");
+        await page.type("#username", email, { delay: 20 });
+        await delay(100);
 
         if (hasRecaptchaPlugin) {
           // console.log('solveRecaptchas()')
-          const res = await page.solveRecaptchas()
+          const res = await page.solveRecaptchas();
           // console.log('solveRecaptchas result', res)
         }
 
-        await page.click('button[type="submit"]')
-        await page.waitForSelector('#password', { timeout: timeoutMs })
-        await page.type('#password', password, { delay: 10 })
-        submitP = () => page.click('button[type="submit"]')
+        await page.click('button[type="submit"]');
+        await page.waitForSelector("#password", { timeout: timeoutMs });
+        await page.type("#password", password, { delay: 10 });
+        submitP = () => page.click('button[type="submit"]');
       }
 
       await Promise.all([
         waitForConditionOrAtCapacity(page, () =>
           page.waitForNavigation({
-            waitUntil: 'networkidle2',
-            timeout: timeoutMs
+            waitUntil: "networkidle2",
+            timeout: timeoutMs,
           })
         ),
-        submitP()
-      ])
+        submitP(),
+      ]);
     } else {
-      await delay(2000)
-      await checkForChatGPTAtCapacity(page)
+      await delay(2000);
+      await checkForChatGPTAtCapacity(page);
     }
 
-    const pageCookies = await page.cookies()
-    await redis.set('CHATGPT:RAW_COOKIES', JSON.stringify(pageCookies))
+    const pageCookies = await page.cookies();
+    await redis.set("CHATGPT:RAW_COOKIES", JSON.stringify(pageCookies));
     const cookies = pageCookies.reduce(
       (map, cookie) => ({ ...map, [cookie.name]: cookie }),
       {}
-    )
+    );
 
     const authInfo = {
       userAgent,
       clearanceToken: cookies.cf_clearance?.value,
-      sessionToken: cookies['__Secure-next-auth.session-token']?.value,
-      cookies
-    }
-    logger.info('chatgpt登录成功')
+      sessionToken: cookies["__Secure-next-auth.session-token"]?.value,
+      cookies,
+    };
+    logger.info("chatgpt登录成功");
 
-    return authInfo
+    return authInfo;
   } catch (err) {
-    throw err
+    throw err;
   } finally {
     await page.screenshot({
-      type: 'png',
-      path: './error.png'
-    })
+      type: "png",
+      path: "./error.png",
+    });
     if (origBrowser) {
       if (page && page !== origPage) {
-        await page.close()
+        await page.close();
       }
     } else if (browser) {
-      await browser.close()
+      await browser.close();
     }
 
-    page = null
-    browser = null
+    page = null;
+    browser = null;
   }
 }
 
-async function checkForChatGPTAtCapacity (page, opts = {}) {
+async function checkForChatGPTAtCapacity(page, opts = {}) {
   const {
     timeoutMs = Config.chromeTimeoutMS, // 2 minutes
     pollingIntervalMs = 3000,
-    retries = 10
-  } = opts
+    retries = 10,
+  } = opts;
 
   // console.log('checkForChatGPTAtCapacity', page.url())
-  let isAtCapacity = false
-  let numTries = 0
+  let isAtCapacity = false;
+  let numTries = 0;
 
   do {
     try {
-      await solveSimpleCaptchas(page)
+      await solveSimpleCaptchas(page);
 
-      const res = await page.$x("//div[contains(., 'ChatGPT is at capacity')]")
-      isAtCapacity = !!res?.length
+      const res = await page.$x("//div[contains(., 'ChatGPT is at capacity')]");
+      isAtCapacity = !!res?.length;
 
       if (isAtCapacity) {
         if (++numTries >= retries) {
-          break
+          break;
         }
 
         // try refreshing the page if chatgpt is at capacity
         await page.reload({
-          waitUntil: 'networkidle2',
-          timeout: timeoutMs
-        })
+          waitUntil: "networkidle2",
+          timeout: timeoutMs,
+        });
 
-        await delay(pollingIntervalMs)
+        await delay(pollingIntervalMs);
       }
     } catch (err) {
       // ignore errors likely due to navigation
-      ++numTries
-      break
+      ++numTries;
+      break;
     }
-  } while (isAtCapacity)
+  } while (isAtCapacity);
 
   if (isAtCapacity) {
-    const error = new Error('ChatGPT is at capacity')
-    error.statusCode = 503
-    throw error
+    const error = new Error("ChatGPT is at capacity");
+    error.statusCode = 503;
+    throw error;
   }
 }
 
-async function waitForConditionOrAtCapacity (
-  page,
-  condition,
-  opts = {}
-) {
-  const { pollingIntervalMs = 500 } = opts
+async function waitForConditionOrAtCapacity(page, condition, opts = {}) {
+  const { pollingIntervalMs = 500 } = opts;
 
   return new Promise((resolve, reject) => {
-    let resolved = false
+    let resolved = false;
 
-    async function waitForCapacityText () {
+    async function waitForCapacityText() {
       if (resolved) {
-        return
+        return;
       }
 
       try {
-        await checkForChatGPTAtCapacity(page)
+        await checkForChatGPTAtCapacity(page);
 
         if (!resolved) {
-          setTimeout(waitForCapacityText, pollingIntervalMs)
+          setTimeout(waitForCapacityText, pollingIntervalMs);
         }
       } catch (err) {
         if (!resolved) {
-          resolved = true
-          return reject(err)
+          resolved = true;
+          return reject(err);
         }
       }
     }
@@ -231,49 +229,49 @@ async function waitForConditionOrAtCapacity (
     condition()
       .then(() => {
         if (!resolved) {
-          resolved = true
-          resolve()
+          resolved = true;
+          resolve();
         }
       })
       .catch((err) => {
         if (!resolved) {
-          resolved = true
-          reject(err)
+          resolved = true;
+          reject(err);
         }
-      })
+      });
 
-    setTimeout(waitForCapacityText, pollingIntervalMs)
-  })
+    setTimeout(waitForCapacityText, pollingIntervalMs);
+  });
 }
 
-async function solveSimpleCaptchas (page) {
+async function solveSimpleCaptchas(page) {
   try {
-    const verifyYouAreHuman = await page.$('text=Verify you are human')
+    const verifyYouAreHuman = await page.$("text=Verify you are human");
     if (verifyYouAreHuman) {
-      logger.mark('encounter cloudflare simple captcha "Verify you are human"')
-      await delay(2000)
+      logger.mark('encounter cloudflare simple captcha "Verify you are human"');
+      await delay(2000);
       await verifyYouAreHuman.click({
-        delay: random.int(5, 25)
-      })
-      await delay(1000)
+        delay: random.int(5, 25),
+      });
+      await delay(1000);
     }
-    const verifyYouAreHumanCN = await page.$('text=确认您是真人')
+    const verifyYouAreHumanCN = await page.$("text=确认您是真人");
     if (verifyYouAreHumanCN) {
-      logger.mark('encounter cloudflare simple captcha "确认您是真人"')
-      await delay(2000)
+      logger.mark('encounter cloudflare simple captcha "确认您是真人"');
+      await delay(2000);
       await verifyYouAreHumanCN.click({
-        delay: random.int(5, 25)
-      })
-      await delay(1000)
+        delay: random.int(5, 25),
+      });
+      await delay(1000);
     }
 
-    const cloudflareButton = await page.$('.hcaptcha-box')
+    const cloudflareButton = await page.$(".hcaptcha-box");
     if (cloudflareButton) {
-      await delay(2000)
+      await delay(2000);
       await cloudflareButton.click({
-        delay: random.int(5, 25)
-      })
-      await delay(1000)
+        delay: random.int(5, 25),
+      });
+      await delay(1000);
     }
   } catch (err) {
     // ignore errors
