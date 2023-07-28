@@ -1761,7 +1761,7 @@ async switch2Picture(e) {
       }
     }
     if (Config.debug) {
-      logger.mark(`using ${use} mode`)
+      logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[调试]`), `using ${use} mode`)
     }
     const userData = await getUserData(e.user_id)
     const useCast = userData.cast || {}

@@ -141,7 +141,7 @@ export default class ESydneyAIClient {
       logger.info('change hosts to https://edgeservices.bing.com')
       this.opts.host = 'https://edgeservices.bing.com/edgesvc'
     }
-    logger.mark('使用host：' + this.opts.host)
+    logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[聊天]`), logger.red(`[调试]`), '使用host：' + this.opts.host)
     let response = await fetch(`${this.opts.host}/turing/conversation/create`, fetchOptions)
     let text = await response.text()
     let retry = 10
