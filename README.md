@@ -19,20 +19,6 @@
 [插件常见问题](https://chatgptplugin.ikechan8370.com/guide) 
 [Yunzai常见问题（LUCK小运版）](https://www.wolai.com/oA43vuW71aBnv7UsEysn4T) 
 [憨憨博客](https://blog.hanhanz.top/)
-
-## 🥰原
-[🥑生命之光🥑](https://github.com/ikechan8370/chatgpt-plugin)
-[🥑原作者🥑](https://github.com/ikechan8370)
-[🥑鳄梨API3反代🥑](https://github.com/ikechan8370/node-chatgpt-proxy)
-[🥑云崽memes插件🥑](https://github.com/ikechan8370/yunzai-meme)
-
-### 🥵如果觉得这个插件有趣或者对你有帮助，请给源项目点一个star吧！
-
-## 🤗版本要求
-Node.js >= 18 / Node.js >= 14(with node-fetch)
-小白尽可能使用18版本以上的nodejs
-
-## 💎安装与使用方法
 ### 🤖安装
 
 在安装之前，请先判断自己需要使用哪种模式，本插件支持官方API/第三方API/~~浏览器~~/必应四种模式。也可以选择**我全都要**(通过qq发送命令`#chatgpt切换浏览器/API/API3/Bing`实时切换)
@@ -68,8 +54,21 @@ git clone --depth=1 https://github.com/Xcating/chatgpt-plugin.git ./plugins/chat
 cd plugins/chatgpt-plugin
 pnpm i
 ```
+## 🥰原
+[🥑生命之光🥑](https://github.com/ikechan8370/chatgpt-plugin)
+[🥑原作者🥑](https://github.com/ikechan8370)
+[🥑鳄梨API3反代🥑](https://github.com/ikechan8370/node-chatgpt-proxy)
+[🥑云崽memes插件🥑](https://github.com/ikechan8370/yunzai-meme)
 
-如果是手工下载的 zip 压缩包，请将解压后的 chatgpt-plugin 文件夹（请删除压缩自带的-master或版本号后缀）放置在 Yunzai-Bot 目录下的 plugins 文件夹内
+### 🥵如果觉得这个插件有趣或者对你有帮助，请给源项目点一个star吧！
+
+## 🤗版本要求
+Node.js >= 18 / Node.js >= 14(with node-fetch)
+小白尽可能使用18版本以上的nodejs
+
+## 💎使用方法
+
+如果是手工下载的 zip 压缩包，请将解压后的 chatgpt-plugin 文件夹（请删除压缩自带的-v2或版本号后缀）放置在 Yunzai-Bot 目录下的 plugins 文件夹内
 
 > ~~浏览器模式仅为备选，如您需要使用浏览器模式，您还需要有**桌面环境**，优先级建议：API≈必应>API3>浏览器~~\
 > ~~2.20更新：必应被大削，变得蠢了，建议还是API/API3优先~~\
