@@ -61,7 +61,7 @@ try {
   logger.info(logger.red.bold("  \\ \\  \\____\\ \\  \\ \\  \\ \\  \\ \\  \\   \\ \\  \\ \\ \\  \\|\\  \\ \\  \\___|    \\ \\  \\"));
   logger.info(logger.red.bold("   \\ \\_______\\ \\__\\ \\__\\ \\__\\ \\__\\   \\ \\__\\ \\ \\_______\\ \\__\\        \\ \\__\\"));
   logger.info(logger.red.bold("    \\|_______|\\|__|\\|__|\\|__|\\|__|    \\|__|  \\|_______|\\|__|         \\|__|"));
-  logger.info(`${chalk.red('ChatGPT')}${chalk.yellow('-')}${chalk.gray('Plugin')}${chalk.cyan('加载')}${chalk.red.bold('成功!')}`)
+  logger.info(`${chalk.red('ChatGPT')}${chalk.yellow('-')}${chalk.gray('Plugin')}${chalk.cyan('加载')}${chalk.red.bold('失败!')}`)
   logger.info(logger.red('[ChatGPT-plugin]'), logger.yellow(`[加载]`), logger.red(`[依赖]`), '插件未检测到依赖！！！！请发送指令#chatgpt安装依赖')
 }
 let createServer;

@@ -142,6 +142,7 @@ const defaultConfig = {
   serpSource: 'ikechan8370',
   extraUrl: 'https://cpe.ikechan8370.com',
   smartMode: false,
+  bingCaptchaOneShotUrl: 'http://bingcaptcha.ikechan8370.com/bing',
   version: 'E-1.1'
 }
 const GEConfig = {
@@ -276,6 +277,7 @@ const GEConfig = {
   serpSource: 'ikechan8370',
   extraUrl: 'https://cpe.ikechan8370.com',
   smartMode: false,
+  bingCaptchaOneShotUrl: 'http://bingcaptcha.ikechan8370.com/bing'
 }
 const _path = process.cwd()
 let config = {}
