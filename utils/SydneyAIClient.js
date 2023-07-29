@@ -946,7 +946,7 @@ export default class SydneyAIClient {
           logger.red(`[SydneyClient]`),
           "必应记录错误失败，可能是出现了验证码 :)"
         );
-        e.reply("必应记录错误失败，可能是出现了验证码 :)");
+        await this.reply("必应记录错误失败，可能是出现了验证码 :)");
       }
       throw err;
     }
