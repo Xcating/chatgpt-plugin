@@ -129,7 +129,7 @@ export default class ESydneyAIClient {
         this.opts.cookies || `_U=${this.opts.userToken}`;
     }
     if (this.opts.proxy) {
-      fetchOptions.agent = proxy(Config.proxy);
+      fetchOptions.agent = new proxy(Config.proxy);
     }
     let accessible = !(await isCN()) || this.opts.proxy;
     if (accessible && !Config.sydneyForceUseReverse) {
@@ -191,7 +191,7 @@ export default class ESydneyAIClient {
       let agent;
       let sydneyHost = "wss://sydney.bing.com";
       if (this.opts.proxy) {
-        agent = proxy(this.opts.proxy);
+        agent = new proxy(this.opts.proxy);
       }
       if (Config.sydneyWebsocketUseProxy) {
         sydneyHost = Config.sydneyReverseProxy
@@ -978,7 +978,7 @@ export default class ESydneyAIClient {
       body: formData,
     };
     if (this.opts.proxy) {
-      fetchOptions.agent = proxy(Config.proxy);
+      fetchOptions.agent = new proxy(Config.proxy);
     }
     let response = await fetch(
       `https://www.bing.com/images/kblob`,
