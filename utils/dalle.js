@@ -18,16 +18,6 @@ let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
   proxy = HttpsProxyAgent.HttpsProxyAgent
 }
-function getProxy() {
-  if (!Config.proxy || proxy) {
-    let px=new proxy
-    return px;
-  } else {
-    throw new Error(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
-}
 export async function createImage(prompt, n = 1, size = "512x512") {
   let basePath = Config.openAiBaseUrl;
   if (Config.openAiBaseUrl && Config.proxy && !Config.openAiForceUseReverse) {
@@ -45,7 +35,7 @@ export async function createImage(prompt, n = 1, size = "512x512") {
   if (Config.debug) {
     logger.info({ prompt, n, size });
   }
-  let proxyFn = getProxy();
+  let proxyFn = new proxy();
   const response = await openai.createImage(
     {
       prompt,
@@ -88,7 +78,7 @@ export async function imageVariation(imageUrl, n = 1, size = "512x512") {
 
   let croppedFileLoc = `data/chatgpt/imagesAccept/${Date.now()}_cropped.png`;
   await resizeAndCropImage(fileLoc, croppedFileLoc, 512);
-  let proxyFn = getProxy();
+  let proxyFn = new proxy();
   const response = await openai.createImageVariation(
     fs.createReadStream(croppedFileLoc),
     n,
@@ -170,7 +160,7 @@ export async function editImage(
   const arrayBuffer = await blob.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   await fs.writeFileSync(fileLoc, buffer);
-  let proxyFn = getProxy();
+  let proxyFn = new proxy();
   let croppedFileLoc = `data/chatgpt/imagesAccept/${Date.now()}_cropped.png`;
   await resizeAndCropImage(fileLoc, croppedFileLoc, 512);
   let maskFileLoc = await createMask(croppedFileLoc, mask);
