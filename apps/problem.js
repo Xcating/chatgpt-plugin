@@ -30,7 +30,7 @@ export class problem extends plugin {
         },
         {
             reg: "^(#)?(chatgpt-plugin|chatgpt|gpt)(问题合集初始化)?$",
-            fnc: "init",
+            fnc: "init2",
             permission: "master",
         },
       ],
@@ -61,6 +61,23 @@ export class problem extends plugin {
       })
     })
     this.rule = rules
+  }
+  async init(e) {
+    keyMap = {}
+    let rules = []
+    keyMap = fs.readFileSync('plugins/chatgpt-plugin/resources/problem/rules.json')
+    keyMap = JSON.parse(keyMap)
+    Object.keys(keyMap).forEach(key => {
+        let reg = `^#?${key}`
+      rules.push({
+        /** 命令正则匹配 */
+        reg,
+        /** 执行方法 */
+        fnc: 'problem'
+      })
+    })
+    this.rule = rules
+    e.reply("成功手动初始化KeyMAP信息！",e.isGroup)
   }
   /**
    * rule - 问题合集
