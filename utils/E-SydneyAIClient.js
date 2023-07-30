@@ -24,6 +24,7 @@ try {
 }
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
+import HttpsProxyAgent from 'https-proxy-agent'
 let delay;
 try {
   delay = (await import("delay")).default;
@@ -45,17 +46,6 @@ try {
     "【ChatGPT-Plugin】依赖ws未安装，可能影响Sydney模式下Bing对话，建议使用pnpm install ws安装"
   );
 }
-let HttpsProxyAgent;
-if (Config.proxy) {
-  try {
-    HttpsProxyAgent = (await import("https-proxy-agent")).default;
-  } catch (e) {
-    console.warn(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
-}
-
 // workaround for ver 7.x and ver 5.x
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
