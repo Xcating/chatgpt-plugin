@@ -24,7 +24,14 @@ try {
 }
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
-import HttpsProxyAgent from 'https-proxy-agent'
+let HttpsProxyAgent;
+  try {
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
+  } catch (e) {
+    console.warn(
+      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+    );
+  }
 let delay;
 try {
   delay = (await import("delay")).default;

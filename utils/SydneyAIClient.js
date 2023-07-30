@@ -24,6 +24,14 @@ try {
 }
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
+let HttpsProxyAgent;
+  try {
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
+  } catch (e) {
+    console.warn(
+      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+    );
+  }
 let delay;
 try {
   delay = (await import("delay")).default;
@@ -45,22 +53,12 @@ try {
     "【ChatGPT-Plugin】依赖ws未安装，可能影响Sydney模式下Bing对话，建议使用pnpm install ws安装"
   );
 }
-let HttpsProxyAgent;
-if (Config.proxy) {
-  try {
-    HttpsProxyAgent = (await import("https-proxy-agent")).default;
-  } catch (e) {
-    console.warn(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
-}
-
 // workaround for ver 7.x and ver 5.x
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
   proxy = HttpsProxyAgent.HttpsProxyAgent
 }
+
 async function getKeyv() {
   let Keyv;
   try {
@@ -141,7 +139,7 @@ export default class SydneyAIClient {
         this.opts.cookies || `_U=${this.opts.userToken}`;
     }
     if (this.opts.proxy) {
-      fetchOptions.agent = proxy(Config.proxy);
+      fetchOptions.agent = new proxy(Config.proxy);
     }
     let accessible = !(await isCN()) || this.opts.proxy;
     if (accessible && !Config.sydneyForceUseReverse) {
@@ -203,7 +201,7 @@ export default class SydneyAIClient {
       let agent;
       let sydneyHost = "wss://sydney.bing.com";
       if (this.opts.proxy) {
-        agent = proxy(this.opts.proxy);
+        agent = new proxy(this.opts.proxy);
       }
       if (Config.sydneyWebsocketUseProxy) {
         sydneyHost = Config.sydneyReverseProxy
@@ -970,7 +968,7 @@ export default class SydneyAIClient {
       body: formData,
     };
     if (this.opts.proxy) {
-      fetchOptions.agent = proxy(Config.proxy);
+      fetchOptions.agent = new proxy(Config.proxy);
     }
     let response = await fetch(
       `https://www.bing.com/images/kblob`,
