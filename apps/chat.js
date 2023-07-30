@@ -4,7 +4,6 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const axios = require("axios");
 const EventSource = require("eventsource");
-import Anthropic from "@anthropic-ai/sdk";
 import HttpsProxyAgent from "https-proxy-agent";
 import _ from "lodash";
 import { Config, defaultOpenAIAPI } from "../utils/config.js";
@@ -89,7 +88,6 @@ let checkNumber;
 const BingRulePrefix = Config.BingRulePrefix;
 const APIRulePrefix = Config.APIRulePrefix;
 const API3RulePrefix = Config.API3RulePrefix;
-const ANTHROPIC_API_KEY = "abc";
 try {
   await import("emoji-strip");
 } catch (err) {
@@ -124,9 +122,6 @@ if (Config.proxy) {
     );
   }
 }
-const anthropic = new Anthropic({
-  apiKey: "tes", // defaults to process.env["ANTHROPIC_API_KEY"]
-});
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。
  * 单位：秒
