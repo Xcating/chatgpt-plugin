@@ -67,7 +67,7 @@ export default class BingDrawClient {
       headers,
     };
     if (Config.proxy) {
-      fetchOptions.agent = proxy(Config.proxy);
+      fetchOptions.agent = new proxy(Config.proxy);
     }
     let success = false;
     let retry = 5;
