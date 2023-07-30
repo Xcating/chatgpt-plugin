@@ -26,7 +26,7 @@ export class SlackClaudeClient {
         // port: 45912
       }
       if (Config.proxy) {
-        option.agent = proxy(Config.proxy)
+        option.agent = new proxy(Config.proxy)
       }
       option.logLevel = Config.debug ? 'debug': 'info'
       this.app = new slack.App(option)

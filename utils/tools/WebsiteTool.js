@@ -82,7 +82,7 @@ export class WebsiteTool extends AbstractTool {
         fetch: (url, options = {}) => {
           const defaultOptions = Config.proxy
             ? {
-                agent: proxy(Config.proxy)
+                agent: new proxy(Config.proxy)
               }
             : {}
           const mergedOptions = {

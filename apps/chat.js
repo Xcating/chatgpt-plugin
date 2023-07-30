@@ -133,7 +133,7 @@ const defaultPropmtPrefix =
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy
     ? {
-        agent: proxy(Config.proxy),
+        agent: new proxy(Config.proxy),
       }
     : {};
   const mergedOptions = {

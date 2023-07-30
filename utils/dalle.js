@@ -20,7 +20,8 @@ if (typeof proxy !== 'function') {
 }
 function getProxy() {
   if (!Config.proxy || proxy) {
-    return proxy;
+    let px=new proxy
+    return px;
   } else {
     throw new Error(
       "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"

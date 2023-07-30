@@ -16,7 +16,7 @@ if (typeof proxy !== 'function') {
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy
     ? {
-        agent: proxy(Config.proxy),
+        agent: new proxy(Config.proxy),
       }
     : {};
 
