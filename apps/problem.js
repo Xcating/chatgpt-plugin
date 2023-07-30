@@ -99,10 +99,11 @@ export class problem extends plugin {
     if(keys=="如何配置文件"){
         msg = [`解决方案：\n ${targetCode}\n`,
 	        segment.image("https://chatgptplugin.ikechan8370.com/assets/GuobaConfig-a8aaacf1.png")]
-        e.reply(`msg`)
+        e.reply(`${msg}`)
     }
-    else
-    e.reply(`解决方案：\n ${targetCode}`)
+    else{
+        e.reply(`解决方案：\n ${targetCode}`)
+    }
   }
 }
 let proble=new problem
