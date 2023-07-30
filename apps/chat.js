@@ -4,7 +4,6 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const axios = require("axios");
 const EventSource = require("eventsource");
-import HttpsProxyAgent from "https-proxy-agent";
 import _ from "lodash";
 import { Config, defaultOpenAIAPI } from "../utils/config.js";
 import { v4 as uuid } from "uuid";
@@ -109,18 +108,17 @@ try {
   );
 }
 let version = Config.version;
-let proxy;
-if (Config.proxy) {
+let HttpsProxyAgent;
   try {
-    proxy = (await import("https-proxy-agent")).default;
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
   } catch (e) {
-    logger.info(
-      logger.cyan("[ChatGPT-plugin]"),
-      logger.yellow(`[依赖管理]`),
-      logger.red(`[缺少依赖]`),
+    console.warn(
       "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
     );
   }
+let proxy = HttpsProxyAgent
+if (typeof proxy !== 'function') {
+  proxy = HttpsProxyAgent.HttpsProxyAgent
 }
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。

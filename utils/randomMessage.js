@@ -1,15 +1,17 @@
 import { Config } from "./config.js";
 import { ChatGPTAPI } from "chatgpt";
 import fetch from "node-fetch";
-let proxy;
-if (Config.proxy) {
+let HttpsProxyAgent;
   try {
-    proxy = (await import("https-proxy-agent")).default;
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
   } catch (e) {
     console.warn(
       "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
     );
   }
+let proxy = HttpsProxyAgent
+if (typeof proxy !== 'function') {
+  proxy = HttpsProxyAgent.HttpsProxyAgent
 }
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy

@@ -2,15 +2,17 @@ import fetch, { FormData } from "node-fetch";
 import { makeForwardMsg } from "./common.js";
 import { Config } from "./config.js";
 
-let proxy;
-if (Config.proxy) {
+let HttpsProxyAgent;
   try {
-    proxy = (await import("https-proxy-agent")).default;
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
   } catch (e) {
     console.warn(
       "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
     );
   }
+let proxy = HttpsProxyAgent
+if (typeof proxy !== 'function') {
+  proxy = HttpsProxyAgent.HttpsProxyAgent
 }
 export default class BingDrawClient {
   constructor(opts) {

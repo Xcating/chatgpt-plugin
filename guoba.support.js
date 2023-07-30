@@ -255,6 +255,13 @@ export function supportGuoba() {
           component: "Switch",
         },
         {
+          field: "problem",
+          label: "启用问题合集",
+          bottomHelpMessage:
+            "开启问题回答功能，可用#chatgpt问题教程 查看指令",
+          component: "Switch",
+        },
+        {
           field: "showQRCode",
           label: "启用二维码",
           bottomHelpMessage:

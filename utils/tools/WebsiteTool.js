@@ -2,7 +2,18 @@ import { AbstractTool } from './AbstractTool.js'
 import { ChatGPTAPI } from '../openai/chatgpt-api.js'
 import { Config } from '../config.js'
 import fetch from 'node-fetch'
-import proxy from 'https-proxy-agent'
+let HttpsProxyAgent;
+  try {
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
+  } catch (e) {
+    console.warn(
+      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+    );
+  }
+let proxy = HttpsProxyAgent
+if (typeof proxy !== 'function') {
+  proxy = HttpsProxyAgent.HttpsProxyAgent
+}
 import { getMaxModelTokens } from '../common.js'
 import { ChatGPTPuppeteer } from '../browser.js'
 export class WebsiteTool extends AbstractTool {

@@ -23,7 +23,7 @@ try {
   await import("node-fetch");
 } catch (e) {
   console.warn(
-    "未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1"
+    "未安装node-fetch，请在云崽目录下执行pnpm add node-fetch"
   );
 }
 import loader from "../../../lib/plugins/loader.js";
@@ -41,7 +41,7 @@ if (Config.proxy) {
     proxy = (await import("https-proxy-agent")).default;
   } catch (e) {
     console.warn(
-      "未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent@5.0.1"
+      "未安装https-proxy-agent，请在云崽目录下执行pnpm add https-proxy-agent"
     );
   }
 }

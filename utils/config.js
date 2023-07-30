@@ -150,7 +150,8 @@ const defaultConfig = {
   extraUrl: "https://cpe.ikechan8370.com",
   smartMode: false,
   bingCaptchaOneShotUrl: "http://bingcaptcha.ikechan8370.com/bing",
-  version: "E-1.1",
+  problem: true,
+  version: "E-1.1"
 };
 const GEConfig = {
   blockWords: ["屏蔽词1", "屏蔽词b"],
@@ -289,6 +290,7 @@ const GEConfig = {
   extraUrl: "https://cpe.ikechan8370.com",
   smartMode: false,
   bingCaptchaOneShotUrl: "http://bingcaptcha.ikechan8370.com/bing",
+  problem: true
 };
 const _path = process.cwd();
 let config = {};
