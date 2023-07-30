@@ -62,7 +62,7 @@ export class problem extends plugin {
     })
     this.rule = rules
   }
-  async init(e) {
+  async init2(e) {
     keyMap = {}
     let rules = []
     keyMap = fs.readFileSync('plugins/chatgpt-plugin/resources/problem/rules.json')
