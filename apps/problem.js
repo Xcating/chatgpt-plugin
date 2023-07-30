@@ -93,16 +93,19 @@ export class problem extends plugin {
   }
   async problem (e) {
     const _path = process.cwd();
-	let img_1 = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/1.png`
+	
     let msg = e.msg.replace('#', '')
     let keys = Object.keys(keyMap).filter(k => msg.startsWith(k))
     let target = keys[0]
     let targetCode = keyMap[target]
-    if(keys=="如何配置文件"){
-        msg = [`解决方案：\n ${targetCode}\n`,segment.image(img_1)]
+    const regex = /\/\/\/img(.+?)(?=\/\/\/img|$)/g;
+    const matches = targetCode.match(regex);
+    if(matches){
+        let img = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/${matches}.png`
+        msg = [`解决方案：\n ${targetCode}\n`,segment.image(img)]
         e.reply(msg)
     }
-    else{
+    else {
         e.reply(`解决方案：\n ${targetCode}`)
     }
   }
