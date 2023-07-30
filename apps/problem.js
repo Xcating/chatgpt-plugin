@@ -101,7 +101,7 @@ export class problem extends plugin {
     const regex = /\/\/\/img(.+?)(?=\/\/\/img|$)/g;
     const matches = targetCode.match(regex);
     if(matches){
-        let img = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/${matches}.png`
+        let img = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/${matches}`
         msg = [`解决方案：\n ${targetCode}\n`,segment.image(img)]
         e.reply(msg)
     }

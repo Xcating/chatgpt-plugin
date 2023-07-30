@@ -1,6 +1,9 @@
 {
     "大佬，你们的电脑都是一直开着的嘛？为什么我一关电脑就用不了了": "可以挂服务器上，可以去阿里云白嫖七个月",
     "发送图片时报错：ppupeteer chromium启动失败": "方法一：Yunzai目录里执行\npnpm add puppeteer@13.7.0 -w\n方法二：Yunzai目录里先执行\npnpm install puppeteer@19.7.3 -w\n再执行\nnode ./node_modules/puppeteer/install.js\n等待进度条走完，再重启机器人就可以了\n方法三：Yunzai目录里执行下列命令 记得复制完，很长\napt-get install ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 libat",
-    "如何配置反代以及反代地址": "首先进入锅巴插件 ，点击ChatGPT插件进行配置，将以下各对应Sydney反代地址(不是代理地址) 【Bing】\nhttps://bing.ikechan8370.com\nhttps://666102.201666.xyz\nhttps://bing.roki.best",
-    "如何配置文件": "推荐使用锅巴进行配置，直接配置config文件对小白不太友好\n首先你需要下载一个锅巴插件 在确定锅巴插件载入成功后对机器人发送 #锅巴登录 之后根据自身情况选择内网还是外网登录\n进入锅巴后找到ChatGPT插件点击 选择配置 配置好你的代理（没有可以不用填）or反代，以及各种你需要的东西，按需配置 ///img1"
+    "如何配置Sydney反代以及反代地址": "首先进入锅巴插件 ，点击ChatGPT插件进行配置，将以下各对应Sydney反代地址(不是代理地址) 【Bing】\nhttps://bing.ikechan8370.com\nhttps://666102.201666.xyz\nhttps://bing.roki.best",
+    "如何配置文件": "推荐使用锅巴进行配置，直接配置config文件对小白不太友好\n首先你需要下载一个锅巴插件 在确定锅巴插件载入成功后对机器人发送 #锅巴登录 之后根据自身情况选择内网还是外网登录\n进入锅巴后找到ChatGPT插件点击 选择配置 配置好你的代理（没有可以不用填）or反代，以及各种你需要的东西，按需配置 ///img1.png",
+    "proxy需要配置吗？": "proxy不是必填项，如果你有proxy的话可以进行配置，没有的话自行跳过",
+    "发送 #结束对话 后 仍然无法解决 对话不存在404报错": "被抢指令了，其他插件的结束对话会回复“已经重置对话了！”和图1一样，但实际上这并不是本插件的回复，本插件的结束对话回复如图上方所示.///img2.png",
+    "转换API ffmpeg音频转码到amr失败": "请查看 https://chatgptplugin.ikechan8370.com/guide"
 }
