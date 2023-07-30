@@ -92,14 +92,15 @@ export class problem extends plugin {
     e.reply(makeForwardMsg(this.e, messages, `GPT问题合集`));
   }
   async problem (e) {
+    const _path = process.cwd();
+	let img_1 = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/1.png`
     let msg = e.msg.replace('#', '')
     let keys = Object.keys(keyMap).filter(k => msg.startsWith(k))
     let target = keys[0]
     let targetCode = keyMap[target]
     if(keys=="如何配置文件"){
-        msg = [`解决方案：\n ${targetCode}\n`,
-	        segment.image("https://chatgptplugin.ikechan8370.com/assets/GuobaConfig-a8aaacf1.png")]
-        e.reply(`${msg}`)
+        msg = [`解决方案：\n ${targetCode}\n`,segment.image(img_1)]
+        e.reply(msg)
     }
     else{
         e.reply(`解决方案：\n ${targetCode}`)
