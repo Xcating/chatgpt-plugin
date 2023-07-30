@@ -93,7 +93,6 @@ export class problem extends plugin {
   }
   async problem (e) {
     const _path = process.cwd();
-	
     let msg = e.msg.replace('#', '')
     let keys = Object.keys(keyMap).filter(k => msg.startsWith(k))
     let target = keys[0]
@@ -104,6 +103,8 @@ export class problem extends plugin {
         let img = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/${matches}`
         msg = [`解决方案：\n ${targetCode}\n`,segment.image(img)]
         e.reply(msg)
+        logger.info(targetCode)
+        logger.info(keys)
     }
     else {
         e.reply(`解决方案：\n ${targetCode}`)
