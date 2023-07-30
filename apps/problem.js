@@ -77,7 +77,7 @@ export class problem extends plugin {
       })
     })
     this.rule = rules
-    e.reply("成功手动初始化KeyMAP信息！",e.isGroup)
+    e.reply(`成功手动初始化KeyMAP信息！`,e.isGroup)
   }
   /**
    * rule - 问题合集
@@ -89,14 +89,17 @@ export class problem extends plugin {
     keys.forEach(key => {
         messages.push(key);
     });
-    e.reply(makeForwardMsg(this.e, messages, `模型信息`));
+    e.reply(makeForwardMsg(this.e, messages, `GPT问题合集`));
   }
   async problem (e) {
     let msg = e.msg.replace('#', '')
     let keys = Object.keys(keyMap).filter(k => msg.startsWith(k))
     let target = keys[0]
     let targetCode = keyMap[target]
-    e.reply("解决方案：\n"+ targetCode)
+    if(keys=="如何配置文件"){
+        e.reply(`解决方案：\n ${targetCode}`,segment.image("https://chatgptplugin.ikechan8370.com/assets/GuobaConfig-a8aaacf1.png"))
+    }
+    e.reply(`解决方案：\n ${targetCode}`)
   }
 }
 let proble=new problem
