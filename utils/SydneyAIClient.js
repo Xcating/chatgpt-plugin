@@ -22,7 +22,6 @@ try {
 } catch (e) {
   console.warn("未安装crypto，请发送指令#chatgpt安装依赖");
 }
-import HttpsProxyAgent from "https-proxy-agent";
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
 let delay;
@@ -46,10 +45,10 @@ try {
     "【ChatGPT-Plugin】依赖ws未安装，可能影响Sydney模式下Bing对话，建议使用pnpm install ws安装"
   );
 }
-let proxy;
+let HttpsProxyAgent;
 if (Config.proxy) {
   try {
-    proxy = (await import("https-proxy-agent")).default;
+    HttpsProxyAgent = (await import("https-proxy-agent")).default;
   } catch (e) {
     console.warn(
       "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
@@ -57,15 +56,11 @@ if (Config.proxy) {
   }
 }
 
-// async function getWebSocket () {
-//   let WebSocket
-//   try {
-//     WebSocket = (await import('ws')).default
-//   } catch (error) {
-//     throw new Error('ws依赖未安装，请使用pnpm install ws安装')
-//   }
-//   return WebSocket
-// }
+// workaround for ver 7.x and ver 5.x
+let proxy = HttpsProxyAgent
+if (typeof proxy !== 'function') {
+  proxy = HttpsProxyAgent.HttpsProxyAgent
+}
 async function getKeyv() {
   let Keyv;
   try {
@@ -208,7 +203,7 @@ export default class SydneyAIClient {
       let agent;
       let sydneyHost = "wss://sydney.bing.com";
       if (this.opts.proxy) {
-        agent = new HttpsProxyAgent(this.opts.proxy);
+        agent = proxy(this.opts.proxy);
       }
       if (Config.sydneyWebsocketUseProxy) {
         sydneyHost = Config.sydneyReverseProxy
