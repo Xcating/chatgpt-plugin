@@ -103,8 +103,8 @@ export class problem extends plugin {
         let img = `file:///${_path}/plugins/chatgpt-plugin/resources/problem/${matches}`
         msg = [`解决方案：\n ${targetCode}\n`,segment.image(img)]
         e.reply(msg)
-        logger.info(targetCode)
-        logger.info(keys)
+        //logger.info(targetCode)
+        //logger.info(keys)
     }
     else {
         e.reply(`解决方案：\n ${targetCode}`)
