@@ -281,7 +281,7 @@ export class chatgpt extends plugin {
           reg: "^#(chatgpt)(删除|扔掉)对话",
           fnc: "deleteConversation",
           permission: "master",
-        }
+        },
       ],
     });
     this.toggleMode = toggleMode;
@@ -2616,30 +2616,43 @@ export class chatgpt extends plugin {
             logger.error(error);
             const message =
               error?.message || error?.data?.message || error || "出错了";
+            const { maxConv } = error;
             if (
               message &&
               typeof message === "string" &&
               message.indexOf("CaptchaChallenge") > -1
             ) {
               if (bingToken) {
-                await e.reply("必应出现验证码，尝试解决中");
-                try {
-                  let captchaResolveResult = await solveCaptchaOneShot(
-                    bingToken
-                  );
-                  if (captchaResolveResult?.success) {
-                    await e.reply("验证码已解决");
-                  } else {
-                    logger.error(captchaResolveResult);
-                    await e.reply(
-                      "验证码解决失败: " + captchaResolveResult.error
+                if (maxConv > 20) {
+                  // maxConv为30说明token有效，可以通过解验证码码服务过码
+                  await e.reply("出现必应验证码，尝试解决中");
+                  try {
+                    let captchaResolveResult = await solveCaptchaOneShot(
+                      bingToken
                     );
+                    if (captchaResolveResult?.success) {
+                      await e.reply("验证码已成功解决");
+                    } else {
+                      logger.error(captchaResolveResult);
+                      await e.reply(
+                        "验证码解决失败，错误信息: " +
+                          captchaResolveResult.error
+                      );
+                      retry = 0;
+                    }
+                  } catch (err) {
+                    logger.error(err);
+                    await e.reply("验证码解决失败: " + err);
                     retry = 0;
                   }
-                } catch (err) {
-                  logger.error(err);
-                  await e.reply("验证码解决失败: " + err);
-                  retry = 0;
+                } else {
+                  // 未登录用户maxConv目前为5或10，出验证码没救
+                  logger.error(
+                    logger.cyan("[ChatGPT-plugin]"),
+                    logger.yellow(`[聊天]`),
+                    logger.red(`[必应]`),
+                    `token [${bingToken}] 无效或已过期`
+                  );
                 }
               }
             } else if (
