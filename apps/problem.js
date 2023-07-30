@@ -97,8 +97,11 @@ export class problem extends plugin {
     let target = keys[0]
     let targetCode = keyMap[target]
     if(keys=="如何配置文件"){
-        e.reply(`解决方案：\n ${targetCode}`,segment.image("https://chatgptplugin.ikechan8370.com/assets/GuobaConfig-a8aaacf1.png"))
+        msg = [`解决方案：\n ${targetCode}\n`,
+	        segment.image("https://chatgptplugin.ikechan8370.com/assets/GuobaConfig-a8aaacf1.png")]
+        e.reply(`msg`)
     }
+    else
     e.reply(`解决方案：\n ${targetCode}`)
   }
 }
