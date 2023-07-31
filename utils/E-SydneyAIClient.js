@@ -958,9 +958,9 @@ export default class ESydneyAIClient {
       }
       try {
         err.maxConv = maxConv
-    } catch (err) {
-      err.maxConv=30
-    }
+      } catch (err) {
+       err.maxConv=30
+     }
       throw err;
     }
   }
