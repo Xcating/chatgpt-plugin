@@ -2614,14 +2614,14 @@ export class chatgpt extends plugin {
             logger.error(error);
             const message =
               error?.message || error?.data?.message || error || "出错了";
-            const { maxConv } = error;
+            const maxConv = error.maxConv;
             if (
               message &&
               typeof message === "string" &&
               message.indexOf("CaptchaChallenge") > -1
             ) {
               if (bingToken) {
-                if (true) {
+                if (maxConv >= 20) {
                   // maxConv为30说明token有效，可以通过解验证码码服务过码
                   await e.reply("出现必应验证码，尝试解决中");
                   try {
@@ -2651,6 +2651,7 @@ export class chatgpt extends plugin {
                     logger.red(`[必应]`),
                     `token [${bingToken}] 无效或已过期`
                   );
+                  await e.reply(`token [${bingToken}] 无效或已过期`);
                 }
               }
             } else if (
