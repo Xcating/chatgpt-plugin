@@ -956,7 +956,11 @@ export default class ESydneyAIClient {
           "必应记录错误失败，可能是出现了验证码 :)"
         );
       }
-      err.maxConv = maxConv
+      try {
+        err.maxConv = maxConv
+    } catch (err) {
+      err.maxConv=30
+    }
       throw err;
     }
   }

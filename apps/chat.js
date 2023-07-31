@@ -2621,7 +2621,7 @@ export class chatgpt extends plugin {
               message.indexOf("CaptchaChallenge") > -1
             ) {
               if (bingToken) {
-                if (maxConv > 20) {
+                if (true) {
                   // maxConv为30说明token有效，可以通过解验证码码服务过码
                   await e.reply("出现必应验证码，尝试解决中");
                   try {
