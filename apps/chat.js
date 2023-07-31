@@ -2633,14 +2633,14 @@ export class chatgpt extends plugin {
                     } else {
                       logger.error(captchaResolveResult);
                       await e.reply(
-                        "验证码解决失败，错误信息: " +
+                        "验证码解决失败，请前往 https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx 手动聊天通过验证码，错误信息: " +
                           captchaResolveResult.error
                       );
                       retry = 0;
                     }
                   } catch (err) {
                     logger.error(err);
-                    await e.reply("验证码解决失败: " + err);
+                    await e.reply("验证码解决失败，请前往 https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx 手动聊天通过验证码: " + err);
                     retry = 0;
                   }
                 } else {
