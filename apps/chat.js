@@ -2616,13 +2616,14 @@ export class chatgpt extends plugin {
             logger.error(error);
             const message =
               error?.message || error?.data?.message || error || "出错了";
-            const maxConv = error.maxConv;
+            const maxConv = error?.maxConv;
             if (
               message &&
               typeof message === "string" &&
               message.indexOf("CaptchaChallenge") > -1
             ) {
               if (bingToken) {
+                logger.info(maxConv)
                 if (maxConv >= 20) {
                   // maxConv为30说明token有效，可以通过解验证码码服务过码
                   await e.reply("出现必应验证码，尝试解决中");
