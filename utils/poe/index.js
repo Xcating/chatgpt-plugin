@@ -39,7 +39,6 @@ export class PoeClient {
     this.config = props
     this.debug = props.debug
   }
-
   headers = {
     'Content-Type': 'application/json',
     Referrer: 'https://poe.com/',

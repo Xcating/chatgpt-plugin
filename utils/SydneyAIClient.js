@@ -56,7 +56,9 @@ try {
 // workaround for ver 7.x and ver 5.x
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 
 async function getKeyv() {
@@ -139,7 +141,7 @@ export default class SydneyAIClient {
         this.opts.cookies || `_U=${this.opts.userToken}`;
     }
     if (this.opts.proxy) {
-      fetchOptions.agent = new proxy(Config.proxy);
+      fetchOptions.agent = proxy(Config.proxy);
     }
     let accessible = !(await isCN()) || this.opts.proxy;
     if (accessible && !Config.sydneyForceUseReverse) {
@@ -201,7 +203,7 @@ export default class SydneyAIClient {
       let agent;
       let sydneyHost = "wss://sydney.bing.com";
       if (this.opts.proxy) {
-        agent = new proxy(this.opts.proxy);
+        agent = proxy(this.opts.proxy);
       }
       if (Config.sydneyWebsocketUseProxy) {
         sydneyHost = Config.sydneyReverseProxy
@@ -968,7 +970,7 @@ export default class SydneyAIClient {
       body: formData,
     };
     if (this.opts.proxy) {
-      fetchOptions.agent = new proxy(Config.proxy);
+      fetchOptions.agent = proxy(Config.proxy);
     }
     let response = await fetch(
       `https://www.bing.com/images/kblob`,

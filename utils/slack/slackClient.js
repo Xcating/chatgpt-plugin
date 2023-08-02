@@ -12,7 +12,9 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 export class SlackClaudeClient {
   constructor (props) {
@@ -26,7 +28,7 @@ export class SlackClaudeClient {
         // port: 45912
       }
       if (Config.proxy) {
-        option.agent = new proxy(Config.proxy)
+        option.agent = proxy(Config.proxy)
       }
       option.logLevel = Config.debug ? 'debug': 'info'
       this.app = new slack.App(option)

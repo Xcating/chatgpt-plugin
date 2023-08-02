@@ -118,7 +118,9 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。
@@ -133,7 +135,7 @@ const defaultPropmtPrefix =
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy
     ? {
-        agent: new proxy(Config.proxy),
+        agent: proxy(Config.proxy),
       }
     : {};
   const mergedOptions = {

@@ -11,12 +11,14 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 const newFetch = (url, options = {}) => {
   const defaultOptions = Config.proxy
     ? {
-        agent: new proxy(Config.proxy),
+        agent: proxy(Config.proxy),
       }
     : {};
 

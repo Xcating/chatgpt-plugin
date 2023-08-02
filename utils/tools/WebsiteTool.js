@@ -12,7 +12,9 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 import { getMaxModelTokens } from '../common.js'
 import { ChatGPTPuppeteer } from '../browser.js'
@@ -82,7 +84,7 @@ export class WebsiteTool extends AbstractTool {
         fetch: (url, options = {}) => {
           const defaultOptions = Config.proxy
             ? {
-                agent: new proxy(Config.proxy)
+                agent: proxy(Config.proxy)
               }
             : {}
           const mergedOptions = {

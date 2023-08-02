@@ -16,7 +16,9 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 export async function createImage(prompt, n = 1, size = "512x512") {
   let basePath = Config.openAiBaseUrl;
@@ -35,7 +37,7 @@ export async function createImage(prompt, n = 1, size = "512x512") {
   if (Config.debug) {
     logger.info({ prompt, n, size });
   }
-  let proxyFn = new proxy();
+  let proxyFn = proxy();
   const response = await openai.createImage(
     {
       prompt,
@@ -78,7 +80,7 @@ export async function imageVariation(imageUrl, n = 1, size = "512x512") {
 
   let croppedFileLoc = `data/chatgpt/imagesAccept/${Date.now()}_cropped.png`;
   await resizeAndCropImage(fileLoc, croppedFileLoc, 512);
-  let proxyFn = new proxy();
+  let proxyFn = proxy();
   const response = await openai.createImageVariation(
     fs.createReadStream(croppedFileLoc),
     n,
@@ -160,7 +162,7 @@ export async function editImage(
   const arrayBuffer = await blob.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   await fs.writeFileSync(fileLoc, buffer);
-  let proxyFn = new proxy();
+  let proxyFn = proxy();
   let croppedFileLoc = `data/chatgpt/imagesAccept/${Date.now()}_cropped.png`;
   await resizeAndCropImage(fileLoc, croppedFileLoc, 512);
   let maskFileLoc = await createMask(croppedFileLoc, mask);

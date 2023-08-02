@@ -12,7 +12,9 @@ let HttpsProxyAgent;
   }
 let proxy = HttpsProxyAgent
 if (typeof proxy !== 'function') {
-  proxy = HttpsProxyAgent.HttpsProxyAgent
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p)
+  }
 }
 export default class BingDrawClient {
   constructor(opts) {
@@ -67,7 +69,7 @@ export default class BingDrawClient {
       headers,
     };
     if (Config.proxy) {
-      fetchOptions.agent = new proxy(Config.proxy);
+      fetchOptions.agent = proxy(Config.proxy);
     }
     let success = false;
     let retry = 5;
