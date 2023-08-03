@@ -9,9 +9,9 @@ try {
     "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
   );
 }
-let proxy = HttpsProxyAgent;
-if (typeof proxy !== "function") {
-  proxy = (p) => {
+let proxyX = HttpsProxyAgent;
+if (typeof proxyX !== "function") {
+  proxyX = (p) => {
     return new HttpsProxyAgent.HttpsProxyAgent(p);
   };
 }
@@ -34,7 +34,7 @@ export class ClaudeAIClient {
     this.fetch = (url, options = {}) => {
       const defaultOptions = proxy
         ? {
-            agent: proxy(proxy),
+            agent: proxyX(proxy),
           }
         : {};
       const mergedOptions = {

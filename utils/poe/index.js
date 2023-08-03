@@ -25,7 +25,8 @@ let optionMap = {
   a2_100k: 'Claude-instant-100k',
   a2: 'Claude-instant',
   chinchilla: 'ChatGPT',
-  acouchy: 'Google-PaLM'
+  acouchy: 'Google-PaLM',
+  vizcacha: 'GPT432k'
 }
 if (fs.existsSync('data/chatgpt/poeMap.json')) {
   optionMap = fs.readFileSync('data/chatgpt/poeMap.json')
