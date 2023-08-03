@@ -1,4 +1,4 @@
-import fetch, { File, FormDat, Headers } from "node-fetch";
+import fetch, { File, FormData, Headers } from "node-fetch";
 import fs from "fs";
 import crypto from "crypto";
 import HttpsProxyAgent from "https-proxy-agent";
