@@ -1,7 +1,20 @@
 import fetch, { File, FormData, Headers } from "node-fetch";
 import fs from "fs";
 import crypto from "crypto";
-import HttpsProxyAgent from "https-proxy-agent";
+let HttpsProxyAgent;
+try {
+  HttpsProxyAgent = (await import("https-proxy-agent")).default;
+} catch (e) {
+  console.warn(
+    "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+  );
+}
+let proxy = HttpsProxyAgent;
+if (typeof proxy !== "function") {
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p);
+  };
+}
 export class ClaudeAIClient {
   constructor(opts) {
     const { organizationId, sessionKey, proxy, debug = false } = opts;
@@ -21,7 +34,7 @@ export class ClaudeAIClient {
     this.fetch = (url, options = {}) => {
       const defaultOptions = proxy
         ? {
-            agent: HttpsProxyAgent(proxy),
+            agent: proxy(proxy),
           }
         : {};
       const mergedOptions = {
