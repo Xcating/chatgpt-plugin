@@ -257,8 +257,7 @@ export function supportGuoba() {
         {
           field: "problem",
           label: "启用问题合集",
-          bottomHelpMessage:
-            "开启问题回答功能，可用#chatgpt问题教程 查看指令",
+          bottomHelpMessage: "开启问题回答功能，可用#chatgpt问题教程 查看指令",
           component: "Switch",
         },
         {
@@ -778,6 +777,22 @@ export function supportGuoba() {
           field: "slackClaudeGlobalPreset",
           label: "Slack全局设定",
           bottomHelpMessage: "若启用全局设定，每个人都会默认使用这里的设定。",
+          component: "Input",
+        },
+        {
+          label: "以下为Claude2方式的配置",
+          component: "Divider",
+        },
+        {
+          field: "claudeAIOrganizationId",
+          label: "claude2 OrganizationId",
+          bottomHelpMessage: "claude.ai的OrganizationId",
+          component: "Input",
+        },
+        {
+          field: "claudeAISessionKey",
+          label: "claude2 SessionKey",
+          bottomHelpMessage: "claude.ai Cookie中的SessionKey",
           component: "Input",
         },
         {

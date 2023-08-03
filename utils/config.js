@@ -151,7 +151,10 @@ const defaultConfig = {
   smartMode: false,
   bingCaptchaOneShotUrl: "http://bingcaptcha.ikechan8370.com/bing",
   problem: true,
-  version: "E-1.1"
+  // claude2
+  claudeAIOrganizationId: "",
+  claudeAISessionKey: "",
+  version: "E-1.1",
 };
 const GEConfig = {
   blockWords: ["屏蔽词1", "屏蔽词b"],
@@ -290,7 +293,9 @@ const GEConfig = {
   extraUrl: "https://cpe.ikechan8370.com",
   smartMode: false,
   bingCaptchaOneShotUrl: "http://bingcaptcha.ikechan8370.com/bing",
-  problem: true
+  problem: true,
+  claudeAIOrganizationId: "",
+  claudeAISessionKey: "",
 };
 const _path = process.cwd();
 let config = {};

@@ -40,6 +40,7 @@ import {
   formatDate,
   generateAudio,
   formatDate2,
+  mkdirs,
 } from "../utils/common.js";
 import { ChatGPTPuppeteer } from "../utils/browser.js";
 import { KeyvFile } from "keyv-file";
@@ -83,6 +84,8 @@ import { SendDiceTool } from "../utils/tools/SendDiceTool.js";
 import { SendAvatarTool } from "../utils/tools/SendAvatarTool.js";
 import { SendMessageToSpecificGroupOrUserTool } from "../utils/tools/SendMessageToSpecificGroupOrUserTool.js";
 import { SetTitleTool } from "../utils/tools/SetTitleTool.js";
+import { ClaudeAIClient } from "../utils/claude.ai/index.js";
+import fs from "fs";
 let checkNumber;
 const BingRulePrefix = Config.BingRulePrefix;
 const APIRulePrefix = Config.APIRulePrefix;
@@ -109,18 +112,18 @@ try {
 }
 let version = Config.version;
 let HttpsProxyAgent;
-  try {
-    HttpsProxyAgent = (await import("https-proxy-agent")).default;
-  } catch (e) {
-    console.warn(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
-let proxy = HttpsProxyAgent
-if (typeof proxy !== 'function') {
+try {
+  HttpsProxyAgent = (await import("https-proxy-agent")).default;
+} catch (e) {
+  console.warn(
+    "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+  );
+}
+let proxy = HttpsProxyAgent;
+if (typeof proxy !== "function") {
   proxy = (p) => {
-    return new HttpsProxyAgent.HttpsProxyAgent(p)
-  }
+    return new HttpsProxyAgent.HttpsProxyAgent(p);
+  };
 }
 /**
  * 每个对话保留的时长。单个对话内ai是保留上下文的。超时后销毁对话，再次对话创建新的对话。
@@ -190,6 +193,12 @@ export class chatgpt extends plugin {
         {
           reg: "^#claude开启新对话",
           fnc: "newClaudeConversation",
+        },
+        {
+          /** 命令正则匹配 */
+          reg: "^#claude2[sS]*",
+          /** 执行方法 */
+          fnc: "claude2",
         },
         {
           /** 命令正则匹配 */
@@ -337,6 +346,11 @@ export class chatgpt extends plugin {
       // await client.endConversation()
       await redis.del(`CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`);
       await e.reply("claude对话已结束");
+      return;
+    }
+    if (use === "claude2") {
+      await redis.del(`CHATGPT:CLAUDE2_CONVERSATION:${e.sender.user_id}`);
+      await e.reply("claude2对话已结束");
       return;
     }
     if (use === "xh") {
@@ -2058,6 +2072,24 @@ export class chatgpt extends plugin {
     await this.abstractChat(e, prompt, "api");
     return true;
   }
+  async claude2(e) {
+    if (!Config.allowOtherMode) {
+      return false;
+    }
+    let ats = e.message.filter((m) => m.type === "at");
+    if (!e.atme && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark("艾特别人了，没艾特我，忽略#claude2");
+      }
+      return false;
+    }
+    let prompt = _.replace(e.raw_message.trimStart(), "#claude2", "").trim();
+    if (prompt.length === 0) {
+      return false;
+    }
+    await this.abstractChat(e, prompt, "claude2");
+    return true;
+  }
 
   async chatgpt3(e) {
     if (!Config.allowOtherMode) {
@@ -2623,7 +2655,7 @@ export class chatgpt extends plugin {
               message.indexOf("CaptchaChallenge") > -1
             ) {
               if (bingToken) {
-                logger.info(maxConv)
+                logger.info(maxConv);
                 if (maxConv >= 20) {
                   // maxConv为30说明token有效，可以通过解验证码码服务过码
                   await e.reply("出现必应验证码，尝试解决中");
@@ -2643,7 +2675,10 @@ export class chatgpt extends plugin {
                     }
                   } catch (err) {
                     logger.error(err);
-                    await e.reply("验证码解决失败，请前往 https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx 手动聊天通过验证码: " + err);
+                    await e.reply(
+                      "验证码解决失败，请前往 https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx 手动聊天通过验证码: " +
+                        err
+                    );
                     retry = 0;
                   }
                 } else {
@@ -2853,6 +2888,63 @@ export class chatgpt extends plugin {
         return {
           text,
         };
+      }
+      case "claude2": {
+        let { conversationId } = conversation;
+        let client = new ClaudeAIClient({
+          organizationId: Config.claudeAIOrganizationId,
+          sessionKey: Config.claudeAISessionKey,
+          debug: Config.debug,
+          proxy: Config.proxy,
+        });
+        let fileUrl, filename, attachments;
+        if (e.source && e.source.message === "[文件]") {
+          if (e.isGroup) {
+            let source = (await e.group.getChatHistory(e.source.seq, 1))[0];
+            let file = source.message.find((m) => m.type === "file");
+            if (file) {
+              filename = file.name;
+              fileUrl = await e.group.getFileUrl(file.fid);
+            }
+          } else {
+            let source = (await e.friend.getChatHistory(e.source.time, 1))[0];
+            let file = source.message.find((m) => m.type === "file");
+            if (file) {
+              filename = file.name;
+              fileUrl = await e.group.getFileUrl(file.fid);
+            }
+          }
+        }
+        if (fileUrl) {
+          logger.info(
+            logger.cyan("[ChatGPT-plugin]"),
+            logger.yellow(`[聊天]`),
+            logger.red(`[claude2]`),
+            "文件地址：" + fileUrl
+          );
+          mkdirs("data/chatgpt/files");
+          let destinationPath = "data/chatgpt/files/" + filename;
+          const response = await fetch(fileUrl);
+          const fileStream = fs.createWriteStream(destinationPath);
+          await new Promise((resolve, reject) => {
+            response.body.pipe(fileStream);
+            response.body.on("error", (err) => {
+              reject(err);
+            });
+            fileStream.on("finish", () => {
+              resolve();
+            });
+          });
+          attachments = [
+            await client.convertDocument(destinationPath, filename),
+          ];
+        }
+        if (conversationId) {
+          return await client.sendMessage(prompt, conversationId, attachments);
+        } else {
+          let conv = await client.createConversation();
+          return await client.sendMessage(prompt, conv.uuid, attachments);
+        }
       }
       case "xh": {
         const ssoSessionId = Config.xinghuoToken;
