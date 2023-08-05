@@ -2084,6 +2084,8 @@ export class chatgpt extends plugin {
       return false;
     }
     let prompt = _.replace(e.raw_message.trimStart(), "#claude2", "").trim();
+    prompt = prompt.replace("喵喵", "");
+    prompt = prompt.replace("喵", "");
     if (prompt.length === 0) {
       return false;
     }
