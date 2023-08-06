@@ -373,7 +373,7 @@ export class ChatGPTPuppeteer extends Puppeteer {
   };
 
   async handle403Error() {
-    console.log(`ChatGPT "${this._email}" session expired; refreshing...`);
+    console.log(`ChatGPT "${this._email}" session过期; 正在刷新...`);
     try {
       await maximizePage(this._page);
       await this._page.reload({
@@ -434,13 +434,13 @@ export class ChatGPTPuppeteer extends Puppeteer {
           await delay(300);
           timeout = timeout - 300;
           if (timeout < 0) {
-            const error = new Error("Not signed in");
+            const error = new Error("没有登录或注册");
             error.statusCode = 401;
             throw error;
           }
         }
       } else if (!this._accessToken) {
-        const error = new Error("Not signed in");
+        const error = new Error("没有登录或注册");
         error.statusCode = 401;
         throw error;
       }

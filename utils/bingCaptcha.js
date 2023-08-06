@@ -71,11 +71,11 @@ export async function solveCaptcha(id, regionId, text, token) {
 
 export async function solveCaptchaOneShot(token) {
   if (!token) {
-    throw new Error("no token");
+    throw new Error("没有Token");
   }
   let solveUrl = Config.bingCaptchaOneShotUrl;
   if (!solveUrl) {
-    throw new Error("no captcha source");
+    throw new Error("没有验证码过码服务资源，默认为 http://bingcaptcha.ikechan8370.com/bing");
   }
   logger.info(`尝试解决token${token}的验证码`);
   let result = await fetch(solveUrl, {

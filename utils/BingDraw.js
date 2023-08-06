@@ -86,7 +86,7 @@ export default class BingDrawClient {
       let res = await response.text();
       if (res.toLowerCase().indexOf("this prompt has been blocked") > -1) {
         throw new Error(
-          "Your prompt has been blocked by Bing. Try to change any bad words and try again."
+          "你的绘图tag因为不和谐或者太涩被必应拒绝了"
         );
       }
       if (response.status !== 302) {
@@ -108,7 +108,7 @@ export default class BingDrawClient {
       }
     }
     if (!success) {
-      throw new Error("绘图失败，请检查Bing token和代理/反代配置");
+      throw new Error("绘图失败，请检查Bing token和代理/反代配置，大部分机场是这样的，建议用群主反代画图");
     }
     let redirectUrl = response.headers.get("Location").replace("&nfy=1", "");
     let requestId = redirectUrl.split("id=")[1];
@@ -118,7 +118,7 @@ export default class BingDrawClient {
     });
     let pollingUrl = `${this.opts.baseUrl}/images/create/async/results/${requestId}?q=${urlEncodedPrompt}`;
     logger.info({ pollingUrl });
-    logger.info("waiting for bing draw results...");
+    logger.info("正在等待必应绘图结果...");
     let timeoutTimes = 30;
     let found = false;
     let timer = setInterval(async () => {
@@ -163,7 +163,7 @@ export default class BingDrawClient {
           timer = null;
         } else {
           logger.info(
-            "still waiting for bing draw results... times left: " + timeoutTimes
+            "还在等待bing的still结果。。。剩余次数：" + timeoutTimes
           );
           timeoutTimes--;
         }
