@@ -154,7 +154,7 @@ const defaultConfig = {
   // claude2
   claudeAIOrganizationId: "",
   claudeAISessionKey: "",
-  version: "E-1.1",
+  version: "E-2.0",
 };
 const GEConfig = {
   blockWords: ["屏蔽词1", "屏蔽词b"],
