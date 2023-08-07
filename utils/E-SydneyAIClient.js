@@ -152,10 +152,17 @@ export default class ESydneyAIClient {
       logger.red(`[调试]`),
       "使用host：" + this.opts.host
     );
+    logger.info(
+      logger.red("[ChatGPT-plugin]"),
+      logger.yellow(`[聊天]`),
+      logger.red(`[调试]`),
+      fetchOptions
+    );
     let response = await fetch(
       `${this.opts.host}/turing/conversation/create`,
       fetchOptions
     );
+    
     let text = await response.text();
     let retry = 10;
     while (retry >= 0 && response.status === 200 && !text) {
