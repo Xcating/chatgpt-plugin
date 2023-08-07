@@ -2017,11 +2017,14 @@ export class chatgpt extends plugin {
             `必应调用OpenAI时服务器出现异常，请等待后重试`,
             true
           );
-        } else if (
-          msg.includes("Sorry, you need to login first to access this service")
-        ) {
+        } 
+        else if (msg.includes("Sorry, you need to login first to access this service")) {
           await this.reply(`你的必应Token已经过期了，请重新获取`, true);
-        } else if (msg.includes("CAPTCHA")) {
+        } 
+        else if (msg.includes("200")) {
+          await this.reply(`你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代`, true);
+        } 
+        else if (msg.includes("CAPTCHA")) {
           await this.reply(
             `这个报错理论上不应该出现，应该会自动过验证才对`,
             true
