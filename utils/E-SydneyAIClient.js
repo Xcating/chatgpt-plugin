@@ -970,6 +970,7 @@ export default class ESydneyAIClient {
           conversationId,
           clientId,
         };
+        err.maxConv = maxConv;
       } catch (err) {
         logger.info(
           logger.cyan("[ChatGPT-plugin]"),
@@ -978,7 +979,6 @@ export default class ESydneyAIClient {
           "必应记录错误失败，可能是出现了验证码 :)"
         );
       }
-      err.maxConv = maxConv;
       throw err;
     }
   }
