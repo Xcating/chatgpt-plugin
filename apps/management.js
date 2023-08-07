@@ -322,8 +322,20 @@ export class ChatgptManagement extends plugin {
           reg: "^#(chatgpt)?刷新(token|Token|Api3Token|Api3token}API3Token|TOKEN|ACCESSTOKEN|API3token|accesstoken|access_token|Access_Token)$",
           fnc: "refreshToken",
         },
+        {
+          reg: "^#chatgpt(开启|关闭|开|关)(调试|debug)(模式|方法)?$",
+          fnc: "switchDebug",
+        },
       ],
     });
+  }
+  async switchDebug(e) {
+    let msg = e.msg;
+    if (msg.includes("开")) {
+      Config.debug = true;
+    } else {
+      Config.debug = false;
+    }
   }
   async refreshToken(e) {
     if (!Config.OpenAiPlatformRefreshToken) {

@@ -1646,7 +1646,7 @@ export class chatgpt extends plugin {
               await this.reply(`你的必应Token已经过期了，请重新获取`, true);
             } else if (msg.includes("200")) {
               await this.reply(
-                `你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代；错误码：403`,
+                `机器人的ip被必应封禁了，请联系机器人主人，尝试更换反代并打开强制反代与对话使用sydney反代；错误码：403`,
                 true
               );
             } else if (msg.includes("CAPTCHA")) {
@@ -2060,56 +2060,6 @@ export class chatgpt extends plugin {
           );
         } else if (msg.includes('"statusCode":500')) {
           await this.reply(`你的API3 Token无法使用或错误，请修正`, true);
-        } else {
-          if (msg.length < 200) {
-            await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`, true);
-          } else {
-            await this.renderImage(
-              e,
-              use,
-              `通信异常：未知错误 ,错误信息如下: ${msg}`,
-              prompt
-            );
-          }
-        }
-      }
-      if (use == "bing") {
-        if (msg.includes("502")) {
-          await this.reply(`必应服务器出现异常，请等待后重试`, true);
-        } else if (msg.includes("429")) {
-          await this.reply(
-            `必应调用OpenAI时服务器出现异常，请等待后重试`,
-            true
-          );
-        } else if (msg.includes("Invalid URL")) {
-          await this.reply(
-            `你的bing反代不存在：${Config.sydneyReverseProxy}`,
-            true
-          );
-        } else if (
-          msg.includes("Sorry, you need to login first to access this service")
-        ) {
-          await this.reply(`你的必应Token已经过期了，请重新获取`, true);
-        } else if (msg.includes("200")) {
-          await this.reply(
-            `你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代,报错`,
-            true
-          );
-        } else if (msg.includes("CAPTCHA")) {
-          await this.reply(
-            `这个报错理论上不应该出现，应该会自动过验证才对`,
-            true
-          );
-        } else if (msg.includes("404")) {
-          await this.reply(
-            `首先检查自己有没有配置好全局代理或反代，这种情况是很可能是重定向到cn.bing了，如果配置好了全局代理或反代仍这样的话可以发送 #结束对话 重新创建对话试试`,
-            true
-          );
-        } else if (msg.includes("Throttled Request is throttled underfined")) {
-          await this.reply(
-            `你的账号使用Sydney或者自设定模式过多 达到了日限流额 可等待12h后重新获取token再配置解决`,
-            true
-          );
         } else {
           if (msg.length < 200) {
             await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`, true);
