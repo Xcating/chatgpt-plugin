@@ -2018,6 +2018,9 @@ export class chatgpt extends plugin {
             true
           );
         } 
+        else if(msg.includes("Invalid URL")){
+          await this.reply(`你的bing反代不存在：${Config.sydneyReverseProxy}`, true);
+        }
         else if (msg.includes("Sorry, you need to login first to access this service")) {
           await this.reply(`你的必应Token已经过期了，请重新获取`, true);
         } 
