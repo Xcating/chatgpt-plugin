@@ -25,13 +25,13 @@ try {
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
 let HttpsProxyAgent;
-  try {
-    HttpsProxyAgent = (await import("https-proxy-agent")).default;
-  } catch (e) {
-    console.warn(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
+try {
+  HttpsProxyAgent = (await import("https-proxy-agent")).default;
+} catch (e) {
+  console.warn(
+    "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+  );
+}
 let delay;
 try {
   delay = (await import("delay")).default;
@@ -54,11 +54,11 @@ try {
   );
 }
 // workaround for ver 7.x and ver 5.x
-let proxy = HttpsProxyAgent
-if (typeof proxy !== 'function') {
+let proxy = HttpsProxyAgent;
+if (typeof proxy !== "function") {
   proxy = (p) => {
-    return new HttpsProxyAgent.HttpsProxyAgent(p)
-  }
+    return new HttpsProxyAgent.HttpsProxyAgent(p);
+  };
 }
 
 async function getKeyv() {
@@ -152,17 +152,19 @@ export default class ESydneyAIClient {
       logger.red(`[调试]`),
       "使用host：" + this.opts.host
     );
-    logger.info(
-      logger.red("[ChatGPT-plugin]"),
-      logger.yellow(`[聊天]`),
-      logger.red(`[调试]`),
-      fetchOptions
-    );
+    if (Config.debug) {
+      logger.info(
+        logger.red("[ChatGPT-plugin]"),
+        logger.yellow(`[聊天]`),
+        logger.red(`[调试]`),
+        fetchOptions
+      );
+    }
     let response = await fetch(
       `${this.opts.host}/turing/conversation/create`,
       fetchOptions
     );
-    
+
     let text = await response.text();
     let retry = 10;
     while (retry >= 0 && response.status === 200 && !text) {
@@ -285,6 +287,15 @@ export default class ESydneyAIClient {
     if (!this.conversationsCache) {
       throw new Error("no support conversationsCache");
     }
+    if (Config.debug) {
+      logger.info(
+        logger.red("[ChatGPT-plugin]"),
+        logger.yellow(`[聊天]`),
+        logger.red(`[调试]`),
+        opts
+      );
+    }
+
     let {
       conversationSignature,
       conversationId,
@@ -484,7 +495,7 @@ export default class ESydneyAIClient {
     if (Config.enableGenerateContents) {
       optionsSets.push(...["gencontentv3"]);
     }
-    let maxConv = Config.maxNumUserMessagesInConversation
+    let maxConv = Config.maxNumUserMessagesInConversation;
     const currentDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     const imageDate = await this.kblobImage(opts.imageUrl);
     console.log(imageDate);
@@ -734,8 +745,10 @@ export default class ESydneyAIClient {
                 event?.arguments?.[0]?.throttling
                   ?.maxNumUserMessagesInConversation
               ) {
-                maxConv = event?.arguments?.[0]?.throttling?.maxNumUserMessagesInConversation
-                Config.maxNumUserMessagesInConversation = maxConv
+                maxConv =
+                  event?.arguments?.[0]?.throttling
+                    ?.maxNumUserMessagesInConversation;
+                Config.maxNumUserMessagesInConversation = maxConv;
               }
               return;
             }
@@ -947,16 +960,16 @@ export default class ESydneyAIClient {
         response: reply.text,
         details: reply,
         apology: Config.sydneyApologyIgnored && apology,
-        maxConv
+        maxConv,
       };
     } catch (err) {
-      await this.conversationsCache.set(conversationKey, conversation)
+      await this.conversationsCache.set(conversationKey, conversation);
       err.conversation = {
         conversationSignature,
         conversationId,
-        clientId
-      }
-      err.maxConv = maxConv
+        clientId,
+      };
+      err.maxConv = maxConv;
       throw err;
     }
   }
