@@ -1667,19 +1667,28 @@ export class chatgpt extends plugin {
                 true
               );
             }
-          } else {
-            if (msg.length < 200) {
+            else if (
+              msg.includes("Client network socket disconnected before secure TLS connection was established")
+            ) {
               await this.reply(
-                `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                `你配置的sydney反代无法连接或者网络错误，重试即可`,
                 true
               );
-            } else {
-              await this.renderImage(
-                e,
-                use,
-                `通信异常：未知错误 ,错误信息如下: ${msg}`,
-                prompt
-              );
+            }
+            else{
+                if (msg.length < 200) {
+                  await this.reply(
+                    `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                    true
+                  );
+                } else {
+                  await this.renderImage(
+                    e,
+                    use,
+                    `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                    prompt
+                  );
+                }
             }
           }
         }
