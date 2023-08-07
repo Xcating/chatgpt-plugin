@@ -1501,97 +1501,99 @@ export class chatgpt extends plugin {
         // 字数超限直接返回
         return false;
       }
-      logger.info(
-        logger.cyan("[ChatGPT-plugin]"),
-        logger.yellow(`[Exrate]`),
-        logger.red(`[MoreMessage]`),
-        `ChatGPT回复额外消息`
-      );
-      //----------------------
-      //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
-      // 遍历分割后的句子数组
-      if (Config.ExrateMsg === true) {
-        var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
-        // 使用正则表达式进行字符串分割
-        var sentences = variableWithoutNewlines.split(/[。？]/);
-        // 计数器
-        var count = 0;
-        // 存储超过五个句子的内容
-        var extraSentences = "";
-        // 遍历每个句子
-        for (var i = 0; i < sentences.length; i++) {
-          var sentence = sentences[i].trim();
-          // 忽略空字符串
-          if (sentence === "") {
-            continue;
-          }
-          // 执行回复操作
-          // 忽略空的句子
-          if (Math.random() >= 0.3) {
-            //0.3是概率，Math.random()随机生成一个1~0的小数
-            await this.reply(
-              await convertFaces(sentence, Config.enableRobotAt, e)
-            );
-          } else {
-            await this.reply(
-              await convertFaces(sentence, Config.enableRobotAt, e),
-              e.isGroup
-            );
-          }
-          if (Config.debug) {
-            logger.info(
-              logger.cyan("[ChatGPT-plugin]"),
-              logger.yellow(`[Exrate]`),
-              logger.red(`[MoreMessage]`),
-              `正在分割数据${count}个，内容为${sentence}`
-            );
-          }
-          // 增加计数
-          count++;
-          // 检查计数是否达到上限
-          if (count >= Config.Maxcount) {
-            // 连接超过五个句子的内容
-            extraSentences = sentences.slice(i + 1).join("。");
-            if (Config.debug) {
-              logger.info(
-                logger.cyan("[ChatGPT-plugin]"),
-                logger.yellow(`[Exrate]`),
-                logger.red(`[DEBUG]`),
-                extraSentences
-              );
-            }
-            break;
-          }
-        }
-        // 如果有超过X个句子的内容，则作为第X+1条回复发送
-        if (extraSentences !== "") {
-          await this.reply(
-            await convertFaces(extraSentences, Config.enableRobotAt, e),
-            e.isGroup
-          );
-        }
-      } else {
+      if (!chatMessage.error) {
         logger.info(
           logger.cyan("[ChatGPT-plugin]"),
           logger.yellow(`[Exrate]`),
           logger.red(`[MoreMessage]`),
-          `未启用分割消息，统一发送`
+          `ChatGPT回复额外消息`
         );
-        await this.reply(
-          await convertFaces(chatMessage?.text, Config.enableRobotAt, e),
-          e.isGroup
-        );
-      }
-      if (Config.ExprotMoji === true) {
-        setTimeout(async () => {
+        //----------------------
+        //await this.reply(await convertFaces(chatMessage?.text, Config.enableRobotAt, e), e.isGroup)
+        // 遍历分割后的句子数组
+        if (Config.ExrateMsg === true) {
+          var variableWithoutNewlines = chatMessage?.text.replace(/\n/g, "");
+          // 使用正则表达式进行字符串分割
+          var sentences = variableWithoutNewlines.split(/[。？]/);
+          // 计数器
+          var count = 0;
+          // 存储超过五个句子的内容
+          var extraSentences = "";
+          // 遍历每个句子
+          for (var i = 0; i < sentences.length; i++) {
+            var sentence = sentences[i].trim();
+            // 忽略空字符串
+            if (sentence === "") {
+              continue;
+            }
+            // 执行回复操作
+            // 忽略空的句子
+            if (Math.random() >= 0.3) {
+              //0.3是概率，Math.random()随机生成一个1~0的小数
+              await this.reply(
+                await convertFaces(sentence, Config.enableRobotAt, e)
+              );
+            } else {
+              await this.reply(
+                await convertFaces(sentence, Config.enableRobotAt, e),
+                e.isGroup
+              );
+            }
+            if (Config.debug) {
+              logger.info(
+                logger.cyan("[ChatGPT-plugin]"),
+                logger.yellow(`[Exrate]`),
+                logger.red(`[MoreMessage]`),
+                `正在分割数据${count}个，内容为${sentence}`
+              );
+            }
+            // 增加计数
+            count++;
+            // 检查计数是否达到上限
+            if (count >= Config.Maxcount) {
+              // 连接超过五个句子的内容
+              extraSentences = sentences.slice(i + 1).join("。");
+              if (Config.debug) {
+                logger.info(
+                  logger.cyan("[ChatGPT-plugin]"),
+                  logger.yellow(`[Exrate]`),
+                  logger.red(`[DEBUG]`),
+                  extraSentences
+                );
+              }
+              break;
+            }
+          }
+          // 如果有超过X个句子的内容，则作为第X+1条回复发送
+          if (extraSentences !== "") {
+            await this.reply(
+              await convertFaces(extraSentences, Config.enableRobotAt, e),
+              e.isGroup
+            );
+          }
+        } else {
           logger.info(
             logger.cyan("[ChatGPT-plugin]"),
             logger.yellow(`[Exrate]`),
             logger.red(`[MoreMessage]`),
-            `触发发送表情`
+            `未启用分割消息，统一发送`
           );
-          e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站，有更好的提issue（
-        }, 2000);
+          await this.reply(
+            await convertFaces(chatMessage?.text, Config.enableRobotAt, e),
+            e.isGroup
+          );
+        }
+        if (Config.ExprotMoji === true) {
+          setTimeout(async () => {
+            logger.info(
+              logger.cyan("[ChatGPT-plugin]"),
+              logger.yellow(`[Exrate]`),
+              logger.red(`[MoreMessage]`),
+              `触发发送表情`
+            );
+            e.reply(segment.image("http://api.yujn.cn/api/chaijun.php")); //别问API哪来的，问就是从憨憨插件发现的接口站，有更好的提issue（
+          }, 2000);
+        }
       }
       if (use !== "api3" && use !== "poe" && use !== "claude") {
         previousConversation.conversation = {
@@ -1618,6 +1620,68 @@ export class chatgpt extends plugin {
             logger.red(`[聊天回复信息]`),
             chatMessage
           );
+        }
+        let msg = chatMessage.text;
+        logger.info(chatMessage.error);
+        logger.info(msg);
+        if (chatMessage.error) {
+          if (use == "bing") {
+            if (msg.includes("502")) {
+              await this.reply(`必应服务器出现异常，请等待后重试`, true);
+            } else if (msg.includes("429")) {
+              await this.reply(
+                `必应调用OpenAI时服务器出现异常，请等待后重试`,
+                true
+              );
+            } else if (msg.includes("Invalid URL")) {
+              await this.reply(
+                `你的bing反代不存在：${Config.sydneyReverseProxy}`,
+                true
+              );
+            } else if (
+              msg.includes(
+                "Sorry, you need to login first to access this service"
+              )
+            ) {
+              await this.reply(`你的必应Token已经过期了，请重新获取`, true);
+            } else if (msg.includes("200")) {
+              await this.reply(
+                `你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代；错误码：403`,
+                true
+              );
+            } else if (msg.includes("CAPTCHA")) {
+              await this.reply(
+                `这个报错理论上不应该出现，应该会自动过验证才对`,
+                true
+              );
+            } else if (msg.includes("404")) {
+              await this.reply(
+                `首先检查自己有没有配置好全局代理或反代，这种情况是很可能是重定向到cn.bing了，如果配置好了全局代理或反代仍这样的话可以发送 #结束对话 重新创建对话试试`,
+                true
+              );
+            } else if (
+              msg.includes("Throttled Request is throttled underfined")
+            ) {
+              await this.reply(
+                `你的账号使用Sydney或者自设定模式过多 达到了日限流额 可等待12h后重新获取token再配置解决`,
+                true
+              );
+            }
+          } else {
+            if (msg.length < 200) {
+              await this.reply(
+                `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                true
+              );
+            } else {
+              await this.renderImage(
+                e,
+                use,
+                `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                prompt
+              );
+            }
+          }
         }
         if (!chatMessage.error) {
           // 没错误的时候再更新，不然易出错就对话没了
@@ -2017,17 +2081,21 @@ export class chatgpt extends plugin {
             `必应调用OpenAI时服务器出现异常，请等待后重试`,
             true
           );
-        } 
-        else if(msg.includes("Invalid URL")){
-          await this.reply(`你的bing反代不存在：${Config.sydneyReverseProxy}`, true);
-        }
-        else if (msg.includes("Sorry, you need to login first to access this service")) {
+        } else if (msg.includes("Invalid URL")) {
+          await this.reply(
+            `你的bing反代不存在：${Config.sydneyReverseProxy}`,
+            true
+          );
+        } else if (
+          msg.includes("Sorry, you need to login first to access this service")
+        ) {
           await this.reply(`你的必应Token已经过期了，请重新获取`, true);
-        } 
-        else if (msg.includes("200")) {
-          await this.reply(`你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代`, true);
-        } 
-        else if (msg.includes("CAPTCHA")) {
+        } else if (msg.includes("200")) {
+          await this.reply(
+            `你的ip被必应封禁了，请尝试更换反代并打开强制反代与对话使用sydney反代,报错`,
+            true
+          );
+        } else if (msg.includes("CAPTCHA")) {
           await this.reply(
             `这个报错理论上不应该出现，应该会自动过验证才对`,
             true
@@ -2042,16 +2110,17 @@ export class chatgpt extends plugin {
             `你的账号使用Sydney或者自设定模式过多 达到了日限流额 可等待12h后重新获取token再配置解决`,
             true
           );
-        }
-        if (msg.length < 200) {
-          await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`, true);
         } else {
-          await this.renderImage(
-            e,
-            use,
-            `通信异常：未知错误 ,错误信息如下: ${msg}`,
-            prompt
-          );
+          if (msg.length < 200) {
+            await this.reply(`通信异常：未知错误 ,错误信息如下: ${msg}`, true);
+          } else {
+            await this.renderImage(
+              e,
+              use,
+              `通信异常：未知错误 ,错误信息如下: ${msg}`,
+              prompt
+            );
+          }
         }
       }
     }
@@ -2656,7 +2725,7 @@ export class chatgpt extends plugin {
             logger.error(error);
             const message =
               error?.message || error?.data?.message || error || "出错了";
-            const { maxConv } = error
+            const { maxConv } = error;
             if (
               message &&
               typeof message === "string" &&
