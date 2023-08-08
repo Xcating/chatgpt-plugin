@@ -203,6 +203,12 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
+          reg: "^#azure[sS]*",
+          /** 执行方法 */
+          fnc: "azureGPT",
+        },
+        {
+          /** 命令正则匹配 */
           reg: "^#claude[sS]*",
           /** 执行方法 */
           fnc: "claude",
@@ -2110,6 +2116,7 @@ export class chatgpt extends plugin {
       `#${APIRulePrefix}`,
       ""
     ).trim();
+    prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
     }
@@ -2136,7 +2143,25 @@ export class chatgpt extends plugin {
     await this.abstractChat(e, prompt, "claude2");
     return true;
   }
-
+  async azureGPT(e) {
+    if (!Config.allowOtherMode) {
+      return false;
+    }
+    let ats = e.message.filter((m) => m.type === "at");
+    if (!e.atme && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark("艾特别人了，没艾特我，忽略#azure");
+      }
+      return false;
+    }
+    let prompt = _.replace(e.raw_message.trimStart(), "#azure", "").trim();
+    prompt = prompt.replace("喵喵", "");
+    if (prompt.length === 0) {
+      return false;
+    }
+    await this.abstractChat(e, prompt, "azure");
+    return true;
+  }
   async chatgpt3(e) {
     if (!Config.allowOtherMode) {
       return false;
@@ -2153,6 +2178,7 @@ export class chatgpt extends plugin {
       `#${API3RulePrefix}`,
       ""
     ).trim();
+    prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
     }
@@ -2171,6 +2197,7 @@ export class chatgpt extends plugin {
       return false;
     }
     let prompt = _.replace(e.raw_message.trimStart(), "#poe1", "").trim();
+    prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
     }
@@ -2189,6 +2216,7 @@ export class chatgpt extends plugin {
       return false;
     }
     let prompt = _.replace(e.raw_message.trimStart(), "#chatglm", "").trim();
+    prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
     }
@@ -2212,6 +2240,7 @@ export class chatgpt extends plugin {
       `#${BingRulePrefix}`,
       ""
     ).trim();
+    prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
     }
