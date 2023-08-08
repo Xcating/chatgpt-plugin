@@ -10,6 +10,7 @@
     "@fastify/websocket": "^8.2.0",
     "@slack/bolt": "^3.13.2",
     "@waylaidwanderer/chatgpt-api": "^1.37.1",
+    "@azure/openai": "^1.0.0-beta.3",
     "asn1.js": "^5.0.0",
     "chatgpt": "^5.2.4",
     "delay": "^6.0.0",

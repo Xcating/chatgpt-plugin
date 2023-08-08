@@ -155,8 +155,9 @@ const defaultConfig = {
   claudeAIOrganizationId: "",
   claudeAISessionKey: "",
   groupMerge: false,
-  azureDeploymentName:"",
-  azureUrl:"",
+  azureDeploymentName: "",
+  azureUrl: "",
+  azureApiKey: "",
   version: "E-2.0",
 };
 const GEConfig = {
@@ -301,7 +302,8 @@ const GEConfig = {
   claudeAISessionKey: "",
   groupMerge: false,
   azureDeploymentName:"",
-  azureUrl:""
+  azureUrl:"",
+  azureApiKey: ""
 };
 const _path = process.cwd();
 let config = {};
