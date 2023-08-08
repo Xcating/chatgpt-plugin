@@ -831,7 +831,7 @@ export default class ESydneyAIClient {
                   text: replySoFar.join(""),
                 };
             // 获取到图片内容
-            if (message.contentType === "IMAGE") {
+            if (messages.some(obj => obj.contentType === "IMAGE")) {
               message.imageTag = messages
                 .filter((m) => m.contentType === "IMAGE")
                 .map((m) => m.text)

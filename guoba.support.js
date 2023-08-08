@@ -84,6 +84,12 @@ export function supportGuoba() {
           component: "Switch",
         },
         {
+          field: 'groupMerge',
+          label: '群组消息合并',
+          bottomHelpMessage: '开启后，群聊消息将被视为同一对话',
+          component: 'Switch'
+        },
+        {
           field: "ttsMode",
           label: "语音模式源",
           bottomHelpMessage: "语音模式下使用何种语音源进行文本->音频转换",

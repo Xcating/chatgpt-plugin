@@ -154,6 +154,7 @@ const defaultConfig = {
   // claude2
   claudeAIOrganizationId: "",
   claudeAISessionKey: "",
+  groupMerge: false,
   version: "E-2.0",
 };
 const GEConfig = {
@@ -296,6 +297,7 @@ const GEConfig = {
   problem: true,
   claudeAIOrganizationId: "",
   claudeAISessionKey: "",
+  groupMerge: false
 };
 const _path = process.cwd();
 let config = {};
