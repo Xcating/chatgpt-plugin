@@ -18,6 +18,7 @@ import {
   solveCaptcha,
   solveCaptchaOneShot,
 } from "../utils/bingCaptcha.js";
+import { OpenAIClient, AzureKeyCredential } from '@azure/openai'
 import AzureTTS from "../utils/tts/microsoft-azure.js";
 import VoiceVoxTTS from "../utils/tts/voicevox.js";
 import {
@@ -1452,6 +1453,10 @@ export class chatgpt extends plugin {
           key = `CHATGPT:CONVERSATIONS_XH:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
           break;
         }
+        case 'azure': {
+          key = `CHATGPT:CONVERSATIONS_AZURE:${e.sender.user_id}`
+          break
+        }
       }
       let ctime = new Date();
       previousConversation =
@@ -1461,6 +1466,7 @@ export class chatgpt extends plugin {
           ctime,
           utime: ctime,
           num: 0,
+          messages: [{ role: 'system', content: 'You are an AI assistant that helps people find information.' }],
           conversation: {},
         });
       previousConversation = JSON.parse(previousConversation);
@@ -1473,6 +1479,7 @@ export class chatgpt extends plugin {
         );
       }
       conversation = {
+        messages: previousConversation.messages,
         conversationId: previousConversation.conversation?.conversationId,
         parentMessageId: previousConversation.parentMessageId,
         clientId: previousConversation.clientId,
@@ -1610,6 +1617,11 @@ export class chatgpt extends plugin {
           }
         } else if (chatMessage.id) {
           previousConversation.parentMessageId = chatMessage.id;
+        } else if (chatMessage.message) {
+          if (previousConversation.messages.length > 10) {
+            previousConversation.messages.shift()
+          }
+          previousConversation.messages.push(chatMessage.message)
         }
         if (Config.debug) {
           logger.info(
@@ -2991,7 +3003,18 @@ export class chatgpt extends plugin {
           prompt,
           conversation?.conversationId
         );
+        
         return response;
+      }
+      case 'azure': {
+        let msg = conversation.messages
+        let content = { role: 'user', content: prompt }
+        msg.push(content)
+        const client = new OpenAIClient(Config.azureUrl, new AzureKeyCredential(Config.apiKey))
+        const deploymentName = Config.azureDeploymentName
+        const { choices } = await client.getChatCompletions(deploymentName, msg)
+        let completion = choices[0].message;
+        return {'text' : completion.content, 'message': completion}
       }
       default: {
         let completionParams = {};
