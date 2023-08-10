@@ -18,7 +18,12 @@ import {
   solveCaptcha,
   solveCaptchaOneShot,
 } from "../utils/bingCaptcha.js";
-import { OpenAIClient, AzureKeyCredential } from '@azure/openai'
+
+try {
+  await import('@azure/openai')
+} catch (err) {
+  logger.warn('【Azure-Openai】依赖@azure/openai未安装，Azure OpenAI不可用 请执行pnpm install @azure/openai安装')
+}
 import AzureTTS from "../utils/tts/microsoft-azure.js";
 import VoiceVoxTTS from "../utils/tts/voicevox.js";
 import {
@@ -3036,6 +3041,14 @@ export class chatgpt extends plugin {
         return response;
       }
       case 'azure': {
+        let azureModel
+        try {
+          azureModel = await import('@azure/openai')
+        } catch (error) {
+          throw new Error('未安装@azure/openai包，请执行pnpm install @azure/openai安装')
+        }
+        let OpenAIClient = azureModel.OpenAIClient
+        let AzureKeyCredential = azureModel.AzureKeyCredential
         let msg = conversation.messages
         let content = { role: 'user', content: prompt }
         msg.push(content)
