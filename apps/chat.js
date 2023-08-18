@@ -177,6 +177,12 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
+          reg: `^(#)?bard[sS]*`,
+          /** 执行方法 */
+          fnc: "bard1",
+        },
+        {
+          /** 命令正则匹配 */
           reg: `^(#)?(${APIRulePrefix})[sS]*`,
           /** 执行方法 */
           fnc: "chatgpt1",
@@ -2253,6 +2259,29 @@ export class chatgpt extends plugin {
       return false;
     }
     await this.abstractChat(e, prompt, "api3");
+    return true;
+  }
+  async bard1(e) {
+    if (!Config.allowOtherMode) {
+      return false;
+    }
+    let ats = e.message.filter((m) => m.type === "at");
+    if (!e.atme && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark("艾特别人了，没艾特我，忽略#bard");
+      }
+      return false;
+    }
+    let prompt = _.replace(
+      e.raw_message.trimStart(),
+      `#bard`,
+      ""
+    ).trim();
+    prompt = prompt.replace("喵喵", "");
+    if (prompt.length === 0) {
+      return false;
+    }
+    await this.abstractChat(e, prompt, "bard");
     return true;
   }
   async poe1(e) {
