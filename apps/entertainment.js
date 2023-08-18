@@ -762,11 +762,10 @@ ${translateLangLabels}
   }
 
   async screenshotUrl(e) {
-    if(e.msg.includes('ip')){
-      e.reply("我操你妈逼坑我ip滚蛋")
+    if (e.msg.includes("ip")) {
+      e.reply("我操你妈逼坑我ip滚蛋");
     }
-    if(!e.isMaster)
-    {
+    if (!e.isMaster) {
       return true;
     }
     let url = e.msg.replace(/^#url(：|:)/, "");

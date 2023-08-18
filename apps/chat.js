@@ -20,9 +20,11 @@ import {
 } from "../utils/bingCaptcha.js";
 
 try {
-  await import('@azure/openai')
+  await import("@azure/openai");
 } catch (err) {
-  logger.warn('【Azure-Openai】依赖@azure/openai未安装，Azure OpenAI不可用 请执行pnpm install @azure/openai安装')
+  logger.warn(
+    "【Azure-Openai】依赖@azure/openai未安装，Azure OpenAI不可用 请执行pnpm install @azure/openai安装"
+  );
 }
 import AzureTTS from "../utils/tts/microsoft-azure.js";
 import VoiceVoxTTS from "../utils/tts/voicevox.js";
@@ -64,6 +66,7 @@ import { SlackClaudeClient } from "../utils/slack/slackClient.js";
 import { getPromptByName } from "../utils/prompts.js";
 import BingDrawClient from "../utils/BingDraw.js";
 import XinghuoClient from "../utils/xinghuo/xinghuo.js";
+import Bard from "../utils/bard.js";
 import { JinyanTool } from "../utils/tools/JinyanTool.js";
 import { SendVideoTool } from "../utils/tools/SendBilibiliTool.js";
 import { KickOutTool } from "../utils/tools/KickOutTool.js";
@@ -368,6 +371,11 @@ export class chatgpt extends plugin {
     if (use === "xh") {
       await redis.del(`CHATGPT:CONVERSATIONS_XH:${e.sender.user_id}`);
       await e.reply("星火对话已结束");
+      return;
+    }
+    if (use === "bard") {
+      await redis.del(`CHATGPT:CONVERSATIONS_BARD:${e.sender.user_id}`);
+      await e.reply("Bard对话已结束");
       return;
     }
     let ats = e.message.filter((m) => m.type === "at");
@@ -717,12 +725,18 @@ export class chatgpt extends plugin {
         for (let i = 0; i < cs.length; i++) {
           await redis.del(cs[i]);
           if (Config.debug) {
-            logger.info(
-              logger.cyan("[ChatGPT-plugin]"),
-              logger.yellow(`[聊天]`),
-              logger.red(`[星火结束所有对话]`),
-              "delete slack conversation of qq: " + cs[i]
-            );
+            logger.info("delete xh conversation of qq: " + cs[i]);
+          }
+          deleted++;
+        }
+        break;
+      }
+      case "bard": {
+        let cs = await redis.keys("CHATGPT:CONVERSATIONS_BARD:*");
+        for (let i = 0; i < cs.length; i++) {
+          await redis.del(cs[i]);
+          if (Config.debug) {
+            logger.info("delete bard conversation of qq: " + cs[i]);
           }
           deleted++;
         }
@@ -1415,7 +1429,13 @@ export class chatgpt extends plugin {
     let key;
     if (use === "api3") {
       // api3 支持对话穿插，因此不按照qq号来进行判断了
-      let conversationId = await redis.get(`CHATGPT:QQ_CONVERSATION:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`)
+      let conversationId = await redis.get(
+        `CHATGPT:QQ_CONVERSATION:${
+          e.isGroup && Config.groupMerge
+            ? e.group_id.toString()
+            : e.sender.user_id
+        }`
+      );
       if (conversationId) {
         let lastMessageId = await redis.get(
           `CHATGPT:CONVERSATION_LAST_MESSAGE_ID:${conversationId}`
@@ -1445,28 +1465,56 @@ export class chatgpt extends plugin {
     } else if (use !== "poe" && use !== "claude") {
       switch (use) {
         case "api": {
-          key = `CHATGPT:CONVERSATIONS:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          key = `CHATGPT:CONVERSATIONS:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
           break;
         }
         case "bing": {
-          key = `CHATGPT:CONVERSATIONS_BING:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          key = `CHATGPT:CONVERSATIONS_BING:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
           break;
         }
         case "chatglm": {
-          key = `CHATGPT:CONVERSATIONS_CHATGLM:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          key = `CHATGPT:CONVERSATIONS_CHATGLM:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
           break;
         }
         case "browser": {
-          key = `CHATGPT:CONVERSATIONS_BROWSER:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          key = `CHATGPT:CONVERSATIONS_BROWSER:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
           break;
         }
         case "xh": {
-          key = `CHATGPT:CONVERSATIONS_XH:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          key = `CHATGPT:CONVERSATIONS_XH:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
           break;
         }
-        case 'azure': {
-          key = `CHATGPT:CONVERSATIONS_AZURE:${e.sender.user_id}`
-          break
+        case "bard": {
+          key = `CHATGPT:CONVERSATIONS_BARD:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`;
+          break;
+        }
+        case "azure": {
+          key = `CHATGPT:CONVERSATIONS_AZURE:${e.sender.user_id}`;
+          break;
         }
       }
       let ctime = new Date();
@@ -1477,7 +1525,13 @@ export class chatgpt extends plugin {
           ctime,
           utime: ctime,
           num: 0,
-          messages: [{ role: 'system', content: 'You are an AI assistant that helps people find information.' }],
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an AI assistant that helps people find information.",
+            },
+          ],
           conversation: {},
         });
       previousConversation = JSON.parse(previousConversation);
@@ -1512,6 +1566,12 @@ export class chatgpt extends plugin {
           segment.image(`base64://${chatMessage.image}`),
         ]);
         return false;
+      }
+      // 处理bard图片
+      if (use === "bard" && chatMessage?.images) {
+        chatMessage.images.forEach(async (element) => {
+          await e.reply([element.tag, segment.image(element.url)]);
+        });
       }
       if (use === "api" && !chatMessage) {
         // 字数超限直接返回
@@ -1630,9 +1690,14 @@ export class chatgpt extends plugin {
           previousConversation.parentMessageId = chatMessage.id;
         } else if (chatMessage.message) {
           if (previousConversation.messages.length > 10) {
-            previousConversation.messages.shift()
+            previousConversation.messages.shift();
           }
-          previousConversation.messages.push(chatMessage.message)
+          previousConversation.messages.push(chatMessage.message);
+        }
+        if (use === "bard" && !chatMessage.error) {
+          previousConversation.parentMessageId = chatMessage.responseID;
+          previousConversation.clientId = chatMessage.choiceID;
+          previousConversation.invocationId = chatMessage._reqID;
         }
         if (Config.debug) {
           logger.info(
@@ -1687,29 +1752,29 @@ export class chatgpt extends plugin {
                 `你的账号使用Sydney或者自设定模式过多 达到了日限流额 可等待12h后重新获取token再配置解决`,
                 true
               );
-            }
-            else if (
-              msg.includes("Client network socket disconnected before secure TLS connection was established")
+            } else if (
+              msg.includes(
+                "Client network socket disconnected before secure TLS connection was established"
+              )
             ) {
               await this.reply(
                 `你配置的sydney反代无法连接或者网络错误，重试即可`,
                 true
               );
-            }
-            else{
-                if (msg.length < 200) {
-                  await this.reply(
-                    `通信异常：未知错误 ,错误信息如下: ${msg}`,
-                    true
-                  );
-                } else {
-                  await this.renderImage(
-                    e,
-                    use,
-                    `通信异常：未知错误 ,错误信息如下: ${msg}`,
-                    prompt
-                  );
-                }
+            } else {
+              if (msg.length < 200) {
+                await this.reply(
+                  `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                  true
+                );
+              } else {
+                await this.renderImage(
+                  e,
+                  use,
+                  `通信异常：未知错误 ,错误信息如下: ${msg}`,
+                  prompt
+                );
+              }
             }
           }
         }
@@ -2683,13 +2748,13 @@ export class chatgpt extends plugin {
               response.quote = [];
               for (let quote of response.details.sourceAttributions) {
                 response.quote.push({
-                  text: quote.providerDisplayName || '',
+                  text: quote.providerDisplayName || "",
                   url: quote.seeMoreUrl,
                   imageLink: quote.imageLink || "",
                 });
               }
             }
-            console.log(response);
+            // console.log(response);
             // 处理内容生成的图片
             if (response.details.imageTag) {
               if (Config.debug) {
@@ -2876,7 +2941,14 @@ export class chatgpt extends plugin {
           `CHATGPT:CONVERSATION_LAST_MESSAGE_ID:${sendMessageResult.conversationId}`,
           sendMessageResult.id
         );
-        await redis.set(`CHATGPT:QQ_CONVERSATION:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`, sendMessageResult.conversationId)
+        await redis.set(
+          `CHATGPT:QQ_CONVERSATION:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`,
+          sendMessageResult.conversationId
+        );
         if (!conversation.conversationId) {
           // 如果是对话的创建者
           await redis.set(
@@ -3022,6 +3094,10 @@ export class chatgpt extends plugin {
         }
       }
       case "xh": {
+        const cacheOptions = {
+          namespace: "xh",
+          store: new KeyvFile({ filename: "cache.json" }),
+        };
         const ssoSessionId = Config.xinghuoToken;
         if (!ssoSessionId) {
           throw new Error(
@@ -3030,31 +3106,94 @@ export class chatgpt extends plugin {
         }
         let client = new XinghuoClient({
           ssoSessionId,
+          cache: cacheOptions,
         });
         let response = await client.sendMessage(
           prompt,
           conversation?.conversationId
         );
-        
+
         return response;
       }
-      case 'azure': {
-        let azureModel
-        try {
-          azureModel = await import('@azure/openai')
-        } catch (error) {
-          throw new Error('未安装@azure/openai包，请执行pnpm install @azure/openai安装')
+      case "bard": {
+        // 处理cookie
+        const matchesPSID = /__Secure-1PSID=([^;]+)/.exec(Config.bardPsid);
+        const matchesPSIDTS = /__Secure-1PSIDTS=([^;]+)/.exec(Config.bardPsid);
+        const cookie = {
+          "__Secure-1PSID": matchesPSID[1],
+          "__Secure-1PSIDTS": matchesPSIDTS[1],
+        };
+        if (!matchesPSID[1] || !matchesPSIDTS[1]) {
+          throw new Error("未绑定bard");
         }
-        let OpenAIClient = azureModel.OpenAIClient
-        let AzureKeyCredential = azureModel.AzureKeyCredential
-        let msg = conversation.messages
-        let content = { role: 'user', content: prompt }
-        msg.push(content)
-        const client = new OpenAIClient(Config.azureUrl, new AzureKeyCredential(Config.azureApiKey))
-        const deploymentName = Config.azureDeploymentName
-        const { choices } = await client.getChatCompletions(deploymentName, msg)
+        // 处理图片
+        const image = await getImg(e);
+        let imageBuff;
+        if (image) {
+          try {
+            let imgResponse = await fetch(image[0]);
+            if (imgResponse.ok) {
+              imageBuff = await imgResponse.arrayBuffer();
+            }
+          } catch (error) {
+            logger.warn(`错误的图片链接${image[0]}`);
+          }
+        }
+        // 发送数据
+        let bot = new Bard(cookie, {
+          fetch: fetch,
+          bardURL: Config.bardForceUseReverse
+            ? Config.bardReverseProxy
+            : "https://bard.google.com",
+        });
+        let chat = await bot.createChat(
+          conversation?.conversationId
+            ? {
+                conversationID: conversation.conversationId,
+                responseID: conversation.parentMessageId,
+                choiceID: conversation.clientId,
+                _reqID: conversation.invocationId,
+              }
+            : {}
+        );
+        let response = await chat.ask(prompt, {
+          image: imageBuff,
+          format: Bard.JSON,
+        });
+        return {
+          conversationId: response.ids.conversationID,
+          responseID: response.ids.responseID,
+          choiceID: response.ids.choiceID,
+          _reqID: response.ids._reqID,
+          text: response.content,
+          images: response.images,
+        };
+      }
+      case "azure": {
+        let azureModel;
+        try {
+          azureModel = await import("@azure/openai");
+        } catch (error) {
+          throw new Error(
+            "未安装@azure/openai包，请执行pnpm install @azure/openai安装"
+          );
+        }
+        let OpenAIClient = azureModel.OpenAIClient;
+        let AzureKeyCredential = azureModel.AzureKeyCredential;
+        let msg = conversation.messages;
+        let content = { role: "user", content: prompt };
+        msg.push(content);
+        const client = new OpenAIClient(
+          Config.azureUrl,
+          new AzureKeyCredential(Config.azureApiKey)
+        );
+        const deploymentName = Config.azureDeploymentName;
+        const { choices } = await client.getChatCompletions(
+          deploymentName,
+          msg
+        );
         let completion = choices[0].message;
-        return {'text' : completion.content, 'message': completion}
+        return { text: completion.content, message: completion };
       }
       default: {
         let completionParams = {};

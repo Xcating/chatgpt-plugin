@@ -84,10 +84,10 @@ export function supportGuoba() {
           component: "Switch",
         },
         {
-          field: 'groupMerge',
-          label: '群组消息合并',
-          bottomHelpMessage: '开启后，群聊消息将被视为同一对话',
-          component: 'Switch'
+          field: "groupMerge",
+          label: "群组消息合并",
+          bottomHelpMessage: "开启后，群聊消息将被视为同一对话",
+          component: "Switch",
         },
         {
           field: "ttsMode",
@@ -802,26 +802,26 @@ export function supportGuoba() {
           component: "Input",
         },
         {
-          label: '以下为AzureChatGPT的配置',
-          component: 'Divider'
+          label: "以下为AzureChatGPT的配置",
+          component: "Divider",
         },
         {
-          field: 'azureApiKey',
-          label: 'Azure API Key',
-          bottomHelpMessage: '管理密钥，用于访问Azure的API接口',
-          component: 'InputPassword'
+          field: "azureApiKey",
+          label: "Azure API Key",
+          bottomHelpMessage: "管理密钥，用于访问Azure的API接口",
+          component: "InputPassword",
         },
         {
-          field: 'azureUrl',
-          label: '端点地址',
-          bottomHelpMessage: 'https://xxxx.openai.azure.com/',
-          component: 'Input'
+          field: "azureUrl",
+          label: "端点地址",
+          bottomHelpMessage: "https://xxxx.openai.azure.com/",
+          component: "Input",
         },
         {
-          field: 'azureDeploymentName',
-          label: '部署名称',
-          bottomHelpMessage: '创建部署时输入的名称',
-          component: 'Input'
+          field: "azureDeploymentName",
+          label: "部署名称",
+          bottomHelpMessage: "创建部署时输入的名称",
+          component: "Input",
         },
         {
           label: "以下为ChatGLM方式的配置",
@@ -844,6 +844,30 @@ export function supportGuoba() {
             "获取对话页面的ssoSessionId cookie。不要带等号和分号",
           component: "Input",
         },
+        {
+          label: "以下为Bard方式的配置",
+          component: "Divider",
+        },
+        {
+          field: "bardPsid",
+          label: "BardCookie",
+          bottomHelpMessage:
+            "获取https://bard.google.com/页面的cookie，可完整输入，需至少包含__Secure-1PSID和__Secure-1PSIDTS",
+          component: "Input",
+        },
+        {
+          field: "bardReverseProxy",
+          label: "Bard反代地址",
+          bottomHelpMessage: "bard反代服务器地址，用于绕过地区限制",
+          component: "Input",
+        },
+        {
+          field: "bardForceUseReverse",
+          label: "Bard使用反代",
+          bottomHelpMessage: "开启后将通过反代访问bard",
+          component: "Switch",
+        },
+
         {
           label: "以下为杂七杂八的配置",
           component: "Divider",

@@ -158,6 +158,17 @@ const defaultConfig = {
   azureDeploymentName: "",
   azureUrl: "",
   azureApiKey: "",
+  xhmode: 'web',
+  xhAppId: '',
+  xhAPISecret: '',
+  xhAPIKey: '',
+  xhTemperature: 0.5,
+  xhMaxTokens: 1024,
+  xhPromptSerialize: false,
+  xhPrompt: '',
+  bardPsid: '',
+  bardReverseProxy: '',
+  bardForceUseReverse: false,
   version: "E-2.0",
 };
 const GEConfig = {
@@ -303,7 +314,18 @@ const GEConfig = {
   groupMerge: false,
   azureDeploymentName:"",
   azureUrl:"",
-  azureApiKey: ""
+  azureApiKey: "",
+  xhmode: 'web',
+  xhAppId: '',
+  xhAPISecret: '',
+  xhAPIKey: '',
+  xhTemperature: 0.5,
+  xhMaxTokens: 1024,
+  xhPromptSerialize: false,
+  xhPrompt: '',
+  bardPsid: '',
+  bardReverseProxy: '',
+  bardForceUseReverse: false,
 };
 const _path = process.cwd();
 let config = {};
