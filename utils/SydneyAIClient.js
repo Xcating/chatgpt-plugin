@@ -1,43 +1,10 @@
-let fetch;
-let Headers;
-let Request;
-let Response;
-try {
-  fetch = (await import("node-fetch")).default;
-  Headers = (await import("node-fetch")).default;
-  Request = (await import("node-fetch")).default;
-  Response = (await import("node-fetch")).default;
-} catch (e) {
-  console.warn("未安装crypto，请发送指令#chatgpt安装依赖");
-}
-let crypto;
-try {
-  crypto = (await import("crypto")).default;
-} catch (e) {
-  console.warn("未安装crypto，请发送指令#chatgpt安装依赖");
-}
-let WebSocket;
-try {
-  WebSocket = (await import("ws")).default;
-} catch (e) {
-  console.warn("未安装crypto，请发送指令#chatgpt安装依赖");
-}
+import fetch, { Headers, Request, Response, FormData } from "node-fetch";
+import crypto from "crypto";
+import WebSocket from "ws";
+import HttpsProxyAgent from "https-proxy-agent";
 import { Config, pureSydneyInstruction } from "./config.js";
 import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
-let HttpsProxyAgent;
-  try {
-    HttpsProxyAgent = (await import("https-proxy-agent")).default;
-  } catch (e) {
-    console.warn(
-      "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
-    );
-  }
-let delay;
-try {
-  delay = (await import("delay")).default;
-} catch (e) {
-  console.warn("未安装delay，请发送指令#chatgpt安装依赖");
-}
+import delay from "delay";
 import moment from "moment";
 
 if (!globalThis.fetch) {
@@ -46,19 +13,12 @@ if (!globalThis.fetch) {
   globalThis.Request = Request;
   globalThis.Response = Response;
 }
-try {
-  await import("ws");
-} catch (error) {
-  logger.warn(
-    "【ChatGPT-Plugin】依赖ws未安装，可能影响Sydney模式下Bing对话，建议使用pnpm install ws安装"
-  );
-}
 // workaround for ver 7.x and ver 5.x
-let proxy = HttpsProxyAgent
-if (typeof proxy !== 'function') {
+let proxy = HttpsProxyAgent;
+if (typeof proxy !== "function") {
   proxy = (p) => {
-    return new HttpsProxyAgent.HttpsProxyAgent(p)
-  }
+    return new HttpsProxyAgent.HttpsProxyAgent(p);
+  };
 }
 
 async function getKeyv() {
@@ -111,28 +71,26 @@ export default class SydneyAIClient {
         accept: "application/json",
         "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
         "content-type": "application/json",
-        "sec-ch-ua":
-          '"Microsoft Edge";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+        // 'sec-ch-ua': '"Microsoft Edge";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
         // 'sec-ch-ua-arch': '"x86"',
         // 'sec-ch-ua-bitness': '"64"',
         // 'sec-ch-ua-full-version': '"112.0.1722.7"',
         // 'sec-ch-ua-full-version-list': '"Chromium";v="112.0.5615.20", "Microsoft Edge";v="112.0.1722.7", "Not:A-Brand";v="99.0.0.0"',
-        "sec-ch-ua-mobile": "?0",
+        // 'sec-ch-ua-mobile': '?0',
         // 'sec-ch-ua-model': '',
-        "sec-ch-ua-platform": '"macOS"',
+        // 'sec-ch-ua-platform': '"macOS"',
         // 'sec-ch-ua-platform-version': '"15.0.0"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "x-ms-client-request-id": crypto.randomUUID(),
-        "x-ms-useragent":
-          "azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.10.3 OS/macOS",
+        // 'sec-fetch-dest': 'empty',
+        // 'sec-fetch-mode': 'cors',
+        // 'sec-fetch-site': 'same-origin',
+        // 'x-ms-client-request-id': crypto.randomUUID(),
+        // 'x-ms-useragent': 'azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.10.3 OS/macOS',
         // cookie: this.opts.cookies || `_U=${this.opts.userToken}`,
         Referer:
           "https://edgeservices.bing.com/edgesvc/chat?udsframed=1&form=SHORUN&clientscopes=chat,noheader,channelstable,",
-        "Referrer-Policy": "origin-when-cross-origin",
+        // 'Referrer-Policy': 'origin-when-cross-origin',
         // Workaround for request being blocked due to geolocation
-        "x-forwarded-for": "1.1.1.1",
+        // 'x-forwarded-for': '1.1.1.1'
       },
     };
     if (this.opts.cookies || this.opts.userToken) {
@@ -149,12 +107,7 @@ export default class SydneyAIClient {
       logger.info("change hosts to https://edgeservices.bing.com");
       this.opts.host = "https://edgeservices.bing.com/edgesvc";
     }
-    logger.info(
-      logger.red("[ChatGPT-plugin]"),
-      logger.yellow(`[聊天]`),
-      logger.red(`[调试]`),
-      "使用host：" + this.opts.host
-    );
+    logger.mark("使用host：" + this.opts.host);
     let response = await fetch(
       `${this.opts.host}/turing/conversation/create`,
       fetchOptions
@@ -308,12 +261,7 @@ export default class SydneyAIClient {
       onProgress = () => {};
     }
     let master = (await getMasterQQ())[0];
-    if (
-      parentMessageId ||
-      !conversationSignature ||
-      !conversationId ||
-      !clientId
-    ) {
+    if (!conversationSignature || !conversationId || !clientId) {
       const createNewConversationResponse = await this.createNewConversation();
       if (this.debug) {
         console.debug(createNewConversationResponse);
@@ -381,7 +329,7 @@ export default class SydneyAIClient {
       }
     });
     pm = pm.reverse();
-    let previousMessages;
+    let previousMessages = [];
     let whoAmI = "";
     if (Config.enforceMaster && master && qq) {
       // 加强主人人知
@@ -424,7 +372,7 @@ export default class SydneyAIClient {
               },
               ...pm,
             ]
-          : undefined;
+          : [];
     } else {
       previousMessages =
         invocationId === 0
@@ -439,7 +387,7 @@ export default class SydneyAIClient {
               },
               ...pm,
             ]
-          : undefined;
+          : [];
     }
 
     const userMessage = {
@@ -460,9 +408,9 @@ export default class SydneyAIClient {
       "responsible_ai_policy_235",
       "enablemm",
       toneOption,
-      "dagslnv1",
-      "sportsansgnd",
-      "dl_edge_desc",
+      // 'dagslnv1',
+      // 'sportsansgnd',
+      // 'dl_edge_desc',
       "noknowimg",
       // 'dtappid',
       // 'cricinfo',
@@ -475,9 +423,9 @@ export default class SydneyAIClient {
     if (Config.enableGenerateContents) {
       optionsSets.push(...["gencontentv3"]);
     }
+    let maxConv = Config.maxNumUserMessagesInConversation;
     const currentDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     const imageDate = await this.kblobImage(opts.imageUrl);
-    console.log(imageDate);
     const obj = {
       arguments: [
         {
@@ -494,28 +442,26 @@ export default class SydneyAIClient {
           ],
           sliceIds: [],
           traceId: genRanHex(32),
+          scenario: "Underside",
+          verbosity: "verbose",
           isStartOfSession: invocationId === 0,
           message: {
             locale: "zh-CN",
             market: "zh-CN",
-            region: "HK",
+            region: "WW",
             location: "lat:47.639557;long:-122.128159;re=1000m;",
             locationHints: [
               {
+                country: "Macedonia",
+                state: "Centar",
+                city: "Skopje",
+                zipcode: "1004",
+                timezoneoffset: 1,
+                countryConfidence: 8,
+                cityConfidence: 5,
                 Center: {
-                  Latitude: 39.971031896331,
-                  Longitude: 116.33522679576237,
-                },
-                RegionType: 2,
-                SourceType: 11,
-              },
-              {
-                country: "Hong Kong",
-                timezoneoffset: 8,
-                countryConfidence: 9,
-                Center: {
-                  Latitude: 22.15,
-                  Longitude: 114.1,
+                  Latitude: 41.9961,
+                  Longitude: 21.4317,
                 },
                 RegionType: 2,
                 SourceType: 1,
@@ -620,10 +566,15 @@ export default class SydneyAIClient {
         messageType: "Context",
         messageId: "discover-web--page-ping-mriduna-----",
       });
+    } else {
+      obj.arguments[0].previousMessages.push({
+        author: "user",
+        description: "<EMPTY>",
+        contextType: "WebPage",
+        messageType: "Context",
+      });
     }
-    if (obj.arguments[0].previousMessages.length === 0) {
-      delete obj.arguments[0].previousMessages;
-    }
+
     let apology = false;
     const messagePromise = new Promise((resolve, reject) => {
       let replySoFar = [""];
@@ -712,8 +663,10 @@ export default class SydneyAIClient {
                 event?.arguments?.[0]?.throttling
                   ?.maxNumUserMessagesInConversation
               ) {
-                Config.maxNumUserMessagesInConversation =
-                  event?.arguments?.[0]?.throttling?.maxNumUserMessagesInConversation;
+                maxConv =
+                  event?.arguments?.[0]?.throttling
+                    ?.maxNumUserMessagesInConversation;
+                Config.maxNumUserMessagesInConversation = maxConv;
               }
               return;
             }
@@ -796,7 +749,7 @@ export default class SydneyAIClient {
                   text: replySoFar.join(""),
                 };
             // 获取到图片内容
-            if (messages.some(obj => obj.contentType === "IMAGE")) {
+            if (messages.some((obj) => obj.contentType === "IMAGE")) {
               message.imageTag = messages
                 .filter((m) => m.contentType === "IMAGE")
                 .map((m) => m.text)
@@ -823,9 +776,9 @@ export default class SydneyAIClient {
                   logger.warn("该账户的SERP请求已被限流");
                   logger.warn(JSON.stringify(event.item?.result));
                 } else {
-                  reject(
-                    `${event.item?.result.value}\n${event.item?.result.error}\n${event.item?.result.exception}`
-                  );
+                  reject({
+                    message: `${event.item?.result.value}\n${event.item?.result.error}\n${event.item?.result.exception}`,
+                  });
                 }
               } else {
                 reject("Unexpected message author.");
@@ -925,26 +878,20 @@ export default class SydneyAIClient {
         response: reply.text,
         details: reply,
         apology: Config.sydneyApologyIgnored && apology,
+        maxConv,
       };
     } catch (err) {
-      try {
-        await this.conversationsCache.set(conversationKey, conversation);
-        err.conversation = {
-          conversationSignature,
-          conversationId,
-          clientId,
-        };
-      } catch (err) {
-        logger.info(
-          logger.cyan("[ChatGPT-plugin]"),
-          logger.yellow(`[必应]`),
-          logger.red(`[SydneyClient]`),
-          "必应记录错误失败，可能是出现了验证码 :)"
-        );
-      }
+      await this.conversationsCache.set(conversationKey, conversation);
+      err.conversation = {
+        conversationSignature,
+        conversationId,
+        clientId,
+      };
+      err.maxConv = maxConv;
       throw err;
     }
   }
+
   async kblobImage(url) {
     if (!url) return false;
     const formData = new FormData();
@@ -952,7 +899,7 @@ export default class SydneyAIClient {
       "knowledgeRequest",
       JSON.stringify({
         imageInfo: {
-          url: url,
+          url,
         },
         knowledgeRequest: {
           invokedSkills: ["ImageById"],
@@ -972,8 +919,9 @@ export default class SydneyAIClient {
     if (this.opts.proxy) {
       fetchOptions.agent = proxy(Config.proxy);
     }
+    let accessible = !(await isCN()) || this.opts.proxy;
     let response = await fetch(
-      `https://www.bing.com/images/kblob`,
+      `${accessible ? "https://www.bing.com" : this.opts.host}/images/kblob`,
       fetchOptions
     );
     if (response.ok) {
@@ -983,6 +931,7 @@ export default class SydneyAIClient {
       return false;
     }
   }
+
   /**
    * Iterate through messages, building an array based on the parentMessageId.
    * Each message has an id and a parentMessageId. The parentMessageId is the id of the message that this message is a reply to.
@@ -1011,7 +960,7 @@ async function generateRandomIP() {
   if (ip) {
     return ip;
   }
-  const baseIP = "104.28.215.";
+  const baseIP = "62.77.140.";
   const subnetSize = 254; // 2^8 - 2
   const randomIPSuffix = Math.floor(Math.random() * subnetSize) + 1;
   ip = baseIP + randomIPSuffix;

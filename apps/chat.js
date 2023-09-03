@@ -234,6 +234,14 @@ export class chatgpt extends plugin {
           fnc: "xh",
         },
         {
+          reg: "^#星火助手",
+          fnc: "newxhBotConversation",
+        },
+        {
+          reg: "^#星火(搜索|查找)助手",
+          fnc: "searchxhBot",
+        },
+        {
           /** 命令正则匹配 */
           reg: toggleMode === "at" ? "^[^#][sS]*" : "^#chat[^gpt][sS]*",
           /** 执行方法 */
@@ -358,29 +366,59 @@ export class chatgpt extends plugin {
     const use =
       (userData.mode === "default" ? null : userData.mode) ||
       (await redis.get("CHATGPT:USE"));
-    await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`);
+    await redis.del(
+      `CHATGPT:WRONG_EMOTION:${
+        e.isGroup && Config.groupMerge
+          ? e.group_id.toString()
+          : e.sender.user_id
+      }`
+    );
     if (use === "claude") {
       // let client = new SlackClaudeClient({
       //   slackUserToken: Config.slackUserToken,
       //   slackChannelId: Config.slackChannelId
       // })
       // await client.endConversation()
-      await redis.del(`CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`);
+      await redis.del(
+        `CHATGPT:SLACK_CONVERSATION:${
+          e.isGroup && Config.groupMerge
+            ? e.group_id.toString()
+            : e.sender.user_id
+        }`
+      );
       await e.reply("claude对话已结束");
       return;
     }
     if (use === "claude2") {
-      await redis.del(`CHATGPT:CLAUDE2_CONVERSATION:${e.sender.user_id}`);
+      await redis.del(
+        `CHATGPT:CLAUDE2_CONVERSATION:${
+          e.isGroup && Config.groupMerge
+            ? e.group_id.toString()
+            : e.sender.user_id
+        }`
+      );
       await e.reply("claude2对话已结束");
       return;
     }
     if (use === "xh") {
-      await redis.del(`CHATGPT:CONVERSATIONS_XH:${e.sender.user_id}`);
+      await redis.del(
+        `CHATGPT:CONVERSATIONS_XH:${
+          e.isGroup && Config.groupMerge
+            ? e.group_id.toString()
+            : e.sender.user_id
+        }`
+      );
       await e.reply("星火对话已结束");
       return;
     }
     if (use === "bard") {
-      await redis.del(`CHATGPT:CONVERSATIONS_BARD:${e.sender.user_id}`);
+      await redis.del(
+        `CHATGPT:CONVERSATIONS_BARD:${
+          e.isGroup && Config.groupMerge
+            ? e.group_id.toString()
+            : e.sender.user_id
+        }`
+      );
       await e.reply("Bard对话已结束");
       return;
     }
@@ -389,7 +427,13 @@ export class chatgpt extends plugin {
     if (isAtMode) ats = ats.filter((item) => item.qq !== Bot.uin);
     if (ats.length === 0) {
       if (use === "api3") {
-        await redis.del(`CHATGPT:QQ_CONVERSATION:${e.sender.user_id}`);
+        await redis.del(
+          `CHATGPT:QQ_CONVERSATION:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`
+        );
         await this.reply(
           "已退出当前对话，该对话仍然保留。请@我进行聊天以开启新的对话",
           true
@@ -399,13 +443,23 @@ export class chatgpt extends plugin {
         (Config.toneStyle === "Sydney" || Config.toneStyle === "Custom")
       ) {
         let c = await redis.get(
-          `CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`
+          `CHATGPT:CONVERSATIONS_BING:${
+            e.isGroup && Config.groupMerge
+              ? e.group_id.toString()
+              : e.sender.user_id
+          }`
         );
         if (!c) {
           await this.reply("当前没有开启对话", true);
           return;
         } else {
-          await redis.del(`CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`);
+          await redis.del(
+            `CHATGPT:CONVERSATIONS_BING:${
+              e.isGroup && Config.groupMerge
+                ? e.group_id.toString()
+                : e.sender.user_id
+            }`
+          );
         }
         const conversation = {
           store: new KeyvFile({ filename: "cache.json" }),
@@ -1573,8 +1627,8 @@ export class chatgpt extends plugin {
         ]);
         return false;
       }
-      // 处理bard图片
-      if (use === "bard" && chatMessage?.images) {
+      // 处理bard和星火的图片
+      if ((use === "bard" || use === "xh") && chatMessage?.images) {
         chatMessage.images.forEach(async (element) => {
           await e.reply([element.tag, segment.image(element.url)]);
         });
@@ -1903,7 +1957,7 @@ export class chatgpt extends plugin {
       let quotemessage = [];
       if (chatMessage?.quote) {
         chatMessage.quote.forEach(function (item, index) {
-          if (item.text.trim() !== "") {
+          if (item.text && item.text.trim() !== "") {
             quotemessage.push(item);
           }
         });
@@ -2272,11 +2326,7 @@ export class chatgpt extends plugin {
       }
       return false;
     }
-    let prompt = _.replace(
-      e.raw_message.trimStart(),
-      `#bard`,
-      ""
-    ).trim();
+    let prompt = _.replace(e.raw_message.trimStart(), `#bard`, "").trim();
     prompt = prompt.replace("喵喵", "");
     if (prompt.length === 0) {
       return false;
@@ -3137,9 +3187,12 @@ export class chatgpt extends plugin {
           ssoSessionId,
           cache: cacheOptions,
         });
+        // 获取图片资源
+        const image = await getImg(e);
         let response = await client.sendMessage(
           prompt,
-          conversation?.conversationId
+          conversation?.conversationId,
+          image ? image[0] : undefined
         );
 
         return response;
@@ -3690,6 +3743,134 @@ export class chatgpt extends plugin {
       }
     }
     return true;
+  }
+  async newxhBotConversation(e) {
+    let botId = e.msg.replace(/^#星火助手/, "").trim();
+    if (Config.xhmode != "web") {
+      await e.reply("星火助手仅支持体验版使用", true);
+      return true;
+    }
+    if (!botId) {
+      await e.reply("无效助手id", true);
+    } else {
+      const ssoSessionId = Config.xinghuoToken;
+      if (!ssoSessionId) {
+        await e.reply(
+          `未绑定星火token，请使用#chatgpt设置星火token命令绑定token`,
+          true
+        );
+        return true;
+      }
+      let client = new XinghuoClient({
+        ssoSessionId,
+        cache: null,
+      });
+      try {
+        let chatId = await client.createChatList(botId);
+        let botInfoRes = await fetch(
+          `https://xinghuo.xfyun.cn/iflygpt/bot/getBotInfo?chatId=${chatId.chatListId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Cookie: "ssoSessionId=" + ssoSessionId + ";",
+              "User-Agent":
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/113.0.5672.69 Mobile/15E148 Safari/604.1",
+            },
+          }
+        );
+        if (botInfoRes.ok) {
+          let botInfo = await botInfoRes.json();
+          if (botInfo.flag) {
+            let ctime = new Date();
+            await redis.set(
+              `CHATGPT:CONVERSATIONS_XH:${
+                e.isGroup && Config.groupMerge
+                  ? e.group_id.toString()
+                  : e.sender.user_id
+              }`,
+              JSON.stringify({
+                sender: e.sender,
+                ctime,
+                utime: ctime,
+                num: 0,
+                conversation: {
+                  conversationId: {
+                    chatid: chatId.chatListId,
+                    botid: botId,
+                  },
+                },
+              }),
+              Config.conversationPreserveTime > 0
+                ? { EX: Config.conversationPreserveTime }
+                : {}
+            );
+            await e.reply(
+              `成功创建助手对话\n助手名称：${botInfo.data.bot_name}\n助手描述：${botInfo.data.bot_desc}`,
+              true
+            );
+          } else {
+            await e.reply(`创建助手对话失败,${botInfo.desc}`, true);
+          }
+        } else {
+          await e.reply(`创建助手对话失败,服务器异常`, true);
+        }
+      } catch (error) {
+        await e.reply(`创建助手对话失败 ${error}`, true);
+      }
+    }
+    return true;
+  }
+
+  async searchxhBot(e) {
+    let searchBot = e.msg.replace(/^#星火(搜索|查找)助手/, "").trim();
+    const ssoSessionId = Config.xinghuoToken;
+    if (!ssoSessionId) {
+      await e.reply(
+        `未绑定星火token，请使用#chatgpt设置星火token命令绑定token`,
+        true
+      );
+      return true;
+    }
+    const cacheresOption = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "ssoSessionId=" + ssoSessionId + ";",
+        "User-Agent":
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/113.0.5672.69 Mobile/15E148 Safari/604.1",
+      },
+      body: JSON.stringify({
+        botType: "",
+        pageIndex: 1,
+        pageSize: 45,
+        searchValue: searchBot,
+      }),
+    };
+    const searchBots = await fetch(
+      "https://xinghuo.xfyun.cn/iflygpt/bot/page",
+      cacheresOption
+    );
+    const bots = await searchBots.json();
+    if (Config.debug) {
+      logger.info(bots);
+    }
+    if (bots.code === 0) {
+      if (bots.data.pageList.length > 0) {
+        this.reply(
+          await makeForwardMsg(
+            this.e,
+            bots.data.pageList.map(
+              (msg) => `${msg.bot.botId} - ${msg.bot.botName}`
+            )
+          )
+        );
+      } else {
+        await e.reply(`未查到相关助手`, true);
+      }
+    } else {
+      await e.reply(`搜索助手失败`, true);
+    }
   }
 
   async emptyQueue(e) {
