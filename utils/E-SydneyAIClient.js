@@ -100,7 +100,6 @@ export default class ESydneyAIClient {
       this.conversationsCache = new Keyv(cacheOptions);
     }
   }
-
   async createNewConversation() {
     await this.initCache();
     const fetchOptions = {

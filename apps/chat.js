@@ -1976,6 +1976,7 @@ export class chatgpt extends plugin {
       for (let quote of quotemessage) {
         if (quote.imageLink) imgUrls.push(quote.imageLink);
       }
+
       if (useTTS) {
         // 缓存数据
         this.cacheContent(
