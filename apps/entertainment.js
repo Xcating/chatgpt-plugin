@@ -72,6 +72,12 @@ export class Entertainment extends plugin {
           reg: "^#测试打招呼",
           fnc: "testhello",
         },
+        {
+          reg: "^#(扔|投)骰子",
+          fnc: "roolDice"
+        }
+
+
       ],
     });
     if (HelloCronX === "") {
@@ -98,6 +104,15 @@ export class Entertainment extends plugin {
         },
       ];
     }
+  }
+  async randomDice() {
+    var dice = Math.floor(Math.random() * 6) + 1;
+    return dice;
+  }
+  async rollDice(e) {
+    var result = rollDice();
+    logger.info("你掷出了 " + result + " 点！");
+    e.reply()
   }
   async testhello(e) {
     if (Config.debug) {
