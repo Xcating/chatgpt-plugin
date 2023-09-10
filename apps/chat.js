@@ -96,6 +96,7 @@ import { SetTitleTool } from "../utils/tools/SetTitleTool.js";
 import { ClaudeAIClient } from "../utils/claude.ai/index.js";
 import fs from "fs";
 let checkNumber;
+const ChatRulePrefix = Config.ChatRulePrefix;
 const BingRulePrefix = Config.BingRulePrefix;
 const APIRulePrefix = Config.APIRulePrefix;
 const API3RulePrefix = Config.API3RulePrefix;
@@ -243,8 +244,13 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
-          reg: toggleMode === "at" ? "^[^#][sS]*" : "^#chat[^gpt][sS]*",
+          reg: `^#(chat|(${ChatRulePrefix}))[^gpt][sS]*`,
           /** 执行方法 */
+          fnc: "chatgpt",
+          log: false,
+        },
+        {
+          reg: '^[^#][sS]*',
           fnc: "chatgpt",
           log: false,
         },

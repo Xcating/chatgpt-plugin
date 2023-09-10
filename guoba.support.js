@@ -235,19 +235,6 @@ export function supportGuoba() {
           },
         },
         {
-          field: "toggleMode",
-          label: "触发方式",
-          bottomHelpMessage:
-            "at模式下只有at机器人才会回复。#chat模式下不需要at，但需要添加前缀#chat",
-          component: "Select",
-          componentProps: {
-            options: [
-              { label: "at", value: "at" },
-              { label: "#chat", value: "prefix" },
-            ],
-          },
-        },
-        {
           field: "allowOtherMode",
           label: "允许其他模式",
           bottomHelpMessage:
@@ -328,6 +315,13 @@ export function supportGuoba() {
         {
           label: "以下为前缀配置",
           component: "Divider",
+        },
+        {
+          field: "ChatRulePrefix",
+          label: "默认对话前缀",
+          bottomHelpMessage:
+            "配置完需要重启，默认为chat，支持用|分隔开多个前缀",
+          component: "Input",
         },
         {
           field: "BingRulePrefix",
