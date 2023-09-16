@@ -16,16 +16,6 @@ if (typeof proxy !== 'function') {
     return new HttpsProxyAgent.HttpsProxyAgent(p)
   }
 }
-const use =
-(userData.mode === "default" ? null : userData.mode) ||
-(await redis.get("CHATGPT:USE"));
-await redis.del(
-`CHATGPT:WRONG_EMOTION:${
-  e.isGroup && Config.groupMerge
-    ? e.group_id.toString()
-    : e.sender.user_id
-}`
-);
 export class SlackClaudeClient {
   constructor (props) {
     this.config = props
@@ -132,16 +122,6 @@ export class SlackClaudeClient {
       }
       return response
     } else {
-      if(use=="Albus"){
-        let postResponse = await this.app.client.chat.postMessage({
-          as_user: true,
-          text: `<@${Config.slackClaudeUserId}> ${prompt}`,
-          token: this.config.slackUserToken,
-          channel: channel.id,
-          thread_ts: conversationId
-        })
-    }
-    else{
       let postResponse = await this.app.client.chat.postMessage({
         as_user: true,
         text: `<@${Config.slackClaudeUserId}> ${prompt}`,
@@ -149,7 +129,6 @@ export class SlackClaudeClient {
         channel: channel.id,
         thread_ts: conversationId
       })
-  }
       let postTs = postResponse.ts
       let response = '_Typing…_'
       let tryTimes = 0

@@ -729,7 +729,7 @@ export function supportGuoba() {
           component: "Input",
         },
         {
-          label: "以下为Slack Claude方式的配置，注意，可以把Slack成员id填成Albus的，可以免费使用gpt-4",
+          label: "以下为Slack Claude方式的配置",
           component: "Divider",
         },
         {
