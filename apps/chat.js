@@ -230,6 +230,12 @@ export class chatgpt extends plugin {
         },
         {
           /** 命令正则匹配 */
+          reg: "^#Albus[sS]*",
+          /** 执行方法 */
+          fnc: "Albus",
+        },
+        {
+          /** 命令正则匹配 */
           reg: "^#xh[sS]*",
           /** 执行方法 */
           fnc: "xh",
@@ -1859,6 +1865,7 @@ export class chatgpt extends plugin {
       let response = chatMessage?.text?.replace("\n\n\n", "\n");
       // 过滤无法正常显示的emoji
       if (use === "claude") response = response.replace(/:[a-zA-Z_]+:/g, "");
+      if (use === "Albus") response = response.replace(/:[a-zA-Z_]+:/g, "");
       let mood = "blandness";
       if (!response) {
         await e.reply("没有任何回复", true);
@@ -1867,7 +1874,7 @@ export class chatgpt extends plugin {
       let emotion, emotionDegree;
       if (
         Config.ttsMode === "azure" &&
-        (use === "claude" || use === "bing") &&
+        (use === "claude" || use === "bing" || use == "Albus") &&
         (await AzureTTS.getEmotionPrompt(e))
       ) {
         let ttsRoleAzure = userReplySetting.ttsRoleAzure;
@@ -2422,7 +2429,24 @@ export class chatgpt extends plugin {
     await this.abstractChat(e, prompt, "claude");
     return true;
   }
-
+  async Albus(e) {
+    if (!Config.allowOtherMode) {
+      return false;
+    }
+    let ats = e.message.filter((m) => m.type === "at");
+    if (!e.atme && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark("艾特别人了，没艾特我，忽略#Albus");
+      }
+      return false;
+    }
+    let prompt = _.replace(e.raw_message.trimStart(), "#Albus", "").trim();
+    if (prompt.length === 0) {
+      return false;
+    }
+    await this.abstractChat(e, prompt, "Albus");
+    return true;
+  }
   async xh(e) {
     if (!Config.allowOtherMode) {
       return false;
@@ -3122,6 +3146,41 @@ export class chatgpt extends plugin {
           text,
         };
       }
+      case "Albus": {
+        let client = new SlackClaudeClient({
+          slackUserToken: Config.slackUserToken,
+          slackChannelId: Config.slackChannelId,
+        });
+        let conversationId = await redis.get(
+          `CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`
+        );
+        if (!conversationId) {
+          // 如果是新对话
+          if (
+            Config.slackClaudeEnableGlobalPreset &&
+            (useCast?.slack || Config.slackClaudeGlobalPreset)
+          ) {
+            // 先发送设定
+            let prompt = useCast?.slack || Config.slackClaudeGlobalPreset;
+            let emotion = await AzureTTS.getEmotionPrompt(e);
+            if (emotion) {
+              prompt = prompt + "\n" + emotion;
+            }
+            await client.sendMessage(prompt, e);
+            logger.info(
+              logger.cyan("[ChatGPT-plugin]"),
+              logger.yellow(`[聊天]`),
+              logger.red(`[Claude]`),
+              "claudeFirst:",
+              prompt
+            );
+          }
+        }
+        let text = await client.sendMessage(prompt, e);
+        return {
+          text,
+        };
+      }
       case "claude2": {
         let { conversationId } = conversation;
         let client = new ClaudeAIClient({
@@ -3695,6 +3754,63 @@ export class chatgpt extends plugin {
   }
 
   async newClaudeConversation(e) {
+    let presetName = e.msg.replace(/^#claude开启新对话/, "").trim();
+    let client = new SlackClaudeClient({
+      slackUserToken: Config.slackUserToken,
+      slackChannelId: Config.slackChannelId,
+    });
+    let response;
+    if (!presetName || presetName === "空" || presetName === "无设定") {
+      let conversationId = await redis.get(
+        `CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`
+      );
+      if (conversationId) {
+        // 如果有对话进行中，先删除
+        logger.info(
+          logger.cyan("[ChatGPT-plugin]"),
+          logger.yellow(`[聊天]`),
+          logger.red(`[Claude]`),
+          "开启Claude新对话，但旧对话未结束，自动结束上一次对话"
+        );
+        await redis.del(`CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`);
+        await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`);
+      }
+      response = await client.sendMessage("", e);
+      await e.reply(response, true);
+    } else {
+      let preset = getPromptByName(presetName);
+      if (!preset) {
+        await e.reply("没有这个设定", true);
+      } else {
+        let conversationId = await redis.get(
+          `CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`
+        );
+        if (conversationId) {
+          // 如果有对话进行中，先删除
+          logger.info(
+            logger.cyan("[ChatGPT-plugin]"),
+            logger.yellow(`[聊天]`),
+            logger.red(`[Claude]`),
+            "开启Claude新对话，但旧对话未结束，自动结束上一次对话"
+          );
+          await redis.del(`CHATGPT:SLACK_CONVERSATION:${e.sender.user_id}`);
+          await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`);
+        }
+        logger.info(
+          logger.cyan("[ChatGPT-plugin]"),
+          logger.yellow(`[聊天]`),
+          logger.red(`[Claude]`),
+          "send preset: " + preset.content
+        );
+        response =
+          (await client.sendMessage(preset.content, e)) +
+          (await client.sendMessage(await AzureTTS.getEmotionPrompt(e), e));
+        await e.reply(response, true);
+      }
+    }
+    return true;
+  }
+  async newAlbusConversation(e) {
     let presetName = e.msg.replace(/^#claude开启新对话/, "").trim();
     let client = new SlackClaudeClient({
       slackUserToken: Config.slackUserToken,
