@@ -2452,7 +2452,7 @@ export class chatgpt extends plugin {
     suggest = "",
     imgUrls = []
   ) {
-    let cacheData = { file: "", cacheUrl: Config.cacheUrl, status: "" };
+    let cacheData = { file: '', status: '' }
     cacheData.file = randomString();
     const cacheresOption = {
       method: "POST",
@@ -2551,57 +2551,7 @@ export class chatgpt extends plugin {
         );
       }
     } else {
-      if (Config.cacheEntry) cacheData.file = randomString();
-      const cacheresOption = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: {
-            content: new Buffer.from(content).toString("base64"),
-            prompt: new Buffer.from(prompt).toString("base64"),
-            senderName: e.sender.nickname,
-            style: Config.toneStyle,
-            mood,
-            quote,
-          },
-          model: use,
-          bing: use === "bing",
-          entry: Config.cacheEntry ? cacheData.file : "",
-        }),
-      };
-      if (Config.cacheEntry) {
-        fetch(`${Config.cacheUrl}/cache`, cacheresOption);
-      } else {
-        const cacheres = await fetch(
-          `${Config.cacheUrl}/cache`,
-          cacheresOption
-        );
-        if (cacheres.ok) {
-          cacheData = Object.assign({}, cacheData, await cacheres.json());
-        }
-      }
-      await e.reply(
-        await render(
-          e,
-          "chatgpt-plugin",
-          template,
-          {
-            content: new Buffer.from(content).toString("base64"),
-            prompt: new Buffer.from(prompt).toString("base64"),
-            senderName: e.sender.nickname,
-            quote: quote.length > 0,
-            quotes: quote,
-            cache: cacheData,
-            style: Config.toneStyle,
-            mood,
-            version,
-          },
-          { retType: Config.quoteReply ? "base64" : "" }
-        ),
-        e.isGroup && Config.quoteReply
-      );
+      if (cacheData.error || cacheData.status != 200) { await this.reply(`出现错误：${cacheData.error || 'server error ' + cacheData.status}`, true) } else { await e.reply(await renderUrl(e, (Config.viewHost ? `${Config.viewHost}/` : `http://127.0.0.1:${Config.serverPort || 3321}/`) + `page/${cacheData.file}?qr=${Config.showQRCode ? 'true' : 'false'}`, { retType: Config.quoteReply ? 'base64' : '', Viewport: { width: parseInt(Config.chatViewWidth), height: parseInt(parseInt(Config.chatViewWidth) * 0.56) }, func: (parseFloat(Config.live2d) && !Config.viewHost) ? 'window.Live2d == true' : '', deviceScaleFactor: parseFloat(Config.cloudDPR) }), e.isGroup && Config.quoteReply) }
     }
   }
 
@@ -2949,33 +2899,27 @@ export class chatgpt extends plugin {
               typeof message === "string" &&
               message.indexOf("UnauthorizedRequest") > -1
             ) {
-              // token过期了
-              // let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
-              // const badBingToken = bingTokens.findIndex(element => element.Token === bingToken)
-              // // 可能是微软抽风，给三次机会
-              // if (bingTokens[badBingToken].exception) {
-              //   if (bingTokens[badBingToken].exception <= 3) {
-              //     bingTokens[badBingToken].exception += 1
-              //   } else {
-              //     bingTokens[badBingToken].exception = 0
-              //     bingTokens[badBingToken].State = '过期'
-              //   }
-              // } else {
-              //   bingTokens[badBingToken].exception = 1
-              // }
-              // await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingTokens))
-              logger.warn(`token${bingToken}疑似不存在或已过期，再试试`);
-              retry = retry - 0.1;
+              let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
+              const badBingToken = bingTokens.findIndex(element => element.Token === bingToken)
+              // 可能是微软抽风，给三次机会
+              if (bingTokens[badBingToken].exception) {
+                if (bingTokens[badBingToken].exception <= 3) {
+                  bingTokens[badBingToken].exception += 1
+                } else {
+                  bingTokens[badBingToken].exception = 0
+                  bingTokens[badBingToken].State = '过期'
+                }
             } else {
-              retry--;
-              errorMessage =
-                message ===
-                "Timed out waiting for response. Try enabling debug mode to see more information."
-                  ? reply
-                    ? `${reply}\n不行了，我的大脑过载了，处理不过来了!`
-                    : "必应的小脑瓜不好使了，不知道怎么回答！"
-                  : message;
+              bingTokens[badBingToken].exception = 1
             }
+            await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingTokens))
+            errorMessage = 'UnauthorizedRequest：必应token不正确或已过期'
+            // logger.warn(`token${bingToken}疑似不存在或已过期，再试试`)
+            // retry = retry - 1
+          } else {
+            retry--
+            errorMessage = message === 'Timed out waiting for response. Try enabling debug mode to see more information.' ? (reply ? `${reply}\n不行了，我的大脑过载了，处理不过来了!` : '必应的小脑瓜不好使了，不知道怎么回答！') : message
+          }
           }
         } while (retry > 0);
         if (errorMessage) {
@@ -2986,7 +2930,7 @@ export class chatgpt extends plugin {
           };
         } else {
           return {
-            text: response.response,
+            text: response?.response,
             quote: response.quote,
             suggestedResponses: response.suggestedResponses,
             conversationId: response.conversationId,
@@ -3186,9 +3130,8 @@ export class chatgpt extends plugin {
         };
         const ssoSessionId = Config.xinghuoToken;
         if (!ssoSessionId) {
-          throw new Error(
-            "未绑定星火token，请使用#chatgpt设置星火token命令绑定token。（获取对话页面的ssoSessionId cookie值）"
-          );
+                    //throw new Error('未绑定星火token，请使用#chatgpt设置星火token命令绑定token。（获取对话页面的ssoSessionId cookie值）')
+                    logger.warn(`未绑定星火token，请使用#chatgpt设置星火token命令绑定token。（获取对话页面的ssoSessionId cookie值）`)
         }
         let client = new XinghuoClient({
           ssoSessionId,
@@ -3196,11 +3139,11 @@ export class chatgpt extends plugin {
         });
         // 获取图片资源
         const image = await getImg(e);
-        let response = await client.sendMessage(
-          prompt,
-          conversation?.conversationId,
-          image ? image[0] : undefined
-        );
+        let response = await client.sendMessage(prompt, {
+          e,
+          chatId: conversation?.conversationId,
+          image: image ? image[0] : undefined
+        })
 
         return response;
       }

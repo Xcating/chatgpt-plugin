@@ -58,7 +58,11 @@ pnpm i
 [🥑生命之光🥑](https://github.com/ikechan8370/chatgpt-plugin)
 [🥑原作者🥑](https://github.com/ikechan8370)
 [🥑鳄梨API3反代🥑](https://github.com/ikechan8370/node-chatgpt-proxy)
+[文档1（建设中）](https://chatgpt-docs.err0r.top/)
+[插件常见问题（鹤望兰版）](https://www.wolai.com/4FCxxWAdjbrHF29MCJmAQK)
+[Yunzai常见问题（LUCK小运版）](https://www.wolai.com/oA43vuW71aBnv7UsEysn4T)
 [🥑云崽memes插件🥑](https://github.com/ikechan8370/yunzai-meme)
+
 
 ### 🥵如果觉得这个插件有趣或者对你有帮助，请给源项目点一个star吧！
 
@@ -110,6 +114,7 @@ Node.js >= 18 / Node.js >= 14(with node-fetch)
 * 2023-05-12 支持星火大模型
 * 2023-05-29 支持gpt-4 API.必应无需cookie即可对话（Sydney和自设定模式）
 * 2023-07 支持智能模式，机器人可以实现禁言、群名片/头衔（需给机器人管理员/群主）、分享音乐视频、主动发音频、对接ap,sr和喵喵等插件、联网搜索等，需api模式0613系列模型。智能模式所需的额外api和搜索api分别可以参考[chatgpt-plugin-extras](https://github.com/ikechan8370/chatgpt-plugin-extras) 和 [search-api](https://github.com/ikechan8370/search-api) 自行搭建，其中后者提供了一个公益版本，前者可使用[huggingface](https://huggingface.co/spaces/ikechan8370/cp-extra)部署
+* 2023-09-10 支持来自claude.ai的claude-2模型
 
 ---
 ### 相关配置

@@ -261,19 +261,6 @@ export function supportGuoba() {
           component: "Switch",
         },
         {
-          field: "cacheUrl",
-          label: "渲染服务器地址",
-          bottomHelpMessage: "用于缓存图片模式会话内容并渲染的服务器地址",
-          component: "Input",
-        },
-        {
-          field: "cacheEntry",
-          label: "预制渲染服务器访问代码",
-          bottomHelpMessage:
-            "图片内容渲染服务器开启预制访问代码，当渲染服务器访问较慢时可以开启,但无法保证访问代码可以正常访问页面",
-          component: "Switch",
-        },
-        {
           field: "drawCD",
           label: "绘图CD",
           helpMessage: "单位：秒",
@@ -794,6 +781,30 @@ export function supportGuoba() {
           label: "claude2 SessionKey",
           bottomHelpMessage: "claude.ai Cookie中的SessionKey",
           component: "Input",
+        },
+        {
+          field: 'claudeAIReverseProxy',
+          label: 'claude2 反代',
+          bottomHelpMessage: 'claude.ai 的反代。或许可以参考https://github.com/ikechan8370/sydney-ws-proxy/tree/claude.ai搭建',
+          component: 'Input'
+        },
+        {
+          field: 'claudeAIJA3',
+          label: 'claude2浏览器指纹',
+          bottomHelpMessage: 'claude.ai使用的浏览器TLS指纹，去https://scrapfly.io/web-scraping-tools/ja3-fingerprint或https://ja3.zone/check查看。如果用了反代就不用管',
+          component: 'Input'
+        },
+        {
+          field: 'claudeAIUA',
+          label: 'claude2浏览器UA',
+          bottomHelpMessage: 'claude.ai使用的浏览器UA，https://scrapfly.io/web-scraping-tools/http2-fingerprint或https://ja3.zone/check查看。如果用了反代就不用管',
+          component: 'Input'
+        },
+        {
+          field: 'claudeAITimeout',
+          label: 'claude2超时时间',
+          bottomHelpMessage: '等待响应的超时时间，单位为秒，默认为120。如果不使用反代而是使用代理可以适当调低。',
+          component: 'InputNumber'
         },
         {
           label: "以下为AzureChatGPT的配置",
