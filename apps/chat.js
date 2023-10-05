@@ -2898,17 +2898,24 @@ export class chatgpt extends plugin {
               message &&
               typeof message === "string" &&
               message.indexOf("UnauthorizedRequest") > -1
-            ) {
+            ) 
+            // token过期了
+            {
               let bingTokens = JSON.parse(await redis.get('CHATGPT:BING_TOKENS'))
               const badBingToken = bingTokens.findIndex(element => element.Token === bingToken)
               // 可能是微软抽风，给三次机会
-              if (bingTokens[badBingToken].exception) {
-                if (bingTokens[badBingToken].exception <= 3) {
-                  bingTokens[badBingToken].exception += 1
+              if (badBingToken > 0) {
+                // 可能是微软抽风，给三次机会
+                if (bingTokens[badBingToken]?.exception) {
+                  if (bingTokens[badBingToken].exception <= 3) {
+                    bingTokens[badBingToken].exception += 1
+                  } else {
+                    retry = retry - 1
+                  }
                 } else {
-                  bingTokens[badBingToken].exception = 0
-                  bingTokens[badBingToken].State = '过期'
+                  bingTokens[badBingToken].exception = 1
                 }
+                await redis.set('CHATGPT:BING_TOKENS', JSON.stringify(bingTokens))
             } else {
               bingTokens[badBingToken].exception = 1
             }
