@@ -157,10 +157,7 @@ export default class ESydneyAIClient {
         fetchOptions
       );
     }
-    let response = await fetch(
-      `${this.opts.host}/turing/conversation/create`,
-      fetchOptions
-    );
+    let response = await fetch(`${this.opts.host}/turing/conversation/create?bundleVersion=1.1055.6`, fetchOptions)
 
     let text = await response.text();
     let retry = 10;
@@ -187,7 +184,11 @@ export default class ESydneyAIClient {
       );
     }
     try {
-      return JSON.parse(text);
+      let r = JSON.parse(text)
+      if (!r.conversationSignature) {
+        r.encryptedconversationsignature = response.headers.get('x-sydney-encryptedconversationsignature')
+      }
+      return r
     } catch (err) {
       logger.error(
         "创建sydney对话失败: status code: " +
@@ -199,7 +200,7 @@ export default class ESydneyAIClient {
     }
   }
 
-  async createWebSocketConnection() {
+  async createWebSocketConnection (encryptedconversationsignature = '') {
     await this.initCache();
     // let WebSocket = await getWebSocket()
     return new Promise((resolve, reject) => {
@@ -214,10 +215,11 @@ export default class ESydneyAIClient {
           .replace("http://", "ws://");
       }
       logger.mark(`use sydney websocket host: ${sydneyHost}`);
-      let ws = new WebSocket(sydneyHost + "/sydney/ChatHub", undefined, {
-        agent,
-        origin: "https://edgeservices.bing.com",
-      });
+      let host = sydneyHost + '/sydney/ChatHub'
+      if (encryptedconversationsignature) {
+        host += `?sec_access_token=${encodeURIComponent(encryptedconversationsignature)}`
+      }
+      let ws = new WebSocket(host, undefined, { agent, origin: 'https://edgeservices.bing.com' })
       ws.on("error", (err) => {
         console.error(err);
         reject(err);
@@ -313,6 +315,7 @@ export default class ESydneyAIClient {
       masterName,
       messageType = "Chat",
     } = opts;
+    let encryptedconversationsignature = ''
     //if (messageType === 'Chat') {
     //  logger.warn('该Bing账户token已被限流，降级至使用非搜索模式。本次对话AI将无法使用Bing搜索返回的内容')
     //}
@@ -337,11 +340,7 @@ export default class ESydneyAIClient {
           `UnauthorizedRequest: ${createNewConversationResponse.result.message}`
         );
       }
-      if (
-        !createNewConversationResponse.conversationSignature ||
-        !createNewConversationResponse.conversationId ||
-        !createNewConversationResponse.clientId
-      ) {
+      if (!createNewConversationResponse.conversationId || !createNewConversationResponse.clientId) {
         const resultValue = createNewConversationResponse.result?.value;
         if (resultValue) {
           throw new Error(
@@ -356,7 +355,7 @@ export default class ESydneyAIClient {
           )}`
         );
       }
-      ({ conversationSignature, conversationId, clientId } =
+      ({ conversationSignature, conversationId, clientId, encryptedconversationsignature} =
         createNewConversationResponse);
     }
     let pureSydney = Config.toneStyle === "Sydney";
@@ -465,7 +464,7 @@ export default class ESydneyAIClient {
       role: "User",
       message,
     };
-    const ws = await this.createWebSocketConnection();
+    const ws = await this.createWebSocketConnection(encryptedconversationsignature);
     if (Config.debug) {
       logger.mark("sydney websocket constructed successful");
     }
@@ -495,73 +494,68 @@ export default class ESydneyAIClient {
     let maxConv = Config.maxNumUserMessagesInConversation;
     const currentDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     const imageDate = await this.kblobImage(opts.imageUrl);
+    let argument0 = {
+      source: 'cib',
+      optionsSets,
+      allowedMessageTypes: ['ActionRequest', 'Chat', 'Context',
+        // 'InternalSearchQuery', 'InternalSearchResult', 'Disengaged', 'InternalLoaderMessage', 'Progress', 'RenderCardRequest', 'AdsQuery',
+        'SemanticSerp', 'GenerateContentQuery', 'SearchQuery'],
+      sliceIds: [
+
+      ],
+      requestId: crypto.randomUUID(),
+      traceId: genRanHex(32),
+      scenario: 'Underside',
+      verbosity: 'verbose',
+      isStartOfSession: invocationId === 0,
+      message: {
+        locale: 'zh-CN',
+        market: 'zh-CN',
+        region: 'WW',
+        location: 'lat:47.639557;long:-122.128159;re=1000m;',
+        locationHints: [
+          {
+            country: 'Macedonia',
+            state: 'Centar',
+            city: 'Skopje',
+            zipcode: '1004',
+            timezoneoffset: 1,
+            countryConfidence: 8,
+            cityConfidence: 5,
+            Center: {
+              Latitude: 41.9961,
+              Longitude: 21.4317
+            },
+            RegionType: 2,
+            SourceType: 1
+          }
+        ],
+        author: 'user',
+        inputMethod: 'Keyboard',
+        imageUrl: imageDate.blobId ? `https://www.bing.com/images/blob?bcid=${imageDate.blobId}` : undefined,
+        originalImageUrl: imageDate.processedBlobId ? `https://www.bing.com/images/blob?bcid=${imageDate.processedBlobId}` : undefined,
+        text: message,
+        messageType,
+        userIpAddress: await generateRandomIP(),
+        timestamp: currentDate
+        // messageType: 'SearchQuery'
+      },
+      tone: 'Creative',
+      conversationSignature,
+      participant: {
+        id: clientId
+      },
+      spokenTextMode: 'None',
+      conversationId,
+      previousMessages
+    }
+    if (encryptedconversationsignature) {
+      delete argument0.conversationSignature
+    }
     console.log(imageDate);
     const obj = {
       arguments: [
-        {
-          source: "cib",
-          optionsSets,
-          allowedMessageTypes: [
-            "ActionRequest",
-            "Chat",
-            "Context",
-            // 'InternalSearchQuery', 'InternalSearchResult', 'Disengaged', 'InternalLoaderMessage', 'Progress', 'RenderCardRequest', 'AdsQuery',
-            "SemanticSerp",
-            "GenerateContentQuery",
-            "SearchQuery",
-          ],
-          sliceIds: [],
-          traceId: genRanHex(32),
-          isStartOfSession: invocationId === 0,
-          message: {
-            locale: "zh-CN",
-            market: "zh-CN",
-            region: "HK",
-            location: "lat:47.639557;long:-122.128159;re=1000m;",
-            locationHints: [
-              {
-                Center: {
-                  Latitude: 39.971031896331,
-                  Longitude: 116.33522679576237,
-                },
-                RegionType: 2,
-                SourceType: 11,
-              },
-              {
-                country: "Hong Kong",
-                timezoneoffset: 8,
-                countryConfidence: 9,
-                Center: {
-                  Latitude: 22.15,
-                  Longitude: 114.1,
-                },
-                RegionType: 2,
-                SourceType: 1,
-              },
-            ],
-            author: "user",
-            inputMethod: "Keyboard",
-            imageUrl: imageDate.blobId
-              ? `https://www.bing.com/images/blob?bcid=${imageDate.blobId}`
-              : undefined,
-            originalImageUrl: imageDate.processedBlobId
-              ? `https://www.bing.com/images/blob?bcid=${imageDate.processedBlobId}`
-              : undefined,
-            text: message,
-            messageType,
-            userIpAddress: await generateRandomIP(),
-            timestamp: currentDate,
-            // messageType: 'SearchQuery'
-          },
-          tone: "Creative",
-          conversationSignature,
-          participant: {
-            id: clientId,
-          },
-          spokenTextMode: "None",
-          conversationId,
-          previousMessages,
-        },
+        argument0
       ],
       invocationId: invocationId.toString(),
       target: "chat",
