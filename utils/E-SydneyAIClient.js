@@ -2,6 +2,7 @@ let fetch;
 let Headers;
 let Request;
 let Response;
+import Version from './version.js'
 try {
   fetch = (await import("node-fetch")).default;
   Headers = (await import("node-fetch")).default;
@@ -122,8 +123,7 @@ export default class ESydneyAIClient {
         //"x-ms-client-request-id": crypto.randomUUID(),
         // "x-ms-useragent":"azsdk-js-api-client-factory/1.0.0-beta.1 core-rest-pipeline/1.10.3 OS/macOS",
         // cookie: this.opts.cookies || `_U=${this.opts.userToken}`,
-        Referer:
-          "https://edgeservices.bing.com/edgesvc/chat?udsframed=1&form=SHORUN&clientscopes=chat,noheader,channelstable,",
+        Referer: 'https://edgeservices.bing.com/edgesvc/chat?udsframed=1&form=SHORUN&clientscopes=chat,noheader,channelstable,'
         //"Referrer-Policy": "origin-when-cross-origin",
         // Workaround for request being blocked due to geolocation
         //"x-forwarded-for": "1.1.1.1",
@@ -595,7 +595,7 @@ export default class ESydneyAIClient {
       `;
         context += chats
           .map((chat) => {
-            let sender = chat.sender || {};
+            let sender = chat.sender || chat || {};
             // if (sender.user_id === Bot.uin && chat.raw_message.startsWith('建议的回复')) {
             if (chat.raw_message.startsWith("建议的回复")) {
               // 建议的回复太容易污染设定导致对话太固定跑偏了

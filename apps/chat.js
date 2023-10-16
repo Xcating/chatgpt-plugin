@@ -28,6 +28,7 @@ try {
 }
 import AzureTTS from "../utils/tts/microsoft-azure.js";
 import VoiceVoxTTS from "../utils/tts/voicevox.js";
+import Version from '../utils/version.js'
 import {
   render,
   renderUrl,
@@ -248,12 +249,12 @@ export class chatgpt extends plugin {
           reg: `^#(chat|(${ChatRulePrefix}))[^gpt][sS]*`,
           /** 执行方法 */
           fnc: "chatgpt",
-          log: false,
+          log: true,
         },
         {
           reg: '^[^#][sS]*',
           fnc: "chatgpt",
-          log: false,
+          log: true,
         },
         {
           reg: "^#(chatgpt)?(对话|聊天|说话)列表$",
@@ -1204,16 +1205,17 @@ export class chatgpt extends plugin {
    * #chatgpt
    */
   async chatgpt(e) {
+    let msg = Version.isTrss ? e.msg : e.raw_message
     let prompt;
     if (this.toggleMode === "at") {
-      if (!e.raw_message || e.msg?.startsWith("#")) {
+      if (!msg || e.msg?.startsWith("#")) {
         return false;
       }
       if ((e.isGroup || e.group_id) && !(e.atme || e.atBot)) {
         return false;
       }
       if (e.user_id == getUin(e)) return false;
-      prompt = e.raw_message.trim();
+      prompt = msg.trim();
       if (e.isGroup && typeof this.e.group.getMemberMap === "function") {
         let mm = await this.e.group.getMemberMap();
         let me = mm.get(getUin(e)) || {}; 
@@ -2691,6 +2693,7 @@ export class chatgpt extends plugin {
                 typeof e.group.getMemberMap === "function"
               ) {
                 try {
+                  let memberMap = await e.group.getMemberMap()
                   opt.groupId = e.group_id;
                   opt.qq = e.sender.user_id;
                   opt.nickname = e.sender.card;
@@ -2723,7 +2726,9 @@ export class chatgpt extends plugin {
                   let mm = await e.group.getMemberMap();
                   chats.forEach((chat) => {
                     let sender = mm.get(chat.sender.user_id);
-                    chat.sender = sender;
+                    if (sender) {
+                      chat.sender = sender
+                    }
                   });
                   // console.log(chats)
                   opt.chats = chats;
