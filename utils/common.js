@@ -115,7 +115,7 @@ export async function makeForwardMsg(e, msg = [], dec = "") {
   } else if (e.friend) {
     forwardMsg = await e.friend.makeForwardMsg(forwardMsg);
   } else {
-    return false;
+    msg.join('\n')
   }
   let forwardMsg_json = forwardMsg.data;
   if (typeof (forwardMsg_json) === 'object') {

@@ -249,12 +249,12 @@ export class chatgpt extends plugin {
           reg: `^#(chat|(${ChatRulePrefix}))[^gpt][sS]*`,
           /** 执行方法 */
           fnc: "chatgpt",
-          log: true,
+          log: false,
         },
         {
           reg: '^[^#][sS]*',
           fnc: "chatgpt",
-          log: true,
+          log: false,
         },
         {
           reg: "^#(chatgpt)?(对话|聊天|说话)列表$",

@@ -59,7 +59,7 @@ pnpm i
 [🥑原作者🥑](https://github.com/ikechan8370)
 [🥑鳄梨API3反代🥑](https://github.com/ikechan8370/node-chatgpt-proxy)
 [文档1（建设中）](https://chatgpt-docs.err0r.top/)
-[插件常见问题（鹤望兰版）](https://www.wolai.com/4FCxxWAdjbrHF29MCJmAQK)
+[插件常见问题（鹤望兰版）](https://chatgptplugin.ikechan8370.com/guide/)
 [Yunzai常见问题（LUCK小运版）](https://www.wolai.com/oA43vuW71aBnv7UsEysn4T)
 [🥑云崽memes插件🥑](https://github.com/ikechan8370/yunzai-meme)
 
