@@ -1206,84 +1206,73 @@ export class chatgpt extends plugin {
    */
   async chatgpt(e) {
     let msg = Version.isTrss ? e.msg : e.raw_message
-    let prompt;
-    if (this.toggleMode === "at") {
-      if (!msg || e.msg?.startsWith("#")) {
-        return false;
+    let prompt
+    if (this.toggleMode === 'at') {
+      if (!msg || e.msg?.startsWith('#')) {
+        return false
       }
       if ((e.isGroup || e.group_id) && !(e.atme || e.atBot)) {
-        return false;
+        return false
       }
-      if (e.user_id == getUin(e)) return false;
-      prompt = msg.trim();
-      if (e.isGroup && typeof this.e.group.getMemberMap === "function") {
-        let mm = await this.e.group.getMemberMap();
-        let me = mm.get(getUin(e)) || {}; 
-        let card = me.card;
-        let nickname = me.nickname;
-        if (nickname && card) {
-          if (nickname.startsWith(card)) {
-            // 例如nickname是"滚筒洗衣机"，card是"滚筒"
-            prompt = prompt.replace(`@${nickname}`, "").trim();
-          } else if (card.startsWith(nickname)) {
-            // 例如nickname是"十二"，card是"十二｜本月已发送1000条消息"
-            prompt = prompt.replace(`@${card}`, "").trim();
-            // 如果是好友，显示的还是昵称
-            prompt = prompt.replace(`@${nickname}`, "").trim();
-          } else {
-            // 互不包含，分别替换
-            if (nickname) {
-              prompt = prompt.replace(`@${nickname}`, "").trim();
+      if (e.user_id == getUin(e)) return false
+      prompt = msg.trim()
+      try {
+        if (e.isGroup && typeof this.e.group.getMemberMap === 'function') {
+          let mm = await this.e.group.getMemberMap()
+          let me = mm.get(getUin(e)) || {}
+          let card = me.card
+          let nickname = me.nickname
+          if (nickname && card) {
+            if (nickname.startsWith(card)) {
+              // 例如nickname是"滚筒洗衣机"，card是"滚筒"
+              prompt = prompt.replace(`@${nickname}`, '').trim()
+            } else if (card.startsWith(nickname)) {
+              // 例如nickname是"十二"，card是"十二｜本月已发送1000条消息"
+              prompt = prompt.replace(`@${card}`, '').trim()
+              // 如果是好友，显示的还是昵称
+              prompt = prompt.replace(`@${nickname}`, '').trim()
+            } else {
+              // 互不包含，分别替换
+              if (nickname) {
+                prompt = prompt.replace(`@${nickname}`, '').trim()
+              }
+              if (card) {
+                prompt = prompt.replace(`@${card}`, '').trim()
+              }
             }
-            if (card) {
-              prompt = prompt.replace(`@${card}`, "").trim();
-            }
+          } else if (nickname) {
+            prompt = prompt.replace(`@${nickname}`, '').trim()
+          } else if (card) {
+            prompt = prompt.replace(`@${card}`, '').trim()
           }
-        } else if (nickname) {
-          prompt = prompt.replace(`@${nickname}`, "").trim();
-        } else if (card) {
-          prompt = prompt.replace(`@${card}`, "").trim();
         }
+      } catch (err) {
+        logger.warn(err)
       }
     } else {
-      let ats = e.message.filter((m) => m.type === "at");
+      let ats = e.message.filter(m => m.type === 'at')
       if (!(e.atme || e.atBot) && ats.length > 0) {
         if (Config.debug) {
-          logger.mark("艾特别人了，没艾特我，忽略#chat");
+          logger.mark('艾特别人了，没艾特我，忽略#chat')
         }
-        return false;
+        return false
       }
-      prompt = _.replace(e.raw_message.trimStart(), "#chat", "").trim();
+      prompt = _.replace(e.raw_message.trimStart(), '#chat', '').trim()
       if (prompt.length === 0) {
-        return false;
+        return false
       }
     }
-    let groupId = e.isGroup ? e.group.group_id : "";
-    if (
-      (await redis.get("CHATGPT:SHUT_UP:ALL")) ||
-      (await redis.get(`CHATGPT:SHUT_UP:${groupId}`))
-    ) {
-      logger.info(
-        logger.cyan("[ChatGPT-plugin]"),
-        logger.yellow(`[聊天]`),
-        logger.red(`[闭嘴]`),
-        "chatgpt闭嘴中，不予理会"
-      );
-      return false;
+    let groupId = e.isGroup ? e.group.group_id : ''
+    if (await redis.get('CHATGPT:SHUT_UP:ALL') || await redis.get(`CHATGPT:SHUT_UP:${groupId}`)) {
+      logger.info('chatgpt闭嘴中，不予理会')
+      return false
     }
     // 获取用户配置
-    const userData = await getUserData(e.user_id);
-    const use =
-      (userData.mode === "default" ? null : userData.mode) ||
-      (await redis.get("CHATGPT:USE")) ||
-      "api";
-    //const use = 'api'
+    const userData = await getUserData(e.user_id)
+    const use = (userData.mode === 'default' ? null : userData.mode) || await redis.get('CHATGPT:USE') || 'api'
     // 自动化插件本月已发送xx条消息更新太快，由于延迟和缓存问题导致不同客户端不一样，at文本和获取的card不一致。因此单独处理一下
-    prompt = prompt.replace(/^｜本月已发送\d+条消息/, "");
-    prompt = prompt.replace(/^｜内存/, "");
-    prompt = prompt.replace(/^｜原神/, "");
-
-    await this.abstractChat(e, prompt, use);
+    prompt = prompt.replace(/^｜本月已发送\d+条消息/, '')
+    await this.abstractChat(e, prompt, use)
   }
 
   async abstractChat(e, prompt, use) {
@@ -2713,25 +2702,28 @@ export class chatgpt extends plugin {
                       parseInt(master)
                     )?.nickname;
                   }
-                  let latestChat = await e.group.getChatHistory(0, 1);
-                  let seq = latestChat[0].seq;
-                  let chats = [];
-                  while (chats.length < Config.groupContextLength) {
-                    let chatHistory = await e.group.getChatHistory(seq, 20);
-                    chats.push(...chatHistory.reverse());
-                  }
-                  chats = chats.slice(0, Config.groupContextLength);
-                  // 太多可能会干扰AI对自身qq号和用户qq的判断，感觉gpt3.5也处理不了那么多信息
-                  chats = chats > 50 ? 50 : chats;
-                  let mm = await e.group.getMemberMap();
-                  chats.forEach((chat) => {
-                    let sender = mm.get(chat.sender.user_id);
-                    if (sender) {
-                      chat.sender = sender
+                  let latestChats = await e.group.getChatHistory(0, 1)
+                  if (latestChats.length > 0) {
+                    let latestChat = latestChats[0]
+                    if (latestChat) {
+                      let seq = latestChat.seq
+                      let chats = []
+                      while (chats.length < Config.groupContextLength) {
+                        let chatHistory = await e.group.getChatHistory(seq, 20)
+                        chats.push(...chatHistory)
+                      }
+                      chats = chats.slice(0, Config.groupContextLength)
+                      let mm = await e.group.getMemberMap()
+                      chats.forEach(chat => {
+                        let sender = mm.get(chat.sender.user_id)
+                        if (sender) {
+                          chat.sender = sender
+                        }
+                      })
+                      // console.log(chats)
+                      opt.chats = chats
                     }
-                  });
-                  // console.log(chats)
-                  opt.chats = chats;
+                  }
                 } catch (err) {
                   logger.warn(
                     "获取群聊聊天记录失败，本次对话不携带聊天记录",
