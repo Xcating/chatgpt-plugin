@@ -1,5 +1,5 @@
 import plugin from "../../../lib/plugins/plugin.js";
-import { render } from "../utils/common.js";
+import { render, getUin } from "../utils/common.js";
 import { Config } from "../utils/config.js";
 import { KeyvFile } from "keyv-file";
 
@@ -34,7 +34,7 @@ export class history extends plugin {
     let chat = [];
     let filtered = e.message
       .filter((m) => m.type === "at")
-      .filter((m) => m.qq !== Bot.uin);
+      .filter((m) => m.qq !== getUin(e));
     let queryUser = e.sender.user_id;
     let user = e.sender;
     if (filtered.length > 0) {
@@ -110,7 +110,7 @@ export class history extends plugin {
           name: user.card || user.nickname || user.user_id,
         },
         bot: {
-          qq: Bot.uin,
+          qq: getUin(e),
           name: Bot.nickname,
         },
         chat,

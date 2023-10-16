@@ -7,6 +7,7 @@ import {
   limitString,
   makeForwardMsg,
   maskQQ,
+  getUin
 } from "../utils/common.js";
 import {
   deleteOnePrompt,
@@ -286,7 +287,7 @@ export class help extends plugin {
     let name = e.msg.replace(/^#(chatgpt|ChatGPT)(删除|取消|撤销)共享设定/, "");
     let response = await fetch(
       `https://chatgpt.roki.best/prompt?name=${name}&qq=${
-        master || Bot.uin + ""
+        master || getUin(e) + ""
       }`,
       {
         method: "DELETE",
@@ -406,7 +407,7 @@ export class help extends plugin {
     let toUploadBody = {
       title: currentUse,
       prompt: content,
-      qq: master || Bot.uin + "", // 上传者设定为主人qq或机器人qq
+      qq: master || getUin(e) + "", // 上传者设定为主人qq或机器人qq
       use: extraData.use === "Custom" ? "Sydney" : "ChatGPT",
       r18,
       description,

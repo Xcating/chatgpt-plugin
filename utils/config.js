@@ -56,6 +56,8 @@ const defaultConfig = {
   promptPrefixOverride:
     "Your answer shouldn't be too verbose. Prefer to answer in Chinese.",
   assistantLabel: "ChatGPT",
+  // trss配置
+  trssBotUin: '',
   // thinkingTips: true,
   username: "",
   password: "",
@@ -187,6 +189,8 @@ const GEConfig = {
   defaultTTSRole: "纳西妲",
   alsoSendText: false,
   autoUsePicture: true,
+  // trss配置
+  trssBotUin: '',
   claudeAITimeout: 120,
   autoUsePictureThreshold: 1200,
   ttsAutoFallbackThreshold: 299,

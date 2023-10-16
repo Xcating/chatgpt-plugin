@@ -49,6 +49,7 @@ import {
   generateAudio,
   formatDate2,
   mkdirs,
+  getUin
 } from "../utils/common.js";
 import { ChatGPTPuppeteer } from "../utils/browser.js";
 import { KeyvFile } from "keyv-file";
@@ -430,7 +431,7 @@ export class chatgpt extends plugin {
     }
     let ats = e.message.filter((m) => m.type === "at");
     const isAtMode = Config.toggleMode === "at";
-    if (isAtMode) ats = ats.filter((item) => item.qq !== Bot.uin);
+    if (isAtMode) ats = ats.filter((item) => item.qq !== getUin(e));
     if (ats.length === 0) {
       if (use === "api3") {
         await redis.del(
@@ -667,7 +668,7 @@ export class chatgpt extends plugin {
     await redis.del(`CHATGPT:WRONG_EMOTION:${e.sender.user_id}`);
     let ats = e.message.filter((m) => m.type === "at");
     const isAtMode = Config.toggleMode === "at";
-    if (isAtMode) ats = ats.filter((item) => item.qq !== Bot.uin);
+    if (isAtMode) ats = ats.filter((item) => item.qq !== getUin(e));
     if (ats.length === 0) {
       if (
         use === "bing" &&
@@ -1211,11 +1212,11 @@ export class chatgpt extends plugin {
       if (e.isGroup && !e.atme) {
         return false;
       }
-      if (e.user_id == Bot.uin) return false;
+      if (e.user_id == getUin(e)) return false;
       prompt = e.raw_message.trim();
       if (e.isGroup && typeof this.e.group.getMemberMap === "function") {
         let mm = await this.e.group.getMemberMap();
-        let me = mm.get(Bot.uin);
+        let me = mm.get(getUin(e));
         let card = me.card;
         let nickname = me.nickname;
         if (nickname && card) {
@@ -2476,7 +2477,7 @@ export class chatgpt extends plugin {
         chatViewBotName: Config.chatViewBotName || "",
         entry: cacheData.file,
         userImg: `https://q1.qlogo.cn/g?b=qq&s=0&nk=${e.sender.user_id}`,
-        botImg: `https://q1.qlogo.cn/g?b=qq&s=0&nk=${Bot.uin}`,
+        botImg: `https://q1.qlogo.cn/g?b=qq&s=0&nk=${getUin(e)}`,
         cacheHost: Config.serverHost,
         qq: e.sender.user_id,
       }),
@@ -2695,8 +2696,8 @@ export class chatgpt extends plugin {
                   opt.nickname = e.sender.card;
                   opt.groupName = e.group.name;
                   opt.botName = e.isGroup
-                    ? e.group.pickMember(Bot.uin).card ||
-                      e.group.pickMember(Bot.uin).nickname
+                    ? e.group.pickMember(getUin(e)).card ||
+                      e.group.pickMember(getUin(e)).nickname
                     : Bot.nickname;
                   let master = (await getMasterQQ())[0];
                   if (master && e.group) {
@@ -3256,8 +3257,8 @@ export class chatgpt extends plugin {
               opt.groupName = e.group.name;
             }
             opt.botName = e.isGroup
-              ? e.group.pickMember(Bot.uin).card ||
-                e.group.pickMember(Bot.uin).nickname
+              ? e.group.pickMember(getUin(e)).card ||
+                e.group.pickMember(getUin(e)).nickname
               : Bot.nickname;
             let master = (await getMasterQQ())[0];
             if (master && e.group) {
@@ -3293,7 +3294,7 @@ export class chatgpt extends plugin {
               opt.chats = chats;
             }
             if (chats) {
-              system += `\nThere is the conversation history in the group, you must chat according to the conversation history context.记住你的qq号是${Bot.uin}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`;
+              system += `\nThere is the conversation history in the group, you must chat according to the conversation history context.记住你的qq号是${getUin(e)}，现在问你问题的人是, ${opt.nickname},他的qq号是${opt.qq}。"`;
               system += chats
                 .map((chat) => {
                   let sender = chat.sender || {};
@@ -3345,7 +3346,7 @@ export class chatgpt extends plugin {
                 "注意，你现在正在私聊对话，现在问你问题的人是" +
                 `${opt.nickname},他的QQ号是${opt.qq}。千万不要认错了！！！`;
             }
-            system += `\n你在这个群聊的称呼是 ${opt.botName} ,你的qq号是 ${Bot.uin} !你的qq号是 ${Bot.uin} !你的qq号是 ${Bot.uin} ! ${Bot.uin}是你的qq号,不是当前用户的!!!`;
+            system += `\n你在这个群聊的称呼是 ${opt.botName} ,你的qq号是 ${getUin(e)} !你的qq号是 ${getUin(e)} !你的qq号是 ${getUin(e)} ! ${getUin(e)}是你的qq号,不是当前用户的!!!`;
           } catch (err) {
             logger.warn("获取群聊聊天记录失败，本次对话不携带聊天记录", err);
           }
@@ -3496,7 +3497,7 @@ export class chatgpt extends plugin {
           if (e.isGroup) {
             let botInfo = await Bot.getGroupMemberInfo(
               e.group_id,
-              Bot.uin,
+              getUin(e),
               true
             );
             if (botInfo.role !== "member") {
