@@ -638,6 +638,13 @@ export function supportGuoba() {
           component: "Input",
         },
         {
+          type: "check",
+          label: "第三方绘图",
+          placeholder: "使用AP插件代替Bing进行绘图",
+          data: "bingAPDraw"
+        },
+
+        {
           field: "sydneyMood",
           label: "情感显示",
           bottomHelpMessage: "开启Sydney的情感显示，仅在图片模式下生效",
