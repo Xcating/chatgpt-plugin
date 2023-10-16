@@ -3500,7 +3500,7 @@ export class chatgpt extends plugin {
             );
           }
           if (e.isGroup) {
-            let botInfo = await Bot.getGroupMemberInfo(
+            let botInfo = await e.bot.getGroupMemberInfo(
               e.group_id,
               getUin(e),
               true
