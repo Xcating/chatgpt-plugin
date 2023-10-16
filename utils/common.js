@@ -875,10 +875,17 @@ export function getMaxModelTokens(model = "gpt-3.5-turbo") {
 
 export function getUin (e) {
   if (getUin(e)) return getUin(e)
-  if (Array.isArray(getUin(e))) {
-    if (Config.trssBotUin && getUin(e).indexOf(Config.trssBotUin) > -1) return Config.trssBotUin
-    else return getUin(e)[0]
-  } else return getUin(e)
+  if (e) {
+    if (Array.isArray(e.bot.uin)) {
+      if (Config.trssBotUin && e.bot.uin.indexOf(Config.trssBotUin) > -1) return Config.trssBotUin
+      else return e.bot.uin[0]
+    } else return e.bot.uin
+  } else {
+    if (Array.isArray(Bot.uin)) {
+      if (Config.trssBotUin && Bot.uin.indexOf(Config.trssBotUin) > -1) return Config.trssBotUin
+      else return Bot.uin[0]
+    } else return Bot.uin
+  }
 }
 /**
  * 生成当前语音模式下可发送的音频信息
