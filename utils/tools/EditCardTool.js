@@ -30,12 +30,16 @@ export class EditCardTool extends AbstractTool {
     groupId = isNaN(groupId) || !groupId ? e.group_id : parseInt(groupId.trim())
 
     let group = await e.bot.pickGroup(groupId)
-    let mm = await group.getMemberMap()
-    if (!mm.has(qq)) {
-      return `failed, the user ${qq} is not in group ${groupId}`
-    }
-    if (mm.get(e.bot.uin).role === 'member') {
-      return `failed, you, not user, don't have permission to edit card in group ${groupId}`
+    try {
+      let mm = await group.getMemberMap()
+      if (!mm.has(qq)) {
+        return `failed, the user ${qq} is not in group ${groupId}`
+      }
+      if (mm.get(e.bot.uin) && mm.get(e.bot.uin).role === 'member') {
+        return `failed, you, not user, don't have permission to edit card in group ${groupId}`
+      }
+    } catch (err) {
+      logger.error('获取群信息失败，可能使用的底层协议不完善')
     }
     qq=Number(qq)
     logger.info('修改群名片参数:', groupId, qq, card)
