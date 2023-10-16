@@ -34,7 +34,7 @@ const defaultConfig = {
   ExrateMsg: true,
   model: "",
   temperature: 0.8,
-  toneStyle: "balanced", // or creative, precise
+  toneStyle: "Sydney", // or creative, precise
   sydney: pureSydneyInstruction,
   sydneyReverseProxy: "https://666102.201666.xyz",
   sydneyForceUseReverse: false,
@@ -211,7 +211,7 @@ const GEConfig = {
   claudeAIUA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
   model: "",
   temperature: 0.8,
-  toneStyle: "balanced",
+  toneStyle: "Sydney",
   sydney: pureSydneyInstruction,
   sydneyReverseProxy: "https://666102.201666.xyz",
   sydneyForceUseReverse: false,
