@@ -2690,7 +2690,7 @@ export class chatgpt extends plugin {
                   opt.botName = e.isGroup
                     ? e.group.pickMember(getUin(e)).card ||
                       e.group.pickMember(getUin(e)).nickname
-                    : Bot.nickname;
+                    : e.bot.nickname;
                   let master = (await getMasterQQ())[0];
                   if (master && e.group) {
                     opt.masterName =
@@ -2698,7 +2698,7 @@ export class chatgpt extends plugin {
                       e.group.pickMember(parseInt(master)).nickname;
                   }
                   if (master && !e.group) {
-                    opt.masterName = Bot.getFriendList().get(
+                    opt.masterName = e.bot.getFriendList().get(
                       parseInt(master)
                     )?.nickname;
                   }
@@ -3264,7 +3264,7 @@ export class chatgpt extends plugin {
             opt.botName = e.isGroup
               ? e.group.pickMember(getUin(e)).card ||
                 e.group.pickMember(getUin(e)).nickname
-              : Bot.nickname;
+              : e.bot.nickname;
             let master = (await getMasterQQ())[0];
             if (master && e.group) {
               opt.masterName =
@@ -3824,7 +3824,7 @@ export class chatgpt extends plugin {
           await makeForwardMsg(
             this.e,
             bots.data.pageList.map(
-              (msg) => `${msg.bot.botId} - ${msg.bot.botName}`
+              (msg) => `${msg.bot.botId} - ${msg.e.bot.botName}`
             )
           )
         );

@@ -111,7 +111,7 @@ export class history extends plugin {
         },
         bot: {
           qq: getUin(e),
-          name: Bot.nickname,
+          name: e.bot.nickname,
         },
         chat,
       },

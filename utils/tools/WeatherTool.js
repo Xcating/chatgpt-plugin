@@ -24,10 +24,10 @@ export class WeatherTool extends AbstractTool {
     const target = isNaN(targetGroupIdOrQQNumber) || !targetGroupIdOrQQNumber
       ? e.isGroup ? e.group_id : e.sender.user_id
       : parseInt(targetGroupIdOrQQNumber.trim())
-    let groupList = await Bot.getGroupList()
+    let groupList = await e.bot.getGroupList()
     console.log('SendWether', target, img)
     if (groupList.get(target)) {
-      let group = await Bot.pickGroup(target)
+      let group = await e.bot.pickGroup(target)
       await group.sendMsg(img)
     }
     return `天气信息已经发送到目标群，你只需要告诉用户已经发了`
