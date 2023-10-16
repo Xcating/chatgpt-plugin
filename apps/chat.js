@@ -1209,7 +1209,7 @@ export class chatgpt extends plugin {
       if (!e.raw_message || e.msg?.startsWith("#")) {
         return false;
       }
-      if (e.isGroup && !(e.atme || e.atBot)) {
+      if ((e.isGroup || e.group_id) && !(e.atme || e.atBot)) {
         return false;
       }
       if (e.user_id == getUin(e)) return false;
@@ -2878,6 +2878,8 @@ export class chatgpt extends plugin {
                   );
                   await e.reply(`token [${bingToken}] 无效或已过期`);
                 }
+              } else {
+                retry = 0
               }
             } else if (
               message &&
