@@ -10,7 +10,20 @@ import { Config, pureSydneyInstruction } from './config.js'
 import { formatDate, getMasterQQ, isCN, getUserData } from './common.js'
 import delay from 'delay'
 import moment from 'moment'
-import { getProxy } from './proxy.js'
+let HttpsProxyAgent;
+try {
+  HttpsProxyAgent = (await import("https-proxy-agent")).default;
+} catch (e) {
+  console.warn(
+    "未安装https-proxy-agent，请在插件目录下执行pnpm add https-proxy-agent"
+  );
+}
+let proxy = HttpsProxyAgent;
+if (typeof proxy !== "function") {
+  proxy = (p) => {
+    return new HttpsProxyAgent.HttpsProxyAgent(p);
+  };
+}
 import Version from './version.js'
 
 if (!globalThis.fetch) {
@@ -20,7 +33,6 @@ if (!globalThis.fetch) {
   globalThis.Response = Response
 }
 // workaround for ver 7.x and ver 5.x
-let proxy = getProxy()
 
 async function getKeyv () {
   let Keyv
