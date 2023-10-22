@@ -8,7 +8,7 @@ async function getKeyv() {
   try {
     Keyv = (await import("keyv")).default;
   } catch (error) {
-    throw new Error("keyv依赖未安装，请使用pnpm install keyv安装");
+    throw new Error("keyv依赖未安装，请使用pnpm install keyv安装后方可使用");
   }
   return Keyv;
 }
@@ -89,7 +89,7 @@ export class history extends plugin {
             }
           });
         } else {
-          await e.reply("还不支持BING模式呢");
+          await e.reply("还不支持必应模式呢");
           return true;
         }
         break;
