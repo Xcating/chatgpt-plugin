@@ -131,6 +131,11 @@ export class ChatgptManagement extends plugin {
           permission: "master",
         },
         {
+          reg: '^#chatgpt切换(通义千问|qwen|千问)$',
+          fnc: 'useQwenSolution',
+          permission: 'master'
+        },
+        {
           reg: "^#chatgpt切换(必应|Bing)$",
           fnc: "useBingSolution",
           permission: "master",
@@ -1347,6 +1352,15 @@ azure语音：Azure 语音是微软 Azure 平台提供的一项语音服务，�
       await this.reply('当前已经是Bard模式了')
     }
   }
+  async useQwenSolution () {
+    let use = await redis.get('CHATGPT:USE')
+    if (use !== 'qwen') {
+      await redis.set('CHATGPT:USE', 'qwen')
+      await this.reply('已切换到基于通义千问的解决方案')
+    } else {
+      await this.reply('当前已经是通义千问模式了')
+    }
+  }
   async changeBingTone(e) {
     let tongStyle = e.msg.replace(/^#chatgpt(必应|Bing)切换/, "");
     if (!tongStyle) {
@@ -1762,9 +1776,9 @@ Poe 模式会调用 Poe 中的 Claude-instant 进行对话。需要提供 Cookie
     const viewHost = Config.serverHost ? `http://${Config.serverHost}/` : `http://${await getPublicIP()}:${Config.serverPort || 3321}/`
     const otp = randomString(6)
     await redis.set(
-        `CHATGPT:SERVER_QUICK`,
-        otp,
-        { EX: 60000 }
+      'CHATGPT:SERVER_QUICK',
+      otp,
+      { EX: 60000 }
     )
     await this.reply(`请登录http://tools.alcedogroup.com/login?server=${viewHost}&otp=${otp}`, true)
   }

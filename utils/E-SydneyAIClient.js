@@ -24,7 +24,7 @@ try {
   console.warn("未安装crypto，请发送指令#chatgpt安装依赖");
 }
 import { Config, pureSydneyInstruction } from "./config.js";
-import { formatDate, getMasterQQ, isCN, getUserData } from "./common.js";
+import { formatDate, getMasterQQ, isCN, getUserData , limitString} from "./common.js";
 let HttpsProxyAgent;
 try {
   HttpsProxyAgent = (await import("https-proxy-agent")).default;
@@ -157,14 +157,14 @@ export default class ESydneyAIClient {
         fetchOptions
       );
     }
-    let response = await fetch(`${this.opts.host}/turing/conversation/create?bundleVersion=1.1055.6`, fetchOptions)
+    let response = await fetch(`${this.opts.host}/turing/conversation/create?bundleVersion=1.1055.10`, fetchOptions)
 
     let text = await response.text();
     let retry = 10;
     while (retry >= 0 && response.status === 200 && !text) {
       await delay(400);
       response = await fetch(
-        `${this.opts.host}/turing/conversation/create`,
+        `${this.opts.host}/turing/conversation/create?bundleVersion=1.1055.10`,
         fetchOptions
       );
       text = await response.text();
@@ -314,6 +314,7 @@ export default class ESydneyAIClient {
       botName,
       masterName,
       messageType = "Chat",
+      toSummaryFileContent
     } = opts;
     let encryptedconversationsignature = ''
     //if (messageType === 'Chat') {
@@ -494,6 +495,10 @@ export default class ESydneyAIClient {
     let maxConv = Config.maxNumUserMessagesInConversation;
     const currentDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     const imageDate = await this.kblobImage(opts.imageUrl);
+    if (toSummaryFileContent?.content) {
+      // message = `请不要进行搜索，用户的问题是："${message}"`
+      messageType = 'Chat'
+    }
     let argument0 = {
       source: 'cib',
       optionsSets,
@@ -537,10 +542,12 @@ export default class ESydneyAIClient {
         text: message,
         messageType,
         userIpAddress: await generateRandomIP(),
-        timestamp: currentDate
+        timestamp: currentDate,
+        privacy: 'Internal'
         // messageType: 'SearchQuery'
       },
       tone: 'Creative',
+      privacy: 'Internal',
       conversationSignature,
       participant: {
         id: clientId
@@ -563,7 +570,7 @@ export default class ESydneyAIClient {
     };
     // simulates document summary function on Edge's Bing sidebar
     // unknown character limit, at least up to 7k
-    if (groupId) {
+    if (groupId  && !toSummaryFileContent?.content) {
       context +=
         "[MHAKCSXA] 你现在正在一个QQ群里和人聊天，现在正在跟你对话的人的名字是" +
         `"${nickname}"，他的QQ号是"${this.opts.user}"`;
@@ -644,6 +651,17 @@ export default class ESydneyAIClient {
         messageType: "Context",
         messageId: "discover-web--page-ping-mriduna-----",
       });
+    } else if (toSummaryFileContent?.content) {
+      obj.arguments[0].previousMessages.push({
+        author: 'user',
+        description: limitString(toSummaryFileContent?.content, 50000, true),
+        contextType: 'WebPage',
+        messageType: 'Context',
+        sourceName: toSummaryFileContent?.name,
+        sourceUrl: 'file:///C:/Users/turing/Downloads/Documents/' + toSummaryFileContent?.name || 'file.pdf',
+        // locale: 'und',
+        // privacy: 'Internal'
+      })
     }
     if (obj.arguments[0].previousMessages.length === 0) {
       delete obj.arguments[0].previousMessages;

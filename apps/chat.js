@@ -30,30 +30,26 @@ import AzureTTS from "../utils/tts/microsoft-azure.js";
 import VoiceVoxTTS from "../utils/tts/voicevox.js";
 import Version from '../utils/version.js'
 import {
-  render,
-  renderUrl,
-  getMessageById,
-  makeForwardMsg,
-  upsertMessage,
-  randomString,
-  completeJSON,
-  isImage,
-  getUserData,
+  extractContentFromFile,
+  formatDate,
+  formatDate2,
+  generateAudio,
   getDefaultReplySetting,
-  isCN,
-  getMasterQQ,
-  getUserReplySetting,
   getImageOcrText,
   getImg,
+  getMasterQQ,
   getMaxModelTokens,
-  formatDate,
-  generateAudio,
-  formatDate2,
-  mkdirs,
+  getMessageById,
   getUin,
-  downloadFile,
-  isPureText,
-  extractContentFromFile
+  getUserData,
+  getUserReplySetting,
+  isCN,
+  isImage,
+  makeForwardMsg,
+  randomString,
+  render,
+  renderUrl,
+  upsertMessage
 } from "../utils/common.js";
 import { ChatGPTPuppeteer } from "../utils/browser.js";
 import { KeyvFile } from "keyv-file";
@@ -99,6 +95,7 @@ import { SendAvatarTool } from "../utils/tools/SendAvatarTool.js";
 import { SendMessageToSpecificGroupOrUserTool } from "../utils/tools/SendMessageToSpecificGroupOrUserTool.js";
 import { SetTitleTool } from "../utils/tools/SetTitleTool.js";
 import { ClaudeAIClient } from "../utils/claude.ai/index.js";
+import { QwenApi } from '../utils/alibaba/qwen-api.js'
 import fs from "fs";
 let checkNumber;
 const ChatRulePrefix = Config.ChatRulePrefix;
@@ -246,6 +243,12 @@ export class chatgpt extends plugin {
         {
           reg: "^#星火(搜索|查找)助手",
           fnc: "searchxhBot",
+        },
+        {
+          /** 命令正则匹配 */
+          reg: '^#qwen[sS]*',
+          /** 执行方法 */
+          fnc: 'qwen'
         },
         {
           /** 命令正则匹配 */
@@ -530,6 +533,14 @@ export class chatgpt extends plugin {
           await redis.del(`CHATGPT:CONVERSATIONS:${e.sender.user_id}`);
           await this.reply("已结束当前对话，请@我进行聊天以开启新的对话", true);
         }
+      } else if (use === 'qwen') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_QWEN:${e.sender.user_id}`)
+        if (!c) {
+          await this.reply('当前没有开启对话', true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_QWEN:${e.sender.user_id}`)
+          await this.reply('已结束当前对话，请@我进行聊天以开启新的对话', true)
+        }
       } else if (use === "bing") {
         let c = await redis.get(
           `CHATGPT:CONVERSATIONS_BING:${e.sender.user_id}`
@@ -640,6 +651,14 @@ export class chatgpt extends plugin {
             `已结束${atUser}的对话，TA仍可以@我进行聊天以开启新的对话`,
             true
           );
+        }
+      } else if (use === 'qwen') {
+        let c = await redis.get(`CHATGPT:CONVERSATIONS_QWEN:${qq}`)
+        if (!c) {
+          await this.reply(`当前${atUser}没有开启对话`, true)
+        } else {
+          await redis.del(`CHATGPT:CONVERSATIONS_QWEN:${qq}`)
+          await this.reply(`已结束${atUser}的对话，TA仍可以@我进行聊天以开启新的对话`, true)
         }
       } else if (use === "bing") {
         let c = await redis.get(`CHATGPT:CONVERSATIONS_BING:${qq}`);
@@ -1577,6 +1596,10 @@ export class chatgpt extends plugin {
           key = `CHATGPT:CONVERSATIONS_AZURE:${e.sender.user_id}`;
           break;
         }
+        case 'qwen': {
+          key = `CHATGPT:CONVERSATIONS_QWEN:${(e.isGroup && Config.groupMerge) ? e.group_id.toString() : e.sender.user_id}`
+          break
+        }
       }
       let ctime = new Date();
       previousConversation =
@@ -2417,6 +2440,24 @@ export class chatgpt extends plugin {
     await this.abstractChat(e, prompt, "claude");
     return true;
   }
+  async qwen (e) {
+    if (!Config.allowOtherMode) {
+      return false
+    }
+    let ats = e.message.filter(m => m.type === 'at')
+    if (!(e.atme || e.atBot) && ats.length > 0) {
+      if (Config.debug) {
+        logger.mark('艾特别人了，没艾特我，忽略#xh')
+      }
+      return false
+    }
+    let prompt = _.replace(e.raw_message.trimStart(), '#qwen', '').trim()
+    if (prompt.length === 0) {
+      return false
+    }
+    await this.abstractChat(e, prompt, 'qwen')
+    return true
+  }
 
   async xh(e) {
     if (!Config.allowOtherMode) {
@@ -3159,6 +3200,7 @@ export class chatgpt extends plugin {
 
         return response;
       }
+
       case "bard": {
         // 处理cookie
         const matchesPSID = /__Secure-1PSID=([^;]+)/.exec(Config.bardPsid);
@@ -3238,6 +3280,57 @@ export class chatgpt extends plugin {
         );
         let completion = choices[0].message;
         return { text: completion.content, message: completion };
+      }
+      case 'qwen': {
+        let completionParams = {
+          parameters: {
+            top_p: Config.qwenTopP || 0.5,
+            top_k: Config.qwenTopK || 50,
+            seed: Config.qwenSeed > 0 ? Config.qwenSeed : Math.floor(Math.random() * 114514),
+            temperature: Config.qwenTemperature || 1,
+            enable_search: !!Config.qwenEnableSearch
+          }
+        }
+        if (Config.qwenModel) {
+          completionParams.model = Config.qwenModel
+        }
+        const currentDate = new Date().toISOString().split('T')[0]
+        async function um (message) {
+          return await upsertMessage(message, 'QWEN')
+        }
+        async function gm (id) {
+          return await getMessageById(id, 'QWEN')
+        }
+        let opts = {
+          apiKey: Config.qwenApiKey,
+          debug: false,
+          upsertMessage: um,
+          getMessageById: gm,
+          systemMessage: `You are ${Config.assistantLabel} ${useCast?.api || Config.promptPrefixOverride || defaultPropmtPrefix}
+        Current date: ${currentDate}`,
+          completionParams,
+          assistantLabel: Config.assistantLabel,
+          fetch: newFetch
+        }
+        this.qwenApi = new QwenApi(opts)
+        let option = {
+          timeoutMs: 600000,
+          completionParams
+        }
+        if (conversation) {
+          if (!conversation.conversationId) {
+            conversation.conversationId = uuid()
+          }
+          option = Object.assign(option, conversation)
+        }
+        let msg
+        try {
+          msg = await this.qwenApi.sendMessage(prompt, option)
+        } catch (err) {
+          logger.error(err)
+          throw new Error(err)
+        }
+        return msg
       }
       default: {
         let completionParams = {};
@@ -3400,6 +3493,9 @@ export class chatgpt extends plugin {
         };
         option.systemMessage = system;
         if (conversation) {
+          if (!conversation.conversationId) {
+            conversation.conversationId = uuid()
+          }
           option = Object.assign(option, conversation);
         }
         if (Config.smartMode) {

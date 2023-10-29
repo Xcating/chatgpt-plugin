@@ -24,22 +24,22 @@ import Version from './version.js'
 import fetch from 'node-fetch'
 let pdfjsLib
 try {
-  pdfjsLib = require('pdfjs-dist')
+  pdfjsLib = (await import('pdfjs-dist')).default
 } catch (err) {}
 
 let mammoth
 try {
-  mammoth = require('mammoth')
+  mammoth = (await import('mammoth')).default
 } catch (err) {}
 
 let XLSX
 try {
-  XLSX = require('xlsx')
+  XLSX = (await import('xlsx')).default
 } catch (err) {}
 
 let PPTX
 try {
-  PPTX = require('nodejs-pptx')
+  PPTX = (await import('nodejs-pptx')).default
 } catch (err) {}
 let _puppeteer;
 try {
@@ -82,12 +82,18 @@ export function randomString(length = 5) {
   return str.substr(0, length);
 }
 
-export async function upsertMessage(message) {
-  await redis.set(`CHATGPT:MESSAGE:${message.id}`, JSON.stringify(message));
+export async function upsertMessage (message, suffix = '') {
+  if (suffix) {
+    suffix = '_' + suffix
+  }
+  await redis.set(`CHATGPT:MESSAGE${suffix}:${message.id}`, JSON.stringify(message))
 }
 
-export async function getMessageById(id) {
-  let messageStr = await redis.get(`CHATGPT:MESSAGE:${id}`);
+export async function getMessageById (id, suffix = '') {
+  if (suffix) {
+    suffix = '_' + suffix
+  }
+  let messageStr = await redis.get(`CHATGPT:MESSAGE${suffix}:${id}`)
   return JSON.parse(messageStr);
 }
 
