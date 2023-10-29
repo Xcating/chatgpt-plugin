@@ -37,6 +37,10 @@
     "cycletls": "^1.0.21"
   },
   "optionalDependencies": {
+    "xlsx": "^0.18.5",
+    "mammoth": "^1.6.0",
+    "pdfjs-dist": "^3.11.174",
+    "nodejs-pptx": "^1.2.4",
     "@node-rs/jieba": "^1.6.2",
     "jimp": "^0.22.7",
     "node-silk": "^0.1.0",
